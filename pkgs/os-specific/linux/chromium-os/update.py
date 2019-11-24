@@ -1,19 +1,29 @@
 #! /usr/bin/env nix-shell
-#! nix-shell -p python3 -p nix-prefetch-git -i python
+#! nix-shell -p python3 -i python
 
 import base64
 import csv
 import json
-import re
 import subprocess
 import xml.etree.ElementTree as ElementTree
 from codecs import iterdecode
 from operator import itemgetter
+from os import scandir
 from os.path import dirname, splitext
+from re import MULTILINE, fullmatch, match, search
 from urllib.request import urlopen
 
-# ChromiumOS components required to build crosvm.
-components = ['chromiumos/platform/crosvm', 'chromiumos/third_party/adhd']
+# ChromiumOS components used in Nixpkgs
+components = [
+    'aosp/platform/external/libchrome',
+    'aosp/platform/external/modp_b64',
+    'chromiumos/overlays/chromiumos-overlay',
+    'chromiumos/platform/crosvm',
+    'chromiumos/platform2',
+    'chromiumos/third_party/adhd',
+    'chromiumos/third_party/kernel',
+    'chromiumos/third_party/modemmanager-next',
+]
 
 git_root = 'https://chromium.googlesource.com/'
 manifest_versions = f'{git_root}chromiumos/manifest-versions'
@@ -32,8 +42,8 @@ with urlopen('https://cros-omahaproxy.appspot.com/all') as resp:
     stables = filter(lambda v: v['track'] == 'stable-channel', versions)
     stable = sorted(stables, key=itemgetter('chrome_version'), reverse=True)[0]
 
-chrome_major_version = re.match(r'\d+', stable['chrome_version'])[0]
-chromeos_tip_build = re.match(r'\d+', stable['chromeos_version'])[0]
+chrome_major_version = match(r'\d+', stable['chrome_version'])[0]
+chromeos_tip_build = match(r'\d+', stable['chromeos_version'])[0]
 
 # Find the most recent buildspec for the stable Chrome version and
 # Chromium OS build number.  Its branch build and branch branch build
@@ -62,24 +72,46 @@ with urlopen(f'{buildspecs_url}{chrome_major_version}/{buildspec}.xml?format=TEX
 # of confusion I have been.
 data = {'version': f'{chrome_major_version}.{buildspec}', 'components': {}}
 
+paths = {}
+
 # Fill in the 'components' dictionary with the output from
 # nix-prefetch-git, which can be passed straight to fetchGit when
 # imported by Nix.
 for component in components:
-    argv = ['nix-prefetch-git',
-            '--url', git_root + component,
-            '--rev', revisions[component]]
+    name = component.split('/')[-1]
+    url = f'{git_root}{component}'
+    rev = revisions[component]
+    tarball = f'{url}/+archive/{rev}.tar.gz'
+    output = subprocess.check_output(['nix-prefetch-url', '--print-path', '--unpack', '--name', name, tarball])
+    (sha256, path) = output.decode('utf-8').splitlines()
+    paths[component] = path
+    data['components'][component] = {
+        'name': name,
+        'url': url,
+        'rev': rev,
+        'sha256': sha256,
+    }
 
-    output = subprocess.check_output(argv)
-    data['components'][component] = json.loads(output.decode('utf-8'))
+# Get the version number of libchrome.
+chromiumos_overlay = paths['chromiumos/overlays/chromiumos-overlay']
+contents = scandir(f'{chromiumos_overlay}/chromeos-base/libchrome')
+libchrome_version = lambda name: fullmatch(r'libchrome-(\d+)\.ebuild', name)[1]
+ebuilds = [f for f in contents if f.is_file(follow_symlinks=False)]
+versions = [libchrome_version(f.name) for f in ebuilds]
+latest = sorted(versions, key=int)[-1]
+data['components']['aosp/platform/external/libchrome']['version'] = latest
 
-# Find the path to crosvm's default.nix, so the srcs data can be
-# written into the same directory.
-argv = ['nix-instantiate', '--eval', '--json', '-A', 'crosvm.meta.position']
-position = json.loads(subprocess.check_output(argv).decode('utf-8'))
-filename = re.match(r'[^:]*', position)[0]
+# Get the version number of the kernel.
+kernel = paths['chromiumos/third_party/kernel']
+makefile = open(f'{kernel}/Makefile').read()
+version = search(r'^VERSION = (.+)$', makefile, MULTILINE)[1]
+patchlevel = search(r'^PATCHLEVEL = (.*?)$', makefile, MULTILINE)[1]
+sublevel = search(r'^SUBLEVEL = (.*?)$', makefile, MULTILINE)[1]
+extra = search(r'^EXTRAVERSION =[ \t]*(.*?)$', makefile, MULTILINE)[1]
+full_ver = '.'.join(filter(None, [version, patchlevel, sublevel])) + extra
+data['components']['chromiumos/third_party/kernel']['version'] = full_ver
 
 # Finally, write the output.
-with open(dirname(filename) + '/upstream-info.json', 'w') as out:
+with open(dirname(__file__) + '/upstream-info.json', 'w') as out:
     json.dump(data, out, indent=2)
     out.write('\n')

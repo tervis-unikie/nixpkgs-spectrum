@@ -1,26 +1,18 @@
-{ stdenv, rustPlatform, fetchgit, runCommand, symlinkJoin
+{ stdenv, rustPlatform, fetchFromGitiles, upstreamInfo
 , pkgconfig, minijail, dtc, libusb1, libcap
 }:
 
 let
-
-  upstreamInfo = with builtins; fromJSON (readFile ./upstream-info.json);
-
   arch = with stdenv.hostPlatform;
     if isAarch64 then "arm"
     else if isx86_64 then "x86_64"
     else throw "no seccomp policy files available for host platform";
 
-  crosvmSrc = fetchgit {
-    inherit (upstreamInfo.components."chromiumos/platform/crosvm")
-      url rev sha256 fetchSubmodules;
-  };
+  crosvmSrc = fetchFromGitiles
+    upstreamInfo.components."chromiumos/platform/crosvm";
 
-  adhdSrc = fetchgit {
-    inherit (upstreamInfo.components."chromiumos/third_party/adhd")
-      url rev sha256 fetchSubmodules;
-  };
-
+  adhdSrc = fetchFromGitiles
+    upstreamInfo.components."chromiumos/third_party/adhd";
 in
 
   rustPlatform.buildRustPackage rec {
@@ -29,16 +21,15 @@ in
 
     unpackPhase = ''
       runHook preUnpack
+
       mkdir -p chromiumos/platform chromiumos/third_party
 
       pushd chromiumos/platform
       unpackFile ${crosvmSrc}
-      mv crosvm-* crosvm
       popd
 
       pushd chromiumos/third_party
       unpackFile ${adhdSrc}
-      mv adhd-* adhd
       popd
 
       chmod -R u+w -- "$sourceRoot"
@@ -49,10 +40,10 @@ in
     sourceRoot = "chromiumos/platform/crosvm";
 
     patches = [
-      ./default-seccomp-policy-dir.patch
+      ./default-seccomp-policy-dir.diff
     ];
 
-    cargoSha256 = "16cfp79c13ng5jjcrvz00h3cg7cc9ywhjiq02vsm757knn9jgr1v";
+    cargoSha256 = "1b5i9gwrw55p89f7vwjy801q26hwyn8hd64w6qp66fl9fr7vgvbi";
 
     nativeBuildInputs = [ pkgconfig ];
 

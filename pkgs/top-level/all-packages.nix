@@ -1489,8 +1489,6 @@ in
 
   crip = callPackage ../applications/audio/crip { };
 
-  crosvm = callPackage ../applications/virtualization/crosvm { };
-
   crunch = callPackage ../tools/security/crunch { };
 
   crudini = callPackage ../tools/misc/crudini { };
@@ -10852,6 +10850,11 @@ in
 
   chromaprint = callPackage ../development/libraries/chromaprint { };
 
+  chromiumOSPackages = recurseIntoAttrs
+    (callPackage ../os-specific/linux/chromium-os { });
+
+  inherit (chromiumOSPackages) crosvm sommelier;
+
   cl = callPackage ../development/libraries/cl { };
 
   classads = callPackage ../development/libraries/classads { };
@@ -16109,6 +16112,8 @@ in
 
   klibcShrunk = lowPrio (callPackage ../os-specific/linux/klibc/shrunk.nix { });
 
+  linux_cros = chromiumOSPackages.linux;
+
   linux_mptcp = linux_mptcp_95;
 
   linux_mptcp_94 = callPackage ../os-specific/linux/kernel/linux-mptcp-94.nix {
@@ -16409,6 +16414,7 @@ in
   linux_latest = linuxPackages_latest.kernel;
 
   # Build the kernel modules for the some of the kernels.
+  linuxPackages_cros = linuxPackagesFor pkgs.linux_cros;
   linuxPackages_mptcp = linuxPackagesFor pkgs.linux_mptcp;
   linuxPackages_rpi1 = linuxPackagesFor pkgs.linux_rpi1;
   linuxPackages_rpi2 = linuxPackagesFor pkgs.linux_rpi2;

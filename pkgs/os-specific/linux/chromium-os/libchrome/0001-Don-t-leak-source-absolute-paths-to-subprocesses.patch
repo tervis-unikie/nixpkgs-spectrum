@@ -1,0 +1,40 @@
+From a4499cdec93f1b1fd8c2a9db02244d667d9c7e11 Mon Sep 17 00:00:00 2001
+From: Alyssa Ross <hi@alyssa.is>
+Date: Wed, 27 Nov 2019 17:10:18 +0000
+Subject: [PATCH] Don't leak source-absolute paths to subprocesses
+
+---
+ BUILD.gn | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/BUILD.gn b/BUILD.gn
+index 4477a86..5869e1f 100644
+--- a/BUILD.gn
++++ b/BUILD.gn
+@@ -466,8 +466,9 @@ action("base") {
+   }
+ 
+   script = "//common-mk/write_args.py"
+-  outputs = [ "${root_out_dir}/lib/lib${target_name}-${libbase_ver}.so" ]
+-  args = [ "--output" ] + outputs + [ "--" ] + [
++  lib_path = "${root_out_dir}/lib/lib${target_name}-${libbase_ver}.so"
++  outputs = [ lib_path ]
++  args = [ "--output", rebase_path(lib_path), "--" ] + [
+     "GROUP", "(", "AS_NEEDED", "(",
+   ]
+   foreach(attr, libbase_sublibs) {
+@@ -524,8 +525,9 @@ action("base-test") {
+   }
+ 
+   script = "//common-mk/write_args.py"
+-  outputs = [ "${root_out_dir}/lib${target_name}-${libbase_ver}.a" ]
+-  args = [ "--output" ] + outputs + [ "--" ] + [
++  lib_path = "${root_out_dir}/lib/lib${target_name}-${libbase_ver}.so"
++  outputs = [ lib_path ]
++  args = [ "--output", rebase_path(lib_path), "--" ] + [
+     "GROUP", "(", "AS_NEEDED", "(",
+   ]
+   foreach(attr, libbase_sublibs) {
+-- 
+2.23.0
+
