@@ -11,32 +11,15 @@ let
     else if isx86_64 then "x86_64"
     else throw "no seccomp policy files available for host platform";
 
-  # used to turn symlinks into real files because write permissions are necessary for the vendoring process
-  delink = src: runCommand "${src.name}-delinked" {
-    preferLocalBuild = true;
-    allowSubstitutes = false;
-  } ''
-    cp -prL --reflink=auto ${src} $out
-  '';
+  crosvmSrc = fetchgit {
+    inherit (upstreamInfo.components."chromiumos/platform/crosvm")
+      url rev sha256 fetchSubmodules;
+  };
 
-  # used to place subtrees into the location they have in the Chromium monorepo
-  move = src: target: runCommand "moved-${src.name}" {
-    preferLocalBuild = true;
-    allowSubstitutes = false;
-  } ''
-    mkdir -p $(dirname $out/${target})
-    ln -s ${src} $out/${target}
-  '';
-
-  # used to check out subtrees from the Chromium monorepo
-  chromiumSource = name: subtrees: delink (symlinkJoin {
-    inherit name;
-    paths = stdenv.lib.mapAttrsToList (
-      location: { url, rev, sha256, fetchSubmodules, ... }:
-      move (fetchgit {
-        inherit url rev sha256 fetchSubmodules;
-      }) location) subtrees;
-  });
+  adhdSrc = fetchgit {
+    inherit (upstreamInfo.components."chromiumos/third_party/adhd")
+      url rev sha256 fetchSubmodules;
+  };
 
 in
 
@@ -44,9 +27,26 @@ in
     pname = "crosvm";
     inherit (upstreamInfo) version;
 
-    src = chromiumSource "${pname}-sources" upstreamInfo.components;
+    unpackPhase = ''
+      runHook preUnpack
+      mkdir -p chromiumos/platform chromiumos/third_party
 
-    sourceRoot = "${src.name}/chromiumos/platform/crosvm";
+      pushd chromiumos/platform
+      unpackFile ${crosvmSrc}
+      mv crosvm-* crosvm
+      popd
+
+      pushd chromiumos/third_party
+      unpackFile ${adhdSrc}
+      mv adhd-* adhd
+      popd
+
+      chmod -R u+w -- "$sourceRoot"
+
+      runHook postUnpack
+    '';
+
+    sourceRoot = "chromiumos/platform/crosvm";
 
     patches = [
       ./default-seccomp-policy-dir.patch
