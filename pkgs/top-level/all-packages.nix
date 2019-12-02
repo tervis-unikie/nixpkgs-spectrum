@@ -16099,7 +16099,9 @@ in
   lkl = callPackage ../applications/virtualization/lkl { };
 
   inherit (callPackages ../os-specific/linux/kernel-headers { })
-    linuxHeaders;
+    linuxHeaders
+    linuxHeadersPatches
+    makeLinuxHeaders;
 
   kernelPatches = callPackage ../os-specific/linux/kernel/patches.nix { };
 
