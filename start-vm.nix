@@ -34,5 +34,5 @@ in
 
 writeShellScript "crosvm" ''
   set -x
-  exec ${crosvm}/bin/crosvm run --wayland-sock=/run/user/1000/wayland-0 -p init=${init} --root=${rootfs} ${kernel}/bzImage
+  exec ${crosvm}/bin/crosvm run --wayland-sock=$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY -p init=${init} --root=${rootfs} ${kernel}/bzImage
 ''
