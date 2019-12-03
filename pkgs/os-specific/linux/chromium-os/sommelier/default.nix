@@ -8,6 +8,7 @@ common-mk {
 
   platform2Patches = [
     ./0010-sommelier-don-t-leak-source-absolute-paths.patch
+    ./0011-sommelier-use-stable-xdg-shell-protocol.patch
   ];
 
   buildInputs = [
