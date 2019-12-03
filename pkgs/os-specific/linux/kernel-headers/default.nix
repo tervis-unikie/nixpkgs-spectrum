@@ -3,7 +3,7 @@
 , elf-header
 }:
 
-let
+rec {
   makeLinuxHeaders = { src, version, patches ? [] }: stdenvNoCC.mkDerivation {
     inherit src;
 
@@ -58,7 +58,7 @@ let
     + '' mkdir -p $out/include/config
       echo "${version}-default" > $out/include/config/kernel.release
     ''
-    # These oddly named file records teh `SHELL` passed, which causes bootstrap
+    # These oddly named file records the `SHELL` passed, which causes bootstrap
     # tools run-time dependency.
     + ''
       find "$out" -name '..install.cmd' -print0 | xargs -0 rm
@@ -70,8 +70,11 @@ let
       platforms = platforms.linux;
     };
   };
-in {
-  inherit makeLinuxHeaders;
+
+  linuxHeadersPatches = [
+    ./no-relocs.patch # for building x86 kernel headers on non-ELF platforms
+    ./no-dynamic-cc-version-check.patch # so we can use `stdenvNoCC`, see `makeFlags` above
+  ];
 
   linuxHeaders = let version = "4.19.16"; in
     makeLinuxHeaders {
@@ -80,9 +83,6 @@ in {
         url = "mirror://kernel/linux/kernel/v4.x/linux-${version}.tar.xz";
         sha256 = "1pqvn6dsh0xhdpawz4ag27vkw1abvb6sn3869i4fbrz33ww8i86q";
       };
-      patches = [
-         ./no-relocs.patch # for building x86 kernel headers on non-ELF platforms
-         ./no-dynamic-cc-version-check.patch # so we can use `stdenvNoCC`, see `makeFlags` above
-      ];
+      patches = linuxHeadersPatches;
     };
 }

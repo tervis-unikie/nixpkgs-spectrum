@@ -1,0 +1,55 @@
+{
+  "version": "78.12499.0.0-rc1",
+  "components": {
+    "aosp/platform/external/libchrome": {
+      "name": "libchrome",
+      "url": "https://chromium.googlesource.com/aosp/platform/external/libchrome",
+      "rev": "f4736afd702d3f9ac65a2810a1fc472d964941b7",
+      "sha256": "1wry24ma855rbjnawkjqyjjp4p4rsv6fa8i63mlg3pp5j7bflzip",
+      "version": "462023"
+    },
+    "aosp/platform/external/modp_b64": {
+      "name": "modp_b64",
+      "url": "https://chromium.googlesource.com/aosp/platform/external/modp_b64",
+      "rev": "afc3e28a3de4a627e3afaf73b4c55ed85c992470",
+      "sha256": "0cyvbdvnfcm958dglm0ci36v4np2fskkjxr8kzncgmhxpxdhkmwj"
+    },
+    "chromiumos/overlays/chromiumos-overlay": {
+      "name": "chromiumos-overlay",
+      "url": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay",
+      "rev": "63153be50fe6cbcd7126f9eed6b5bdda28526dae",
+      "sha256": "0v5b2mfrg8c927m073xhjcmgbn077s1gs36kvc7m23194y5wa75i"
+    },
+    "chromiumos/platform/crosvm": {
+      "name": "crosvm",
+      "url": "https://chromium.googlesource.com/chromiumos/platform/crosvm",
+      "rev": "0b86007d3e1ee400c6201c00b7dea323d661b50f",
+      "sha256": "1i3wf7f5ikly404ail161llghzw07wsalpdfdfpr5bs321yfkpsp"
+    },
+    "chromiumos/platform2": {
+      "name": "platform2",
+      "url": "https://chromium.googlesource.com/chromiumos/platform2",
+      "rev": "1a01bbebf957f4750021c6689eb65b9fc026338b",
+      "sha256": "1fyasgg2azixddnnsgfccnbjkpm2qbzjkvv22f298hv8qxhp32nr"
+    },
+    "chromiumos/third_party/adhd": {
+      "name": "adhd",
+      "url": "https://chromium.googlesource.com/chromiumos/third_party/adhd",
+      "rev": "72bf5919510c200fdd9a44ed223fd3a871908b49",
+      "sha256": "0fva5pfa8907qczf2lrinwbw60vvwfc9jv536p2lv86pb36q2vly"
+    },
+    "chromiumos/third_party/kernel": {
+      "name": "kernel",
+      "url": "https://chromium.googlesource.com/chromiumos/third_party/kernel",
+      "rev": "673c07c063fb4fc7d50078ba337e5acd7efca18c",
+      "sha256": "01qww3db1r5aw2r75xfv11qa8ysvwhcdw5sfmdwx1cc3l8j45m7g",
+      "version": "4.19.66"
+    },
+    "chromiumos/third_party/modemmanager-next": {
+      "name": "modemmanager-next",
+      "url": "https://chromium.googlesource.com/chromiumos/third_party/modemmanager-next",
+      "rev": "5b752047977b69618f1b31bd08fd38de6f4f5ba3",
+      "sha256": "0369khzax3r3nxf7jx7d2ryv14xi5s5dz60f4ml4cxidcca20xcj"
+    }
+  }
+}
