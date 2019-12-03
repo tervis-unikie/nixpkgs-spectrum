@@ -16,9 +16,12 @@ let
 
   init = writeShellScript "init" ''
     set -xe
+    ${coreutils}/bin/mkdir /dev/pts /dev/shm
     ${utillinux}/bin/mount -t tmpfs none /tmp
+    ${utillinux}/bin/mount -t devpts -o gid=4,mode=620 none /dev/pts
+    ${utillinux}/bin/mount -t tmpfs none /dev/shm
     export XDG_RUNTIME_DIR=/tmp
-    ${sommelier}/bin/sommelier ${coreutils}/bin/env WAYLAND_DEBUG=1 ${westonLite}/bin/weston-terminal
+    ${sommelier}/bin/sommelier ${hello-wayland}/bin/hello-wayland
   '';
 
   rootfs = runCommand "rootfs" {} ''
