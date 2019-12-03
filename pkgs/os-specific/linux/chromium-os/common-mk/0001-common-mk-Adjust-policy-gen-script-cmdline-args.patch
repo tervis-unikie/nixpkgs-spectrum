@@ -1,7 +1,7 @@
 From fc07988a1837ea947af231d9371a7d7b96618f52 Mon Sep 17 00:00:00 2001
 From: Pavol Marko <pmarko@google.com>
 Date: Wed, 4 Sep 2019 15:21:46 +0200
-Subject: [PATCH 01/10] common-mk: Adjust policy gen script cmdline args
+Subject: [PATCH 01/11] common-mk: Adjust policy gen script cmdline args
 
 The cmdline args interface of the policy source generation script
 'generate_policy_source.py' has changed on the Chromium side as of
