@@ -29,7 +29,7 @@ let
 
     libchrome = callPackage ./libchrome { };
 
-    linux_4_19 = callPackage ../kernel/linux-cros-4.19.nix {
+    linux_4_19 = callPackage ../kernel/linux-cros.nix {
       inherit (linux_4_19) kernelPatches;
     };
 
