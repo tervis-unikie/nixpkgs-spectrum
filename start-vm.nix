@@ -16,7 +16,6 @@ let
 
   stage1 = writeScript "stage1" ''
     #! ${execline}/bin/execlineb -P
-    importas -i PATH PATH
     export PATH ${lib.makeBinPath
       [ s6-linux-init s6-portable-utils s6-linux-utils s6 execline coreutils ]}
     ${s6}/bin/s6-setsid -qb --
