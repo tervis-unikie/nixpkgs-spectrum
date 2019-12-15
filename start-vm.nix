@@ -10,8 +10,15 @@ let
                          VIRTIO_PCI = yes;
                          VIRTIO_BLK = yes;
                          VIRTIO_WL = yes;
-                         SQUASHFS = yes;
                          DEVTMPFS_MOUNT = yes;
+                         SQUASHFS = yes;
+
+                         # VOP is needed to work around a Kconfig bug:
+                         # https://lore.kernel.org/lkml/87wob4tf9b.fsf@alyssa.is/
+                         VOP = yes;
+                         VOP_BUS = yes;
+                         HW_RANDOM = yes;
+                         HW_RANDOM_VIRTIO = yes;
                        }; };
 
   login = writeScript "login" ''
@@ -24,6 +31,11 @@ let
     getty.run = writeScript "getty-run" ''
       #! ${execline}/bin/execlineb -P
       ${busybox}/bin/getty -i -n -l ${login} 38400 ttyS0
+    '';
+
+    rngd.run = writeScript "rngd-run" ''
+      #! ${execline}/bin/execlineb -P
+      ${rng-tools}/bin/rngd -f -x pkcs11
     '';
 
     ".s6-svscan".finish = writeScript "init-stage3" ''
