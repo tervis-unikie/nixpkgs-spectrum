@@ -4992,6 +4992,8 @@ in
 
   mkrand = callPackage ../tools/security/mkrand { };
 
+  mktuntap = callPackage ../tools/networking/mktuntap { };
+
   mktemp = callPackage ../tools/security/mktemp { };
 
   mktorrent = callPackage ../tools/misc/mktorrent { };
