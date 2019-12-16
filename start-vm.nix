@@ -10,6 +10,7 @@ let
                          VIRTIO_PCI = yes;
                          VIRTIO_BLK = yes;
                          VIRTIO_WL = yes;
+                         VIRTIO_NET = yes;
                          DEVTMPFS_MOUNT = yes;
                          SQUASHFS = yes;
 
@@ -74,6 +75,10 @@ let
       if { s6-mount -t devpts -o gid=4,mode=620 none /dev/pts }
       if { s6-mount -t tmpfs none /dev/shm }
       if { s6-mount -t proc none /proc }
+
+      if { ip addr add 10.0.100.2/24 dev eth0 }
+      if { ip link set eth0 up }
+
       export XDG_RUNTIME_DIR /run/user/0
       foreground { ${sommelier}/bin/sommelier ${hello-wayland}/bin/hello-wayland }
       importas -i ? ?
@@ -113,7 +118,29 @@ let
 
 in
 
-writeShellScript "crosvm" ''
-  set -x
-  exec ${crosvm}/bin/crosvm run --wayland-sock=$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY -p init=/sbin/init --root=${root-squashfs} ${kernel}/bzImage
+writeScript "crosvm" ''
+  #! ${execline}/bin/execlineb -P
+
+  importas -i xdg_runtime_dir XDG_RUNTIME_DIR
+  importas -i wayland_display WAYLAND_DISPLAY
+
+  sudo
+
+  importas -i uid SUDO_UID
+  importas -i gid SUDO_GID
+
+  ${mktuntap}/bin/mktuntap -pvB 3
+
+  importas -iu tap_name TUNTAP_NAME
+  if { ip addr add 10.0.100.1/24 dev $tap_name }
+  if { ip link set $tap_name up }
+
+  ${s6}/bin/s6-applyuidgid -u $uid -g $gid
+
+  ${crosvm}/bin/crosvm run
+      --wayland-sock ''${xdg_runtime_dir}/''${wayland_display}
+      --tap-fd 3
+      -p init=/sbin/init
+      --root ${root-squashfs}
+      ${kernel}/bzImage
 ''
