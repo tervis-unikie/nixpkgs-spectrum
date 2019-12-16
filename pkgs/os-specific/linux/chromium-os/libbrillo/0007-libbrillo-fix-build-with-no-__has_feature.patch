@@ -1,0 +1,36 @@
+From 268494087143b570af36bf7c4fe891108ea839db Mon Sep 17 00:00:00 2001
+From: Alyssa Ross <hi@alyssa.is>
+Date: Sun, 1 Dec 2019 14:57:01 +0000
+Subject: [PATCH 7/9] libbrillo: fix build with no __has_feature
+
+---
+ libbrillo/brillo/asan.h | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/libbrillo/brillo/asan.h b/libbrillo/brillo/asan.h
+index d29932a82..0d707467f 100644
+--- a/libbrillo/brillo/asan.h
++++ b/libbrillo/brillo/asan.h
+@@ -7,13 +7,17 @@
+ #ifndef LIBBRILLO_BRILLO_ASAN_H_
+ #define LIBBRILLO_BRILLO_ASAN_H_
+ 
+-#if defined(__has_feature) && __has_feature(address_sanitizer)
++#if defined(__has_feature)
++#if __has_feature(address_sanitizer)
+ // ASan is enabled.
+ #define BRILLO_ASAN_BUILD 1
+ // Provide BRILLO_DISABLE_ASAN hook to disable ASan.
+ // Put this in front on functions or global variables where required.
+ #define BRILLO_DISABLE_ASAN __attribute__((no_sanitize("address")))
+-#else
++#endif
++#endif
++
++#ifndef BRILLO_DISABLE_ASAN
+ #define BRILLO_DISABLE_ASAN
+ #endif
+ 
+-- 
+2.23.0
+

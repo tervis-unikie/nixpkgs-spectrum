@@ -1,55 +1,55 @@
 {
-  "version": "78.12499.0.0-rc1",
+  "version": "79.12607.0.0-rc4",
   "components": {
     "aosp/platform/external/libchrome": {
       "name": "libchrome",
       "url": "https://chromium.googlesource.com/aosp/platform/external/libchrome",
-      "rev": "f4736afd702d3f9ac65a2810a1fc472d964941b7",
-      "sha256": "1wry24ma855rbjnawkjqyjjp4p4rsv6fa8i63mlg3pp5j7bflzip",
+      "rev": "78e77b7f04d2d1be4868a9696c30e38be73b37cc",
+      "sha256": "0fq394hwdfi7zfiakcr4nqr40v6lajznq7ix6pgngd8fa8wrjmkr",
       "version": "462023"
     },
     "aosp/platform/external/modp_b64": {
       "name": "modp_b64",
       "url": "https://chromium.googlesource.com/aosp/platform/external/modp_b64",
-      "rev": "afc3e28a3de4a627e3afaf73b4c55ed85c992470",
-      "sha256": "0cyvbdvnfcm958dglm0ci36v4np2fskkjxr8kzncgmhxpxdhkmwj"
+      "rev": "11a6fc258c6765a43b973b15e86fb4bce7675202",
+      "sha256": "06wjrqm7j6vkzlms1mj1czbdhsd8sxpyii43vqr456c2mzvrzr0n"
     },
     "chromiumos/overlays/chromiumos-overlay": {
       "name": "chromiumos-overlay",
       "url": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay",
-      "rev": "63153be50fe6cbcd7126f9eed6b5bdda28526dae",
-      "sha256": "0v5b2mfrg8c927m073xhjcmgbn077s1gs36kvc7m23194y5wa75i"
+      "rev": "a02872323ae57e95572106a76255ac28a24dd34f",
+      "sha256": "07j5scnmcx95mp4wy1wnx20kawlhydc90cnp8andbvn7rjkz1fbk"
     },
     "chromiumos/platform/crosvm": {
       "name": "crosvm",
       "url": "https://chromium.googlesource.com/chromiumos/platform/crosvm",
-      "rev": "0b86007d3e1ee400c6201c00b7dea323d661b50f",
-      "sha256": "1i3wf7f5ikly404ail161llghzw07wsalpdfdfpr5bs321yfkpsp"
+      "rev": "cfb7db44eb9e5a0bca9a22bfb985252ef74ab251",
+      "sha256": "0gm1ggyzh9qfizm36jmh71c3anygxj1840cm94h71kzg9kiw0330"
     },
     "chromiumos/platform2": {
       "name": "platform2",
       "url": "https://chromium.googlesource.com/chromiumos/platform2",
-      "rev": "1a01bbebf957f4750021c6689eb65b9fc026338b",
-      "sha256": "1fyasgg2azixddnnsgfccnbjkpm2qbzjkvv22f298hv8qxhp32nr"
+      "rev": "dfa3da3447127dc941aacfee56617dd6ec7ae1c1",
+      "sha256": "1vgvapn0cn0g8n7h7l0f4n1jqnzb6hkcbkymr5dn0v2zb5s04inn"
     },
     "chromiumos/third_party/adhd": {
       "name": "adhd",
       "url": "https://chromium.googlesource.com/chromiumos/third_party/adhd",
-      "rev": "72bf5919510c200fdd9a44ed223fd3a871908b49",
-      "sha256": "0fva5pfa8907qczf2lrinwbw60vvwfc9jv536p2lv86pb36q2vly"
+      "rev": "a8df1c52bde3bfd2aebc1d7adcd6f195eb212cb1",
+      "sha256": "1hyvnvwr5ka9zw4h7hhl6fpsfl2acp3zy4wr5qrw8s1cn8ljr9vy"
     },
     "chromiumos/third_party/kernel": {
       "name": "kernel",
       "url": "https://chromium.googlesource.com/chromiumos/third_party/kernel",
-      "rev": "673c07c063fb4fc7d50078ba337e5acd7efca18c",
-      "sha256": "01qww3db1r5aw2r75xfv11qa8ysvwhcdw5sfmdwx1cc3l8j45m7g",
-      "version": "4.19.66"
+      "rev": "96bfeffb29ca01693d3b444c4e01eefaf5514055",
+      "sha256": "11svqzq01xv6p82dz8440kknz0bn1v2g3jhh00g73g4kyxr8lq62",
+      "version": "4.19.79"
     },
     "chromiumos/third_party/modemmanager-next": {
       "name": "modemmanager-next",
       "url": "https://chromium.googlesource.com/chromiumos/third_party/modemmanager-next",
-      "rev": "5b752047977b69618f1b31bd08fd38de6f4f5ba3",
-      "sha256": "0369khzax3r3nxf7jx7d2ryv14xi5s5dz60f4ml4cxidcca20xcj"
+      "rev": "8eb16ade574b2292497e76c07b1ab0ee6e3dd44e",
+      "sha256": "0ss26bh3f8gzbrxxg6mkif6p9jf2l6m5kazvpr0qdzd8gqh9pca3"
     }
   }
 }

@@ -1,0 +1,23 @@
+From d3ea2a8f9f64e2aff9667f03a93540e2e72c0f30 Mon Sep 17 00:00:00 2001
+From: Alyssa Ross <hi@alyssa.is>
+Date: Sun, 24 Nov 2019 17:20:46 +0000
+Subject: [PATCH 2/9] common-mk: .gn: don't hardcode env path
+
+This is needlessly non-portable.
+---
+ .gn | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/.gn b/.gn
+index e7dba8c91..e29fcd61e 100644
+--- a/.gn
++++ b/.gn
+@@ -7,4 +7,4 @@ root = "//common-mk/gn_root/:"
+ 
+ # This makes all scripts run by gn respect the shebang setting of the script.
+ # Otherwise, the default is to always use `python`.
+-script_executable = "/usr/bin/env"
++script_executable = "env"
+-- 
+2.23.0
+

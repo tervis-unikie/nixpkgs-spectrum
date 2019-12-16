@@ -1,0 +1,139 @@
+From 05622922a69bda21677a7f59b19214e3a00855c4 Mon Sep 17 00:00:00 2001
+From: Alyssa Ross <hi@alyssa.is>
+Date: Sun, 24 Nov 2019 16:56:11 +0000
+Subject: [PATCH 1/9] common-mk: don't leak source-absolute paths
+
+Source-absolute paths like //vm_tools/whatever were being leaked to
+subprocesses, which of course didn't know how to understand them.
+With this patch, source-absolute paths are only used to tell GN the
+outputs, and normal Unix paths are passed to subprocesses.
+---
+ common-mk/external_dependencies/BUILD.gn |  3 ++-
+ common-mk/pkg_config.gni                 |  7 +++----
+ common-mk/proto_library.gni              | 21 +++++++++++----------
+ 3 files changed, 16 insertions(+), 15 deletions(-)
+
+diff --git a/common-mk/external_dependencies/BUILD.gn b/common-mk/external_dependencies/BUILD.gn
+index 61f571b38..4cb7b93cf 100644
+--- a/common-mk/external_dependencies/BUILD.gn
++++ b/common-mk/external_dependencies/BUILD.gn
+@@ -47,6 +47,7 @@ genxml2cpp("dbus-proxies") {
+ action("cloud_policy_proto_generator") {
+   policy_resources_dir = "${sysroot}/usr/share/policy_resources"
+   proto_out_dir = "${target_gen_dir}/proto"
++  cloud_policy_protobuf_dir = rebase_path(proto_out_dir)
+   policy_tools_dir = "${sysroot}/usr/share/policy_tools"
+ 
+   script = "${policy_tools_dir}/generate_policy_source.py"
+@@ -58,7 +59,7 @@ action("cloud_policy_proto_generator") {
+     "${proto_out_dir}/cloud_policy.proto",
+   ]
+   args = [
+-    "--cloud-policy-protobuf=${proto_out_dir}/cloud_policy.proto",
++    "--cloud-policy-protobuf=${cloud_policy_protobuf_dir}/cloud_policy.proto",
+     "--chrome-version-file=${policy_resources_dir}/VERSION",
+     "--target-platform=chromeos",
+     "--policy-templates-file=${policy_resources_dir}/policy_templates.json",
+diff --git a/common-mk/pkg_config.gni b/common-mk/pkg_config.gni
+index af3c3fb4c..151c49e56 100644
+--- a/common-mk/pkg_config.gni
++++ b/common-mk/pkg_config.gni
+@@ -81,12 +81,11 @@ template("generate_pkg_config") {
+     if (!defined(output_name)) {
+       output_name = name
+     }
+-    outputs = [
+-      "${target_out_dir}/${output_name}.pc",
+-    ]
++    lib_path = "${target_out_dir}/${output_name}.pc"
++    outputs = [ lib_path ]
+ 
+     script = "//common-mk/generate-pc.py"
+-    args = [ "--output" ] + outputs + [ "--name=" + name ]
++    args = [ "--output", rebase_path(lib_path), "--name=" + name ]
+     if (defined(description)) {
+       args += [ "--description=" + description ]
+     }
+diff --git a/common-mk/proto_library.gni b/common-mk/proto_library.gni
+index 70e32cafc..f6dce2760 100644
+--- a/common-mk/proto_library.gni
++++ b/common-mk/proto_library.gni
+@@ -56,7 +56,7 @@ template("proto_library") {
+ 
+     cc_dir = "${root_gen_dir}/${proto_out_dir}"
+     proto_in_dir = rebase_path(proto_in_dir)
+-    proto_out_dir = rebase_path(proto_out_dir)
++    proto_out_dir = rebase_path(cc_dir)
+ 
+     proto_lib_dirs = [
+       proto_in_dir,
+@@ -92,24 +92,23 @@ template("proto_library") {
+     args += [ "${proto_in_dir}/{{source_name_part}}.proto" ]
+     outputs = []
+     if (gen_python) {
+-      python_dir = "${root_gen_dir}/${proto_out_dir}/py"
+       args += [
+         "--python_out",
+-        "${python_dir}",
++        "${proto_out_dir}/py",
+       ]
+-      outputs += [ "${python_dir}/{{source_name_part}}_pb.py" ]
++      outputs += [ "${cc_dir}/py/{{source_name_part}}_pb.py" ]
+     }
+     if (gen_grpc) {
+       if (gen_grpc_gmock) {
+-        args += [ "--grpc_out=generate_mock_code=true:${cc_dir}" ]
++        args += [ "--grpc_out=generate_mock_code=true:${proto_out_dir}" ]
+         outputs += [ "${cc_dir}/{{source_name_part}}_mock.grpc.pb.h" ]
+       } else {
+-        args += [ "--grpc_out=${cc_dir}" ]
++        args += [ "--grpc_out=${proto_out_dir}" ]
+       }
+       grpc_cpp_plugin = "/usr/bin/grpc_cpp_plugin"
+       args += [
+         "--plugin=protoc-gen-grpc=${grpc_cpp_plugin}",
+-        "--cpp_out=${gen_cpp_mode}${cc_dir}",
++        "--cpp_out=${gen_cpp_mode}${proto_out_dir}",
+       ]
+       outputs += [
+         "${cc_dir}/{{source_name_part}}.grpc.pb.cc",
+@@ -119,7 +118,7 @@ template("proto_library") {
+       ]
+     }
+     if (!gen_grpc && !gen_python) {
+-      args += [ "--cpp_out=${gen_cpp_mode}${cc_dir}" ]
++      args += [ "--cpp_out=${gen_cpp_mode}${proto_out_dir}" ]
+       outputs += [
+         "${cc_dir}/{{source_name_part}}.pb.cc",
+         "${cc_dir}/{{source_name_part}}.pb.h",
+@@ -206,7 +205,9 @@ template("goproto_library") {
+     # otherwise file descriptor var name will conflict.
+     # cf) https://github.com/golang/protobuf/issues/109
+ 
++    cc_dir = "${root_gen_dir}/${proto_out_dir}"
+     proto_in_dir = rebase_path(invoker.proto_in_dir)
++    proto_out_dir = rebase_path(cc_dir)
+ 
+     # Build protoc command line to run.
+     script = "//common-mk/file_generator_wrapper.py"
+@@ -222,7 +223,7 @@ template("goproto_library") {
+       "--proto_path",
+       "${sysroot}/usr/share/proto",
+       "--go_out",
+-      "${go_out_prefix}${root_gen_dir}/${proto_out_dir}",
++      "${go_out_prefix}${proto_out_dir}",
+     ]
+     foreach(source, sources) {
+       args += [ rebase_path(source) ]
+@@ -232,7 +233,7 @@ template("goproto_library") {
+     outputs = []
+     foreach(source, invoker.sources) {
+       name = get_path_info(source, "name")
+-      outputs += [ "${root_gen_dir}/${proto_out_dir}/${name}.pb.go" ]
++      outputs += [ "${cc_dir}/${name}.pb.go" ]
+     }
+   }
+ }
+-- 
+2.23.0
+
