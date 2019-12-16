@@ -82,7 +82,7 @@ let
       # Disable platform specific features if needed
       # using libmad to decode mp3 files on darwin is causing a segfault -- there
       # is probably a solution, but I'm disabling it for now
-      platformMask = lib.optionals stdenv.isDarwin [ "mad" "pulse" "jack" "nfs" "smb" ]
+      platformMask = lib.optionals stdenv.isDarwin [ "mad" "pulse" "jack" "nfs" "smbclient" ]
                   ++ lib.optionals (!stdenv.isLinux) [ "alsa" "systemd" "syslog" ];
 
       knownFeatures = builtins.attrNames featureDependencies;
@@ -113,7 +113,7 @@ let
 
       buildInputs = [ glib boost ]
         ++ (lib.concatLists (lib.attrVals features_ featureDependencies))
-        ++ lib.optional stdenv.isDarwin darwin.apple_sdk.frameworks.AudioToolbox;
+        ++ lib.optionals stdenv.isDarwin [ darwin.apple_sdk.frameworks.AudioToolbox darwin.apple_sdk.frameworks.AudioUnit ];
 
       nativeBuildInputs = [ meson ninja pkgconfig ];
 
@@ -132,7 +132,7 @@ let
         description = "A flexible, powerful daemon for playing music";
         homepage    = http://mpd.wikia.com/wiki/Music_Player_Daemon_Wiki;
         license     = licenses.gpl2;
-        maintainers = with maintainers; [ astsmtl fuuzetsu ehmry fpletz tobim ];
+        maintainers = with maintainers; [ astsmtl ehmry fpletz tobim ];
         platforms   = platforms.unix;
 
         longDescription = ''
