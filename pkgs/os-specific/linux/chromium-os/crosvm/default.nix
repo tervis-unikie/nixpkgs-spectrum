@@ -63,7 +63,7 @@ in
       cp seccomp/${arch}/* $out/share/policy/
     '';
 
-    passthru.updateScript = ./update.py;
+    passthru.updateScript = ../update.py;
 
     meta = with stdenv.lib; {
       description = "A secure virtual machine monitor for KVM";
