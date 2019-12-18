@@ -1,7 +1,7 @@
-From 1c81e92e7a983c2f9fff7bd56ce769f2edb59a59 Mon Sep 17 00:00:00 2001
+From ad7338d648cfeffbd595e9a7681f746ce834d59e Mon Sep 17 00:00:00 2001
 From: Daniel Kurtz <djkurtz@chromium.org>
 Date: Mon, 3 Jun 2019 16:46:17 -0600
-Subject: [PATCH 06/11] libbrillo: Update for OpenSSL 1.1
+Subject: [PATCH 4/9] libbrillo: Update for OpenSSL 1.1
 
 OpenSSL 1.1 has made significant non-backwards compatible changes to its
 API as outlined in:
@@ -186,7 +186,7 @@ index 603bd1d54..cc63258db 100644
      return ReportError(error, FROM_HERE, "Cannot create SSL_CTX");
  
 diff --git a/libbrillo/policy/device_policy_impl.cc b/libbrillo/policy/device_policy_impl.cc
-index e3c12f9d6..0c112a1b9 100644
+index eaf90c96a..3f96d12ee 100644
 --- a/libbrillo/policy/device_policy_impl.cc
 +++ b/libbrillo/policy/device_policy_impl.cc
 @@ -30,6 +30,12 @@ namespace em = enterprise_management;

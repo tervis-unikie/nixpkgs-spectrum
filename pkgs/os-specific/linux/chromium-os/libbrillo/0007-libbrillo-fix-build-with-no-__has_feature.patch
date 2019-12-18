@@ -1,7 +1,7 @@
-From dce65ab2cb0bac44cf5a133aface2acf9f0b2367 Mon Sep 17 00:00:00 2001
+From 268494087143b570af36bf7c4fe891108ea839db Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Sun, 1 Dec 2019 14:57:01 +0000
-Subject: [PATCH 09/11] libbrillo: fix build with no __has_feature
+Subject: [PATCH 7/9] libbrillo: fix build with no __has_feature
 
 ---
  libbrillo/brillo/asan.h | 8 ++++++--

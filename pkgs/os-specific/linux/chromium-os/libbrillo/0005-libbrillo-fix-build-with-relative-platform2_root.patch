@@ -1,17 +1,17 @@
-From 16960cbb59804aebc4b7dd5f746d2452c8a1edd0 Mon Sep 17 00:00:00 2001
+From ee36a284641d9ac2b412bba3738729fd5b969f42 Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Sun, 1 Dec 2019 22:11:39 +0000
-Subject: [PATCH 07/11] libbrillo: fix build with relative platform2_root
+Subject: [PATCH 5/9] libbrillo: fix build with relative platform2_root
 
 ---
  libbrillo/BUILD.gn | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/libbrillo/BUILD.gn b/libbrillo/BUILD.gn
-index e475692ab..c3ca0054b 100644
+index 6739def9c..75b6da6f2 100644
 --- a/libbrillo/BUILD.gn
 +++ b/libbrillo/BUILD.gn
-@@ -355,7 +355,8 @@ shared_library("libpolicy-${libbase_ver}") {
+@@ -360,7 +360,8 @@ shared_library("libpolicy-${libbase_ver}") {
      "openssl",
      "protobuf-lite",
    ]

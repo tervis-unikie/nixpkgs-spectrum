@@ -7,11 +7,11 @@ common-mk {
   platformSubdir = "libbrillo";
 
   platform2Patches = [
-    ./0005-libbrillo-Use-a-unique_ptr-for-EVP_MD_CTX.patch
-    ./0006-libbrillo-Update-for-OpenSSL-1.1.patch
-    ./0007-libbrillo-fix-build-with-relative-platform2_root.patch
-    ./0008-libbrillo-don-t-leak-source-absolute-paths.patch
-    ./0009-libbrillo-fix-build-with-no-__has_feature.patch
+    ./0003-libbrillo-Use-a-unique_ptr-for-EVP_MD_CTX.patch
+    ./0004-libbrillo-Update-for-OpenSSL-1.1.patch
+    ./0005-libbrillo-fix-build-with-relative-platform2_root.patch
+    ./0006-libbrillo-don-t-leak-source-absolute-paths.patch
+    ./0007-libbrillo-fix-build-with-no-__has_feature.patch
   ];
 
   nativeBuildInputs = [ dbus_cplusplus go-protobuf ];

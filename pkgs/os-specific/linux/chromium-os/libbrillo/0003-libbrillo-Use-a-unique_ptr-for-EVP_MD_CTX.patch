@@ -1,7 +1,7 @@
-From ed2920bc6864e044ffa5beb8a2508f4e5f5b4ce4 Mon Sep 17 00:00:00 2001
+From d79343f36918fd99861426f658fdfb53237661f0 Mon Sep 17 00:00:00 2001
 From: Daniel Kurtz <djkurtz@chromium.org>
 Date: Thu, 17 Oct 2019 20:45:53 +1100
-Subject: [PATCH 05/11] libbrillo: Use a unique_ptr for EVP_MD_CTX
+Subject: [PATCH 3/9] libbrillo: Use a unique_ptr for EVP_MD_CTX
 
 In OpenSSL 1.1, the EVP_MD_CTX struct will become opaque, and therefore
 it will not be possible to allocate on the stack.
@@ -33,7 +33,7 @@ Reviewed-by: Nick Crews <ncrews@chromium.org>
  1 file changed, 8 insertions(+), 10 deletions(-)
 
 diff --git a/libbrillo/policy/device_policy_impl.cc b/libbrillo/policy/device_policy_impl.cc
-index 6ba297406..e3c12f9d6 100644
+index 958b7ebb7..eaf90c96a 100644
 --- a/libbrillo/policy/device_policy_impl.cc
 +++ b/libbrillo/policy/device_policy_impl.cc
 @@ -55,36 +55,34 @@ bool ReadPublicKeyFromFile(const base::FilePath& key_file,

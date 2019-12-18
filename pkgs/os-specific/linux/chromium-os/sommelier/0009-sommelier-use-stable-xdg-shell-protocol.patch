@@ -1,7 +1,7 @@
-From f2655b38379414312efda57d6c0fdb73492fcab6 Mon Sep 17 00:00:00 2001
+From ab753b1f376a9a348a0d3a6cc106d097bb4160c3 Mon Sep 17 00:00:00 2001
 From: Puck Meerburg <puck@puckipedia.com>
 Date: Tue, 3 Dec 2019 18:06:14 +0000
-Subject: [PATCH 11/11] sommelier: use stable xdg-shell protocol
+Subject: [PATCH 9/9] sommelier: use stable xdg-shell protocol
 
 From https://github.com/wayland-project/weston/commit/d8d9f5e6e16c8f6a3c06763d5f56c27dc9a6e52e:
 
@@ -12,17 +12,17 @@ From https://github.com/wayland-project/weston/commit/d8d9f5e6e16c8f6a3c06763d5f
 ---
  vm_tools/sommelier/BUILD.gn                   |   2 +-
  ...dg-shell-unstable-v6.xml => xdg-shell.xml} | 319 ++++++++++++------
- vm_tools/sommelier/sommelier-xdg-shell.c      | 242 ++++++-------
- vm_tools/sommelier/sommelier.c                | 209 ++++++------
+ vm_tools/sommelier/sommelier-xdg-shell.c      | 233 ++++++-------
+ vm_tools/sommelier/sommelier.c                | 211 ++++++------
  vm_tools/sommelier/sommelier.h                |  17 +-
- 5 files changed, 450 insertions(+), 339 deletions(-)
+ 5 files changed, 447 insertions(+), 335 deletions(-)
  rename vm_tools/sommelier/protocol/{xdg-shell-unstable-v6.xml => xdg-shell.xml} (79%)
 
 diff --git a/vm_tools/sommelier/BUILD.gn b/vm_tools/sommelier/BUILD.gn
-index 72d5c1647..f01655010 100644
+index 871c142bc..498a0ccab 100644
 --- a/vm_tools/sommelier/BUILD.gn
 +++ b/vm_tools/sommelier/BUILD.gn
-@@ -67,7 +67,7 @@ wayland_protocol_library("sommelier-protocol") {
+@@ -68,7 +68,7 @@ wayland_protocol_library("sommelier-protocol") {
      "protocol/relative-pointer-unstable-v1.xml",
      "protocol/text-input-unstable-v1.xml",
      "protocol/viewporter.xml",
@@ -618,7 +618,7 @@ index 1c0f92452..3a87a9ed6 100644
        xdg_popup surfaces associated with the same xdg_toplevel.
  
 diff --git a/vm_tools/sommelier/sommelier-xdg-shell.c b/vm_tools/sommelier/sommelier-xdg-shell.c
-index a5551b25e..0c11b8de9 100644
+index ecd0fc647..a3ba0d6e1 100644
 --- a/vm_tools/sommelier/sommelier-xdg-shell.c
 +++ b/vm_tools/sommelier/sommelier-xdg-shell.c
 @@ -7,37 +7,37 @@
@@ -886,7 +886,7 @@ index a5551b25e..0c11b8de9 100644
  static void sl_xdg_toplevel_set_fullscreen(
 @@ -292,25 +292,25 @@ static void sl_xdg_toplevel_set_fullscreen(
    struct sl_host_output* host_output =
-       output_resource ? wl_resource_get_user_data(resource) : NULL;
+       output_resource ? wl_resource_get_user_data(output_resource) : NULL;
  
 -  zxdg_toplevel_v6_set_fullscreen(host->proxy,
 -                                  host_output ? host_output->proxy : NULL);
@@ -1091,7 +1091,7 @@ index a5551b25e..0c11b8de9 100644
    struct sl_host_surface* host_surface =
        wl_resource_get_user_data(surface_resource);
    struct sl_host_xdg_surface* host_xdg_surface;
-@@ -493,71 +496,74 @@ static void sl_xdg_shell_get_xdg_surface(struct wl_client* client,
+@@ -493,71 +496,75 @@ static void sl_xdg_shell_get_xdg_surface(struct wl_client* client,
    assert(host_xdg_surface);
  
    host_xdg_surface->ctx = host->ctx;
@@ -1176,39 +1176,34 @@ index a5551b25e..0c11b8de9 100644
 -  host->resource = wl_resource_create(client, &zxdg_shell_v6_interface, 1, id);
 -  wl_resource_set_implementation(host->resource, &sl_xdg_shell_implementation,
 -                                 host, sl_destroy_host_xdg_shell);
--  host->proxy =
--      wl_registry_bind(wl_display_get_registry(ctx->display),
++  host->resource = wl_resource_create(client, &xdg_wm_base_interface,
++				      ctx->xdg_wm_base->id, id);
++  wl_resource_set_implementation(host->resource, &sl_xdg_wm_base_implementation,
++                                 host, sl_destroy_host_xdg_wm_base);
+   host->proxy =
+       wl_registry_bind(wl_display_get_registry(ctx->display),
 -                       ctx->xdg_shell->id, &zxdg_shell_v6_interface, 1);
 -  zxdg_shell_v6_set_user_data(host->proxy, host);
 -  zxdg_shell_v6_add_listener(host->proxy, &sl_xdg_shell_listener, host);
--}
--
++                       ctx->xdg_wm_base->id, &xdg_wm_base_interface,
++                       ctx->xdg_wm_base->version);
++  xdg_wm_base_set_user_data(host->proxy, host);
++  xdg_wm_base_add_listener(host->proxy, &sl_xdg_wm_base_listener, host);
+ }
+ 
 -struct sl_global* sl_xdg_shell_global_create(struct sl_context* ctx) {
 -  return sl_global_create(ctx, &zxdg_shell_v6_interface, 1, ctx,
 -                          sl_bind_host_xdg_shell);
--}
-\ No newline at end of file
-+  host->resource = wl_resource_create(client, &xdg_wm_base_interface,
-+                                      MIN(version, ctx->xdg_wm_base->version), id);
-+  wl_resource_set_implementation(host->resource, &sl_xdg_wm_base_implementation,
-+                                 host, sl_destroy_host_xdg_wm_base);
-+  host->proxy = wl_registry_bind(
-+      wl_display_get_registry(ctx->display), ctx->xdg_wm_base->id,
-+      &xdg_wm_base_interface, ctx->xdg_wm_base->version);
-+  xdg_wm_base_set_user_data(host->proxy, host);
-+  xdg_wm_base_add_listener(host->proxy, &sl_xdg_wm_base_listener, host);
-+}
-+
 +struct sl_global* sl_xdg_wm_base_global_create(struct sl_context* ctx) {
-+  return sl_global_create(ctx, &xdg_wm_base_interface, 
++  return sl_global_create(ctx, &xdg_wm_base_interface,
 +                          ctx->xdg_wm_base->version, ctx,
 +                          sl_bind_host_xdg_wm_base);
-+}
+ }
 diff --git a/vm_tools/sommelier/sommelier.c b/vm_tools/sommelier/sommelier.c
-index ff066e1f3..3fbcde473 100644
+index 3637385a5..fba0d1277 100644
 --- a/vm_tools/sommelier/sommelier.c
 +++ b/vm_tools/sommelier/sommelier.c
-@@ -33,7 +33,7 @@
+@@ -35,7 +35,7 @@
  #include "relative-pointer-unstable-v1-client-protocol.h"
  #include "text-input-unstable-v1-client-protocol.h"
  #include "viewporter-client-protocol.h"
@@ -1217,7 +1212,7 @@ index ff066e1f3..3fbcde473 100644
  
  // Check that required macro definitions exist.
  #ifndef XWAYLAND_PATH
-@@ -245,14 +245,14 @@ void sl_sync_point_destroy(struct sl_sync_point* sync_point) {
+@@ -272,14 +272,14 @@ void sl_sync_point_destroy(struct sl_sync_point* sync_point) {
    free(sync_point);
  }
  
@@ -1237,7 +1232,7 @@ index ff066e1f3..3fbcde473 100644
  
  static void sl_send_configure_notify(struct sl_window* window) {
    xcb_configure_notify_event_t event = {
-@@ -415,8 +415,8 @@ int sl_process_pending_configure_acks(struct sl_window* window,
+@@ -442,8 +442,8 @@ int sl_process_pending_configure_acks(struct sl_window* window,
    }
  
    if (window->xdg_surface) {
@@ -1248,7 +1243,7 @@ index ff066e1f3..3fbcde473 100644
    }
    window->pending_config.serial = 0;
  
-@@ -427,8 +427,8 @@ int sl_process_pending_configure_acks(struct sl_window* window,
+@@ -454,8 +454,8 @@ int sl_process_pending_configure_acks(struct sl_window* window,
  }
  
  static void sl_internal_xdg_surface_configure(
@@ -1259,7 +1254,7 @@ index ff066e1f3..3fbcde473 100644
  
    window->next_config.serial = serial;
    if (!window->pending_config.serial) {
-@@ -449,16 +449,16 @@ static void sl_internal_xdg_surface_configure(
+@@ -476,16 +476,16 @@ static void sl_internal_xdg_surface_configure(
    }
  }
  
@@ -1279,7 +1274,7 @@ index ff066e1f3..3fbcde473 100644
    int activated = 0;
    uint32_t* state;
    int i = 0;
-@@ -488,21 +488,21 @@ static void sl_internal_xdg_toplevel_configure(
+@@ -515,21 +515,21 @@ static void sl_internal_xdg_toplevel_configure(
  
    window->allow_resize = 1;
    wl_array_for_each(state, states) {
@@ -1305,7 +1300,7 @@ index ff066e1f3..3fbcde473 100644
        window->allow_resize = 0;
    }
  
-@@ -518,8 +518,8 @@ static void sl_internal_xdg_toplevel_configure(
+@@ -545,8 +545,8 @@ static void sl_internal_xdg_toplevel_configure(
  }
  
  static void sl_internal_xdg_toplevel_close(
@@ -1316,7 +1311,7 @@ index ff066e1f3..3fbcde473 100644
    xcb_client_message_event_t event = {
        .response_type = XCB_CLIENT_MESSAGE,
        .format = 32,
-@@ -536,21 +536,21 @@ static void sl_internal_xdg_toplevel_close(
+@@ -563,21 +563,21 @@ static void sl_internal_xdg_toplevel_close(
                   XCB_EVENT_MASK_NO_EVENT, (const char*)&event);
  }
  
@@ -1342,7 +1337,7 @@ index ff066e1f3..3fbcde473 100644
      sl_internal_xdg_popup_configure, sl_internal_xdg_popup_done};
  
  static void sl_window_set_wm_state(struct sl_window* window, int state) {
-@@ -590,15 +590,15 @@ void sl_window_update(struct sl_window* window) {
+@@ -645,15 +645,15 @@ void sl_window_update(struct sl_window* window) {
        window->aura_surface = NULL;
      }
      if (window->xdg_toplevel) {
@@ -1361,7 +1356,7 @@ index ff066e1f3..3fbcde473 100644
        window->xdg_surface = NULL;
      }
      window->realized = 0;
-@@ -609,8 +609,8 @@ void sl_window_update(struct sl_window* window) {
+@@ -664,8 +664,8 @@ void sl_window_update(struct sl_window* window) {
    assert(host_surface);
    assert(!host_surface->has_role);
  
@@ -1372,7 +1367,7 @@ index ff066e1f3..3fbcde473 100644
  
    if (window->managed) {
      if (window->transient_for != XCB_WINDOW_NONE) {
-@@ -672,11 +672,11 @@ void sl_window_update(struct sl_window* window) {
+@@ -727,11 +727,11 @@ void sl_window_update(struct sl_window* window) {
    }
  
    if (!window->xdg_surface) {
@@ -1389,7 +1384,7 @@ index ff066e1f3..3fbcde473 100644
    }
  
    if (ctx->aura_shell) {
-@@ -730,47 +730,47 @@ void sl_window_update(struct sl_window* window) {
+@@ -761,50 +761,50 @@ void sl_window_update(struct sl_window* window) {
    // window is closed.
    if (ctx->xwayland || !parent) {
      if (!window->xdg_toplevel) {
@@ -1418,6 +1413,10 @@ index ff066e1f3..3fbcde473 100644
 +      xdg_toplevel_set_max_size(window->xdg_toplevel,
                                      window->max_width / ctx->scale,
                                      window->max_height / ctx->scale);
+     }
+     if (window->maximized) {
+-      zxdg_toplevel_v6_set_maximized(window->xdg_toplevel);
++      xdg_toplevel_set_maximized(window->xdg_toplevel);
      }
    } else if (!window->xdg_popup) {
 -    struct zxdg_positioner_v6* positioner;
@@ -1455,7 +1454,7 @@ index ff066e1f3..3fbcde473 100644
    }
  
    if ((window->size_flags & (US_POSITION | P_POSITION)) && parent &&
-@@ -1122,22 +1122,23 @@ static void sl_registry_handler(void* data,
+@@ -1168,22 +1168,23 @@ static void sl_registry_handler(void* data,
        data_device_manager->host_global =
            sl_data_device_manager_global_create(ctx);
      }
@@ -1493,7 +1492,7 @@ index ff066e1f3..3fbcde473 100644
      }
    } else if (strcmp(interface, "zaura_shell") == 0) {
      if (version >= MIN_AURA_SHELL_VERSION) {
-@@ -1244,13 +1245,13 @@ static void sl_registry_remover(void* data,
+@@ -1290,13 +1291,13 @@ static void sl_registry_remover(void* data,
      ctx->data_device_manager = NULL;
      return;
    }
@@ -1514,7 +1513,7 @@ index ff066e1f3..3fbcde473 100644
      return;
    }
    if (ctx->aura_shell && ctx->aura_shell->id == id) {
-@@ -1405,11 +1406,11 @@ static void sl_destroy_window(struct sl_window* window) {
+@@ -1458,11 +1459,11 @@ static void sl_destroy_window(struct sl_window* window) {
    }
  
    if (window->xdg_popup)
@@ -1529,7 +1528,7 @@ index ff066e1f3..3fbcde473 100644
    if (window->aura_surface)
      zaura_surface_destroy(window->aura_surface);
  
-@@ -1827,15 +1828,15 @@ static void sl_handle_configure_request(struct sl_context* ctx,
+@@ -1906,15 +1907,15 @@ static void sl_handle_configure_request(struct sl_context* ctx,
    // that matching contents will arrive.
    if (window->xdg_toplevel) {
      if (window->pending_config.serial) {
@@ -1549,7 +1548,7 @@ index ff066e1f3..3fbcde473 100644
        window->next_config.serial = 0;
        window->next_config.mask = 0;
        window->next_config.states_length = 0;
-@@ -1956,23 +1957,23 @@ static void sl_handle_configure_notify(struct sl_context* ctx,
+@@ -2035,23 +2036,23 @@ static void sl_handle_configure_notify(struct sl_context* ctx,
  static uint32_t sl_resize_edge(int net_wm_moveresize_size) {
    switch (net_wm_moveresize_size) {
      case NET_WM_MOVERESIZE_SIZE_TOPLEFT:
@@ -1582,7 +1581,7 @@ index ff066e1f3..3fbcde473 100644
    }
  }
  
-@@ -2002,15 +2003,15 @@ static void sl_handle_client_message(struct sl_context* ctx,
+@@ -2098,15 +2099,15 @@ static void sl_handle_client_message(struct sl_context* ctx,
          return;
  
        if (event->data.data32[2] == NET_WM_MOVERESIZE_MOVE) {
@@ -1601,7 +1600,7 @@ index ff066e1f3..3fbcde473 100644
                                  seat->seat->last_serial, edge);
        }
      }
-@@ -2029,24 +2030,24 @@ static void sl_handle_client_message(struct sl_context* ctx,
+@@ -2125,24 +2126,24 @@ static void sl_handle_client_message(struct sl_context* ctx,
  
        if (changed[ATOM_NET_WM_STATE_FULLSCREEN]) {
          if (action == NET_WM_STATE_ADD)
@@ -1631,7 +1630,7 @@ index ff066e1f3..3fbcde473 100644
      }
    }
  }
-@@ -2059,7 +2060,7 @@ static void sl_handle_focus_in(struct sl_context* ctx,
+@@ -2155,7 +2156,7 @@ static void sl_handle_focus_in(struct sl_context* ctx,
      // window was realized.
      struct sl_window* parent = sl_lookup_window(ctx, window->transient_for);
      if (parent && parent->xdg_toplevel && window->xdg_toplevel)
@@ -1640,7 +1639,7 @@ index ff066e1f3..3fbcde473 100644
    }
  }
  
-@@ -2277,9 +2278,9 @@ static void sl_handle_property_notify(struct sl_context* ctx,
+@@ -2373,9 +2374,9 @@ static void sl_handle_property_notify(struct sl_context* ctx,
        return;
  
      if (window->name) {
@@ -1650,9 +1649,9 @@ index ff066e1f3..3fbcde473 100644
 -      zxdg_toplevel_v6_set_title(window->xdg_toplevel, "");
 +      xdg_toplevel_set_title(window->xdg_toplevel, "");
      }
-   } else if (event->atom == XCB_ATOM_WM_NORMAL_HINTS) {
+   } else if (event->atom == XCB_ATOM_WM_CLASS) {
      struct sl_window* window = sl_lookup_window(ctx, event->window);
-@@ -2316,19 +2317,19 @@ static void sl_handle_property_notify(struct sl_context* ctx,
+@@ -2427,19 +2428,19 @@ static void sl_handle_property_notify(struct sl_context* ctx,
        return;
  
      if (window->size_flags & P_MIN_SIZE) {
@@ -1674,9 +1673,9 @@ index ff066e1f3..3fbcde473 100644
 -      zxdg_toplevel_v6_set_max_size(window->xdg_toplevel, 0, 0);
 +      xdg_toplevel_set_max_size(window->xdg_toplevel, 0, 0);
      }
-   } else if (event->atom == ctx->atoms[ATOM_MOTIF_WM_HINTS].value) {
+   } else if (event->atom == XCB_ATOM_WM_HINTS) {
      struct sl_window* window = sl_lookup_window(ctx, event->window);
-@@ -3377,7 +3378,7 @@ int main(int argc, char** argv) {
+@@ -3530,7 +3531,7 @@ int main(int argc, char** argv) {
        .shm = NULL,
        .shell = NULL,
        .data_device_manager = NULL,
@@ -1686,7 +1685,7 @@ index ff066e1f3..3fbcde473 100644
        .viewporter = NULL,
        .linux_dmabuf = NULL,
 diff --git a/vm_tools/sommelier/sommelier.h b/vm_tools/sommelier/sommelier.h
-index 40feb52c0..16aab1818 100644
+index b851b5c8d..7e6daf773 100644
 --- a/vm_tools/sommelier/sommelier.h
 +++ b/vm_tools/sommelier/sommelier.h
 @@ -31,7 +31,7 @@ struct sl_shell;
@@ -1698,7 +1697,7 @@ index 40feb52c0..16aab1818 100644
  struct sl_subcompositor;
  struct sl_aura_shell;
  struct sl_viewporter;
-@@ -96,7 +96,7 @@ struct sl_context {
+@@ -99,7 +99,7 @@ struct sl_context {
    struct sl_shm* shm;
    struct sl_shell* shell;
    struct sl_data_device_manager* data_device_manager;
@@ -1707,7 +1706,7 @@ index 40feb52c0..16aab1818 100644
    struct sl_aura_shell* aura_shell;
    struct sl_viewporter* viewporter;
    struct sl_linux_dmabuf* linux_dmabuf;
-@@ -356,11 +356,12 @@ struct sl_viewporter {
+@@ -373,11 +373,12 @@ struct sl_viewporter {
    struct wp_viewporter* internal;
  };
  
@@ -1722,7 +1721,7 @@ index 40feb52c0..16aab1818 100644
  };
  
  struct sl_aura_shell {
-@@ -458,9 +459,9 @@ struct sl_window {
+@@ -476,9 +477,9 @@ struct sl_window {
    int max_height;
    struct sl_config next_config;
    struct sl_config pending_config;
@@ -1735,7 +1734,7 @@ index 40feb52c0..16aab1818 100644
    struct zaura_surface* aura_surface;
    struct wl_list link;
  };
-@@ -504,7 +505,7 @@ struct sl_global* sl_data_device_manager_global_create(struct sl_context* ctx);
+@@ -522,7 +523,7 @@ struct sl_global* sl_data_device_manager_global_create(struct sl_context* ctx);
  
  struct sl_global* sl_viewporter_global_create(struct sl_context* ctx);
  

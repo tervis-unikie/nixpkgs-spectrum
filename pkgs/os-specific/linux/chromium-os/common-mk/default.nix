@@ -57,10 +57,8 @@ stdenv.mkDerivation ({
       echo applying patch ${patch}
       patch -p1 < ${patch} 
     '') ([
-      ./0001-common-mk-Adjust-policy-gen-script-cmdline-args.patch
-      ./0002-common-mk-Add-proto-library-and-its-dependencies-for.patch
-      ./0003-common-mk-don-t-leak-source-absolute-paths.patch
-      ./0004-common-mk-.gn-don-t-hardcode-env-path.patch
+      ./0001-common-mk-don-t-leak-source-absolute-paths.patch
+      ./0002-common-mk-.gn-don-t-hardcode-env-path.patch
     ] ++ platform2Patches)}
 
     patchShebangs common-mk

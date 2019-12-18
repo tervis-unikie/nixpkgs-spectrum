@@ -1,17 +1,17 @@
-From 308678664652685d48dccc4ea6d55195a307e36d Mon Sep 17 00:00:00 2001
+From 5c95aae10ef7968ab2d9cbdf1456798dc8f94890 Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Sun, 1 Dec 2019 14:55:21 +0000
-Subject: [PATCH 08/11] libbrillo: don't leak source-absolute paths
+Subject: [PATCH 6/9] libbrillo: don't leak source-absolute paths
 
 ---
  libbrillo/BUILD.gn | 7 +++----
  1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/libbrillo/BUILD.gn b/libbrillo/BUILD.gn
-index c3ca0054b..4ae5aced0 100644
+index 75b6da6f2..a3a25865b 100644
 --- a/libbrillo/BUILD.gn
 +++ b/libbrillo/BUILD.gn
-@@ -260,10 +260,9 @@ action("libbrillo-${libbase_ver}") {
+@@ -265,10 +265,9 @@ action("libbrillo-${libbase_ver}") {
      deps += [ ":lib" + sublib.library_name ]
    }
    script = "//common-mk/write_args.py"
