@@ -28,38 +28,42 @@ let
     ${busybox}/bin/login -p -f root $@
   '';
 
-  services = {
-    getty.run = writeScript "getty-run" ''
-      #! ${execline}/bin/execlineb -P
-      ${busybox}/bin/getty -i -n -l ${login} 38400 ttyS0
-    '';
+  makeServicesDir = services: with lib;
+    let
+      services' = {
 
-    rngd.run = writeScript "rngd-run" ''
-      #! ${execline}/bin/execlineb -P
-      ${rng-tools}/bin/rngd -f -x pkcs11
-    '';
+        ".s6-svscan" = {
+          finish = writeScript "init-stage3" ''
+            #! ${execline}/bin/execlineb -P
+            foreground { s6-nuke -th }
+            s6-sleep -m -- 2000
+            foreground { s6-nuke -k }
+            wait { }
+            s6-linux-init-hpr -fr
+          '';
+        } // services.".s6-svscan" or {};
 
-    ".s6-svscan".finish = writeScript "init-stage3" ''
-      #! ${execline}/bin/execlineb -P
-      foreground { s6-nuke -th }
-      s6-sleep -m -- 2000
-      foreground { s6-nuke -k }
-      wait { }
-      s6-linux-init-hpr -fr
-    '';
-  };
+        rngd = {
+          run = writeScript "rngd-run" ''
+            #! ${execline}/bin/execlineb -P
+            ${rng-tools}/bin/rngd -f -x pkcs11,rdrand
+          '';
+        } // services.rngd or {};
 
-  servicesDir = with lib; runCommandNoCC "services" {} ''
-    mkdir $out
-    ${concatStrings (mapAttrsToList (name: attrs: ''
-      mkdir $out/${name}
-      ${concatStrings (mapAttrsToList (key: value: ''
-        cp ${value} $out/${name}/${key}
-      '') attrs)}
-    '') services)}
-  '';
+      } // services;
 
-  stage1 = writeScript "init-stage1" ''
+    in
+      runCommandNoCC "services" {} ''
+        mkdir $out
+        ${concatStrings (mapAttrsToList (name: attrs: ''
+          mkdir $out/${name}
+          ${concatStrings (mapAttrsToList (key: value: ''
+            cp ${value} $out/${name}/${key}
+          '') attrs)}
+        '') services')}
+      '';
+
+  makeStage1 = { run ? null }: writeScript "init-stage1" ''
     #! ${execline}/bin/execlineb -P
     export PATH ${lib.makeBinPath
       [ s6-linux-init s6-portable-utils s6-linux-utils s6 execline busybox ]}
@@ -80,13 +84,12 @@ let
       if { ip link set eth0 up }
 
       export XDG_RUNTIME_DIR /run/user/0
-      foreground {
-        ${sommelier}/bin/sommelier
-        ${westonLite}/bin/weston-terminal --shell /bin/sh
-      }
-      importas -i ? ?
-      if { s6-echo STATUS: $? }
-      s6-svscanctl -6 /run/service
+      ${lib.optionalString (run != null) ''
+        foreground { ${run} }
+        importas -i ? ?
+        if { s6-echo STATUS: $? }
+        s6-svscanctl -6 /run/service
+      ''}
     }
 
     unexport !
@@ -98,18 +101,18 @@ let
     root:x:0:0:System administrator:/:/bin/sh
   '';
 
-  rootfs = runCommand "rootfs" {} ''
+  makeRootfs = { services, run ? null }: runCommand "rootfs" {} ''
     mkdir $out
     cd $out
     mkdir bin sbin dev etc proc run tmp
     ln -s ${dash}/bin/dash bin/sh
-    ln -s ${stage1} sbin/init
+    ln -s ${makeStage1 { inherit run; }} sbin/init
     cp ${passwd} etc/passwd
     touch etc/login.defs
-    cp -r ${servicesDir} etc/service
+    cp -r ${makeServicesDir services} etc/service
   '';
 
-  root-squashfs = runCommand "root-squashfs" {} ''
+  makeRootSquashfs = rootfs: runCommand "root-squashfs" {} ''
     cd ${rootfs}
     (
         grep -v ^${rootfs} ${writeReferencesToFile rootfs}
@@ -118,6 +121,34 @@ let
         | xargs tar -cP --owner root:0 --group root:0 --hard-dereference \
         | ${squashfs-tools-ng}/bin/tar2sqfs $out
   '';
+
+  makeVM =
+    { name, services ? {}, run ? null, wayland ? false, tapFD ? null }:
+    let
+      rootfs = makeRootfs { inherit run services; };
+    in writeShellScript name ''
+      exec ${crosvm}/bin/crosvm run \
+          ${lib.optionalString wayland
+              "--wayland-sock $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY"} \
+          ${lib.optionalString (tapFD != null) "--tap-fd ${toString tapFD}"} \
+          -p init=/sbin/init \
+          --root ${makeRootSquashfs rootfs} \
+          ${kernel}/bzImage
+    '';
+
+  waylandVM = makeVM {
+    name = "wayland-vm";
+    services.getty.run = writeScript "getty-run" ''
+      #! ${execline}/bin/execlineb -P
+      ${busybox}/bin/getty -i -n -l ${login} 38400 ttyS0
+    '';
+    run = ''
+      ${sommelier}/bin/sommelier
+      ${westonLite}/bin/weston-terminal --shell /bin/sh
+    '';
+    wayland = true;
+    tapFD = 3;
+  };
 
 in
 
@@ -140,10 +171,7 @@ writeScript "crosvm" ''
 
   ${s6}/bin/s6-applyuidgid -u $uid -g $gid
 
-  ${crosvm}/bin/crosvm run
-      --wayland-sock ''${xdg_runtime_dir}/''${wayland_display}
-      --tap-fd 3
-      -p init=/sbin/init
-      --root ${root-squashfs}
-      ${kernel}/bzImage
+  export XDG_RUNTIME_DIR $xdg_runtime_dir
+  export WAYLAND_DISPLAY $wayland_display
+  ${waylandVM}
 ''
