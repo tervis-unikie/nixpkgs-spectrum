@@ -80,7 +80,10 @@ let
       if { ip link set eth0 up }
 
       export XDG_RUNTIME_DIR /run/user/0
-      foreground { ${sommelier}/bin/sommelier ${hello-wayland}/bin/hello-wayland }
+      foreground {
+        ${sommelier}/bin/sommelier
+        ${westonLite}/bin/weston-terminal --shell /bin/sh
+      }
       importas -i ? ?
       if { s6-echo STATUS: $? }
       s6-svscanctl -6 /run/service
