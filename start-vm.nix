@@ -20,6 +20,9 @@ let
                          VOP_BUS = yes;
                          HW_RANDOM = yes;
                          HW_RANDOM_VIRTIO = yes;
+
+                         NET_9P = yes;
+                         "9P_FS" = yes;
                        }; };
 
   login = writeScript "login" ''
@@ -63,7 +66,7 @@ let
         '') services')}
       '';
 
-  makeStage1 = { run ? null }: writeScript "init-stage1" ''
+  makeStage1 = { run ? null, tapFD }: writeScript "init-stage1" ''
     #! ${execline}/bin/execlineb -P
     export PATH ${lib.makeBinPath
       [ s6-linux-init s6-portable-utils s6-linux-utils s6 execline busybox ]}
@@ -80,11 +83,13 @@ let
       if { s6-mount -t tmpfs none /dev/shm }
       if { s6-mount -t proc none /proc }
 
-      if { ip addr add 10.0.100.2/24 dev eth0 }
+      if { ip addr add 10.0.10${toString tapFD}.2/24 dev eth0 }
       if { ip link set eth0 up }
-
-      export XDG_RUNTIME_DIR /run/user/0
+      ${lib.optionalString (run != null) "if {"}
+          ip route add default via 10.0.10${toString tapFD}.1
       ${lib.optionalString (run != null) ''
+        }
+        export XDG_RUNTIME_DIR /run/user/0
         foreground { ${run} }
         importas -i ? ?
         if { s6-echo STATUS: $? }
@@ -101,12 +106,12 @@ let
     root:x:0:0:System administrator:/:/bin/sh
   '';
 
-  makeRootfs = { services, run ? null }: runCommand "rootfs" {} ''
+  makeRootfs = { services, run ? null, tapFD }: runCommand "rootfs" {} ''
     mkdir $out
     cd $out
     mkdir bin sbin dev etc proc run tmp
     ln -s ${dash}/bin/dash bin/sh
-    ln -s ${makeStage1 { inherit run; }} sbin/init
+    ln -s ${makeStage1 { inherit run tapFD; }} sbin/init
     cp ${passwd} etc/passwd
     touch etc/login.defs
     cp -r ${makeServicesDir services} etc/service
@@ -125,7 +130,7 @@ let
   makeVM =
     { name, services ? {}, run ? null, wayland ? false, tapFD ? null }:
     let
-      rootfs = makeRootfs { inherit run services; };
+      rootfs = makeRootfs { inherit run services tapFD; };
     in writeShellScript name ''
       exec ${crosvm}/bin/crosvm run \
           ${lib.optionalString wayland
@@ -136,6 +141,16 @@ let
           ${kernel}/bzImage
     '';
 
+  fsVM = makeVM {
+    name = "fs-vm";
+    tapFD = 3;
+
+    services.rust-9p.run = writeScript "rust-9p-run" ''
+      #! ${execline}/bin/execlineb -P
+      ${rust-9p}/bin/unpfs tcp!0.0.0.0!564 /
+    '';
+  };
+
   waylandVM = makeVM {
     name = "wayland-vm";
     services.getty.run = writeScript "getty-run" ''
@@ -143,11 +158,18 @@ let
       ${busybox}/bin/getty -i -n -l ${login} 38400 ttyS0
     '';
     run = ''
+      background {
+        if { s6-mkdir /run/mnt }
+        loopwhilex
+        if -n { s6-mount -t 9p 10.0.103.2 /run/mnt }
+        s6-sleep 1
+      }
+
       ${sommelier}/bin/sommelier
       ${westonLite}/bin/weston-terminal --shell /bin/sh
     '';
     wayland = true;
-    tapFD = 3;
+    tapFD = 4;
   };
 
 in
@@ -164,14 +186,21 @@ writeScript "crosvm" ''
   importas -i gid SUDO_GID
 
   ${mktuntap}/bin/mktuntap -pvB 3
+  importas -iu tap_name_3 TUNTAP_NAME
 
-  importas -iu tap_name TUNTAP_NAME
-  if { ip addr add 10.0.100.1/24 dev $tap_name }
-  if { ip link set $tap_name up }
+  ${mktuntap}/bin/mktuntap -pvB 4
+  importas -iu tap_name_4 TUNTAP_NAME
+
+  if { ip addr add 10.0.103.1/24 dev $tap_name_3 }
+  if { ip addr add 10.0.104.1/24 dev $tap_name_4 }
+  if { ip link set $tap_name_3 up }
+  if { ip link set $tap_name_4 up }
 
   ${s6}/bin/s6-applyuidgid -u $uid -g $gid
 
   export XDG_RUNTIME_DIR $xdg_runtime_dir
   export WAYLAND_DISPLAY $wayland_display
+
+  background { ${fsVM} }
   ${waylandVM}
 ''
