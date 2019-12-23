@@ -165,6 +165,8 @@ in {
 
   aioredis = callPackage ../development/python-modules/aioredis { };
 
+  aiorun = callPackage ../development/python-modules/aiorun { };
+
   ansicolor = callPackage ../development/python-modules/ansicolor { };
 
   ansiwrap =  callPackage ../development/python-modules/ansiwrap { };
@@ -178,6 +180,8 @@ in {
   aplpy = callPackage ../development/python-modules/aplpy { };
 
   apprise = callPackage ../development/python-modules/apprise { };
+
+  arrayqueues = callPackage ../development/python-modules/arrayqueues { };
 
   aresponses = callPackage ../development/python-modules/aresponses { };
 
@@ -893,6 +897,8 @@ in {
 
   pc-ble-driver-py = toPythonModule (callPackage ../development/python-modules/pc-ble-driver-py { });
 
+  pcpp = callPackage ../development/python-modules/pcpp { };
+
   pdf2image = callPackage ../development/python-modules/pdf2image { };
 
   pdfminer = callPackage ../development/python-modules/pdfminer_six { };
@@ -1276,6 +1282,14 @@ in {
   seekpath = callPackage ../development/python-modules/seekpath { };
 
   selectors2 = callPackage ../development/python-modules/selectors2 { };
+
+  sacremoses = callPackage ../development/python-modules/sacremoses { };
+
+  sentencepiece = callPackage ../development/python-modules/sentencepiece {
+    inherit (pkgs) sentencepiece pkgconfig;
+  };
+
+  transformers = callPackage ../development/python-modules/transformers { };
 
   sentinel = callPackage ../development/python-modules/sentinel { };
 
@@ -1729,6 +1743,8 @@ in {
 
   colorlog = callPackage ../development/python-modules/colorlog { };
 
+  colorspacious = callPackage ../development/python-modules/colorspacious { };
+
   colour = callPackage ../development/python-modules/colour {};
 
   configshell = callPackage ../development/python-modules/configshell { };
@@ -1902,6 +1918,8 @@ in {
 
   cartopy = callPackage ../development/python-modules/cartopy {};
 
+  casbin = callPackage ../development/python-modules/casbin { };
+
   case = callPackage ../development/python-modules/case {};
 
   cbor = callPackage ../development/python-modules/cbor {};
@@ -2035,6 +2053,8 @@ in {
   curtsies = callPackage ../development/python-modules/curtsies { };
 
   envs = callPackage ../development/python-modules/envs { };
+
+  etelemetry = callPackage ../development/python-modules/etelemetry { };
 
   eth-hash = callPackage ../development/python-modules/eth-hash { };
 
@@ -2472,6 +2492,8 @@ in {
 
   filetype = callPackage ../development/python-modules/filetype { };
 
+  flammkuchen = callPackage ../development/python-modules/flammkuchen { };
+
   flexmock = callPackage ../development/python-modules/flexmock { };
 
   flit = callPackage ../development/python-modules/flit { };
@@ -2700,6 +2722,8 @@ in {
   lightgbm = callPackage ../development/python-modules/lightgbm { };
 
   lightning = callPackage ../development/python-modules/lightning { };
+
+  lightparam = callPackage ../development/python-modules/lightparam { };
 
   jupyter = callPackage ../development/python-modules/jupyter { };
 
@@ -4328,6 +4352,8 @@ in {
 
   aioeventlet = callPackage ../development/python-modules/aioeventlet { };
 
+  aiokafka = callPackage ../development/python-modules/aiokafka { };
+
   olefile = callPackage ../development/python-modules/olefile { };
 
   requests-mock = callPackage ../development/python-modules/requests-mock { };
@@ -4935,6 +4961,8 @@ in {
 
   qds_sdk = callPackage ../development/python-modules/qds_sdk { };
 
+  qimage2ndarray = callPackage ../development/python-modules/qimage2ndarray { };
+
   quamash = callPackage ../development/python-modules/quamash { };
 
   quandl = callPackage ../development/python-modules/quandl { };
@@ -5244,6 +5272,8 @@ in {
   streamz = callPackage ../development/python-modules/streamz { };
 
   structlog = callPackage ../development/python-modules/structlog { };
+
+  stytra = callPackage ../development/python-modules/stytra { };
 
   sybil = callPackage ../development/python-modules/sybil { };
 
@@ -6607,6 +6637,8 @@ in {
   stringcase = callPackage ../development/python-modules/stringcase { };
 
   webrtcvad = callPackage ../development/python-modules/webrtcvad { };
+
+  wfuzz = callPackage ../development/python-modules/wfuzz { };
 
   wget = callPackage ../development/python-modules/wget { };
 

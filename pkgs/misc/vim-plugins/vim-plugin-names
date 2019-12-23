@@ -12,6 +12,7 @@ amiorin/ctrlp-z
 andreshazard/vim-logreview
 andsild/peskcolor.vim
 andviro/flake8-vim
+andys8/vim-elm-syntax
 ap/vim-css-color
 arcticicestudio/nord-vim
 artur-shaik/vim-javacomplete2
@@ -106,6 +107,7 @@ godlygeek/tabular
 google/vim-codefmt
 google/vim-jsonnet
 google/vim-maktaba
+gorkunov/smartpairs.vim
 gotcha/vimelette
 gregsexton/gitv
 guns/vim-clojure-highlight
@@ -157,6 +159,7 @@ joonty/vim-xdebug
 josa42/coc-go
 jpalardy/vim-slime
 jreybert/vimagit
+jsfaint/gen_tags.vim
 JuliaEditorSupport/deoplete-julia
 JuliaEditorSupport/julia-vim
 Julian/vim-textobj-variable-segment
@@ -170,6 +173,7 @@ junegunn/vim-easy-align
 junegunn/vim-github-dashboard
 junegunn/vim-peekaboo
 junegunn/vim-plug
+junegunn/vim-slash
 justincampbell/vim-eighties
 justinmk/vim-dirvish
 justinmk/vim-sneak
@@ -312,6 +316,7 @@ neomake/neomake
 neovimhaskell/haskell-vim
 neovimhaskell/nvim-hs.vim
 neovim/nvimdev.nvim
+neovim/nvim-lsp
 neutaaaaan/iosvkem
 nfnty/vim-nftables
 nicoe/deoplete-khard
@@ -471,6 +476,7 @@ valloric/youcompleteme
 vhda/verilog_systemverilog.vim
 vim-airline/vim-airline
 vim-airline/vim-airline-themes
+vimlab/split-term.vim
 vimoutliner/vimoutliner
 vim-pandoc/vim-pandoc
 vim-pandoc/vim-pandoc-after
