@@ -45,14 +45,6 @@ let
             s6-linux-init-hpr -fr
           '';
         } // services.".s6-svscan" or {};
-
-        rngd = {
-          run = writeScript "rngd-run" ''
-            #! ${execline}/bin/execlineb -P
-            ${rng-tools}/bin/rngd -f -x pkcs11,rdrand
-          '';
-        } // services.rngd or {};
-
       } // services;
 
     in
