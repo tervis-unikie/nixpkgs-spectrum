@@ -61,6 +61,7 @@ mapAliases ({
   buildPerlPackage = perlPackages.buildPerlPackage; # added 2018-10-12
   bundler_HEAD = bundler; # added 2015-11-15
   cantarell_fonts = cantarell-fonts; # added 2018-03-03
+  catfish = xfce.catfish; # added 2019-12-22
   checkbashism = checkbashisms; # added 2016-08-16
   cide = throw "deprecated in 2019-09-11: abandoned by upstream";
   cinepaint = throw "cinepaint has been removed from nixpkgs, as it was unmaintained"; # added 2019-12-10
@@ -393,6 +394,7 @@ mapAliases ({
   smbclient = samba; # added 2018-04-25
   slim = throw "slim has been removed. Please use a different display-manager"; # added 2019-11-11
   slimThemes = throw "slimThemes has been removed because slim has been also"; # added 2019-11-11
+  net_snmp = net-snmp; # added 2019-12-21
   spaceOrbit = space-orbit; # addewd 2016-05-23
   speech_tools = speech-tools; # added 2018-04-25
   speedtest_cli = speedtest-cli;  # added 2015-02-17
