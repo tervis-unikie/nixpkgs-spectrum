@@ -132,6 +132,7 @@ in
   jellyfin = handleTest ./jellyfin.nix {};
   jenkins = handleTest ./jenkins.nix {};
   kafka = handleTest ./kafka.nix {};
+  keepalived = handleTest ./keepalived.nix {};
   kerberos = handleTest ./kerberos/default.nix {};
   kernel-latest = handleTest ./kernel-latest.nix {};
   kernel-lts = handleTest ./kernel-lts.nix {};
@@ -257,6 +258,7 @@ in
   smokeping = handleTest ./smokeping.nix {};
   snapper = handleTest ./snapper.nix {};
   solr = handleTest ./solr.nix {};
+  spacecookie = handleTest ./spacecookie.nix {};
   sonarr = handleTest ./sonarr.nix {};
   strongswan-swanctl = handleTest ./strongswan-swanctl.nix {};
   sudo = handleTest ./sudo.nix {};

@@ -508,6 +508,8 @@ in
 
   acpica-tools = callPackage ../tools/system/acpica-tools { };
 
+  act = callPackage ../development/tools/misc/act {};
+
   actdiag = with python3.pkgs; toPythonApplication actdiag;
 
   actkbd = callPackage ../tools/system/actkbd { };
@@ -1612,7 +1614,7 @@ in
 
   dua = callPackage ../tools/misc/dua { };
 
-  inherit (ocamlPackages) dune;
+  inherit (ocamlPackages) dune dune_2;
 
   duperemove = callPackage ../tools/filesystems/duperemove { };
 
@@ -2079,7 +2081,7 @@ in
     libmysqlclient = null;
     postgresql = null;
     libdbi = null;
-    net_snmp = null;
+    net-snmp = null;
     libuuid = null;
     gnutls = null;
     libgcrypt = null;
@@ -2513,6 +2515,8 @@ in
   interception-tools-plugins = {
     caps2esc = callPackage ../tools/inputmethods/interception-tools/caps2esc.nix { };
   };
+
+  age = callPackage ../tools/security/age { };
 
   brotli = callPackage ../tools/compression/brotli { };
 
@@ -5907,7 +5911,9 @@ in
   qesteidutil = libsForQt5.callPackage ../tools/security/qesteidutil { } ;
   qdigidoc = libsForQt5.callPackage ../tools/security/qdigidoc { } ;
 
-  qgrep = callPackage ../tools/text/qgrep {};
+  qgrep = callPackage ../tools/text/qgrep {
+    inherit (darwin.apple_sdk.frameworks) CoreServices CoreFoundation;
+  };
 
   qhull = callPackage ../development/libraries/qhull { };
 
@@ -5970,6 +5976,8 @@ in
   rawdog = callPackage ../applications/networking/feedreaders/rawdog { };
 
   rc = callPackage ../shells/rc { };
+
+  rdbtools = callPackage ../development/tools/rdbtools { python = python3; };
 
   rdma-core = callPackage ../os-specific/linux/rdma-core { };
 
@@ -8156,7 +8164,7 @@ in
 
   purescript-psa = nodePackages.purescript-psa;
 
-  spago = haskell.lib.justStaticExecutables haskellPackages.spago;
+  spago = callPackage ../development/tools/purescript/spago { };
 
   pulp = nodePackages.pulp;
 
@@ -8524,7 +8532,6 @@ in
   llvmPackages_latest = llvmPackages_9;
 
   lorri = callPackage ../tools/misc/lorri {
-    inherit (darwin) cf-private;
     inherit (darwin.apple_sdk.frameworks) CoreServices Security;
   };
 
@@ -8947,6 +8954,8 @@ in
 
   clojure = callPackage ../development/interpreters/clojure { };
 
+  clojure-lsp = callPackage ../development/tools/misc/clojure-lsp { };
+
   clooj = callPackage ../development/interpreters/clojure/clooj.nix { };
 
   dhall = callPackage ../development/interpreters/dhall { };
@@ -9354,7 +9363,23 @@ in
   })
     ruby_2_4
     ruby_2_5
-    ruby_2_6;
+    ruby_2_6
+    ruby_2_7;
+
+  rubyMinimal = ruby.override {
+    # gem support is minimal overhead
+    rubygemsSupport = true;
+    useRailsExpress = false;
+    zlibSupport = false;
+    opensslSupport = false;
+    gdbmSupport = false;
+    cursesSupport = false;
+    docSupport = false;
+    yamlSupport = false;
+    fiddleSupport = false;
+    # remove gcc from runtime closure
+    removeReferenceToCC = true;
+  };
 
   ruby = ruby_2_6;
 
@@ -10573,7 +10598,7 @@ in
 
   texlab = callPackage ../development/tools/misc/texlab {
     inherit (darwin.apple_sdk.frameworks) Security;
-    texlab-citeproc-build-deps = nodePackages."texlab-citeproc-build-deps-../tools/misc/texlab/citeproc";
+    inherit (nodePackages) texlab-citeproc-build-deps;
   };
 
   tflint = callPackage ../development/tools/analysis/tflint { };
@@ -11652,6 +11677,8 @@ in
 
   glib-networking = callPackage ../development/libraries/glib-networking {};
 
+  glirc = haskell.lib.justStaticExecutables haskellPackages.glirc;
+
   gom = callPackage ../development/libraries/gom { };
 
   ace = callPackage ../development/libraries/ace { };
@@ -11677,8 +11704,6 @@ in
   pangomm = callPackage ../development/libraries/pangomm {
     inherit (darwin.apple_sdk.frameworks) ApplicationServices;
   };
-
-  pangox_compat = callPackage ../development/libraries/pangox-compat { };
 
   gdata-sharp = callPackage ../development/libraries/gdata-sharp { };
 
@@ -11761,6 +11786,8 @@ in
   gtkspell3 = callPackage ../development/libraries/gtkspell/3.nix { };
 
   gtkspellmm = callPackage ../development/libraries/gtkspellmm { };
+
+  gtk-layer-shell = callPackage ../development/libraries/gtk-layer-shell { };
 
   gts = callPackage ../development/libraries/gts { };
 
@@ -15452,7 +15479,7 @@ in
 
   check-esxi-hardware = callPackage ../servers/monitoring/plugins/esxi.nix {};
 
-  net_snmp = callPackage ../servers/monitoring/net-snmp { };
+  net-snmp = callPackage ../servers/monitoring/net-snmp { };
 
   newrelic-sysmond = callPackage ../servers/monitoring/newrelic-sysmond { };
 
@@ -15461,7 +15488,7 @@ in
   riemann = callPackage ../servers/monitoring/riemann { };
   riemann-dash = callPackage ../servers/monitoring/riemann-dash { };
 
-  rust-9p = callPackage ../servers/rust-9p {};
+  unpfs = callPackage ../servers/unpfs {};
 
   oidentd = callPackage ../servers/identd/oidentd { };
 
@@ -18224,8 +18251,6 @@ in
 
   carla = qt5.callPackage ../applications/audio/carla { };
 
-  catfish = callPackage ../applications/search/catfish { };
-
   catimg = callPackage ../tools/misc/catimg { };
 
   catt = python3Packages.callPackage ../applications/video/catt { };
@@ -19178,6 +19203,8 @@ in
     inherit (darwin) IOKit;
   };
 
+  glow = callPackage ../applications/editors/glow { };
+
   glowing-bear = callPackage ../applications/networking/irc/glowing-bear { };
 
   gmtk = callPackage ../development/libraries/gmtk { };
@@ -20120,6 +20147,8 @@ in
   monotoneViz = callPackage ../applications/version-management/monotone-viz {
     ocamlPackages = ocaml-ng.ocamlPackages_4_01_0;
   };
+
+  monitor = callPackage ../applications/system/monitor { };
 
   moolticute = libsForQt5.callPackage ../applications/misc/moolticute { };
 
@@ -21401,6 +21430,7 @@ in
 
   swift-im = libsForQt5.callPackage ../applications/networking/instant-messengers/swift-im {
     inherit (gnome2) GConf;
+    boost = boost168;
   };
 
   sylpheed = callPackage ../applications/networking/mailreaders/sylpheed { };
@@ -21449,7 +21479,9 @@ in
 
   tailor = callPackage ../applications/version-management/tailor {};
 
-  taizen = callPackage ../applications/misc/taizen { };
+  taizen = callPackage ../applications/misc/taizen {
+    inherit (darwin.apple_sdk.frameworks) Security;
+  };
 
   tangogps = callPackage ../applications/misc/tangogps {
     gconf = gnome2.GConf;
@@ -21666,6 +21698,8 @@ in
   ulauncher = callPackage ../applications/misc/ulauncher { };
 
   twinkle = qt5.callPackage ../applications/networking/instant-messengers/twinkle { };
+
+  ueberzug = with python3Packages; toPythonApplication ueberzug;
 
   umurmur = callPackage ../applications/networking/umurmur { };
 
@@ -23658,9 +23692,15 @@ in
 
   kssd = callPackage ../applications/science/biology/kssd { };
 
+  last = callPackage ../applications/science/biology/last { };
+
   macse = callPackage ../applications/science/biology/macse { };
 
   migrate = callPackage ../applications/science/biology/migrate { };
+
+  minia = callPackage ../applications/science/biology/minia {
+    boost = boost159;
+  };
 
   mirtk = callPackage ../development/libraries/science/biology/mirtk { };
 
@@ -23747,6 +23787,8 @@ in
   SPAdes = callPackage ../applications/science/biology/spades { };
 
   svaba = callPackage ../applications/science/biology/svaba { };
+
+  tebreak = callPackage ../applications/science/biology/tebreak { };
 
   trimal = callPackage ../applications/science/biology/trimal { };
 
@@ -24528,7 +24570,9 @@ in
 
   dpkg = callPackage ../tools/package-management/dpkg { };
 
-  ekiga = callPackage ../applications/networking/instant-messengers/ekiga { };
+  ekiga = callPackage ../applications/networking/instant-messengers/ekiga {
+    boost = boost167;
+  };
 
   dumb = callPackage ../misc/dumb { };
 
@@ -25249,6 +25293,8 @@ in
     gcc_32bit = pkgsi686Linux.gcc;
     inherit (gnome2) GConf;
   };
+
+  unityhub = callPackage ../development/tools/unityhub { };
 
   urbit = callPackage ../misc/urbit { };
 

@@ -137,9 +137,9 @@ let
     name = "fs-vm";
     tapFD = 3;
 
-    services.rust-9p.run = writeScript "rust-9p-run" ''
+    services.unpfs.run = writeScript "unpfs-run" ''
       #! ${execline}/bin/execlineb -P
-      ${rust-9p}/bin/unpfs tcp!0.0.0.0!564 /
+      ${unpfs}/bin/unpfs tcp!0.0.0.0!564 /
     '';
   };
 

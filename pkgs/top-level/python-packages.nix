@@ -717,8 +717,6 @@ in {
 
   helper = callPackage ../development/python-modules/helper { };
 
-  histbook = callPackage ../development/python-modules/histbook { };
-
   hdmedians = callPackage ../development/python-modules/hdmedians { };
 
   hocr-tools = callPackage ../development/python-modules/hocr-tools { };
@@ -1704,6 +1702,10 @@ in {
 
   bumps = callPackage ../development/python-modules/bumps {};
 
+  bx-python = callPackage ../development/python-modules/bx-python {
+    inherit (pkgs) zlib;
+  };
+
   cached-property = callPackage ../development/python-modules/cached-property { };
 
   caffe = toPythonModule (pkgs.caffe.override {
@@ -1803,7 +1805,7 @@ in {
 
   easysnmp = callPackage ../development/python-modules/easysnmp {
     openssl = pkgs.openssl;
-    net_snmp = pkgs.net_snmp;
+    net-snmp = pkgs.net-snmp;
   };
 
   iowait = callPackage ../development/python-modules/iowait {};
@@ -1942,6 +1944,8 @@ in {
 
   certifi = callPackage ../development/python-modules/certifi { };
 
+  certipy = callPackage ../development/python-modules/certipy {};
+ 
   characteristic = callPackage ../development/python-modules/characteristic { };
 
   chart-studio = callPackage ../development/python-modules/chart-studio { };
@@ -2598,6 +2602,8 @@ in {
   then callPackage ../development/python-modules/gurobipy/linux.nix {}
   else throw "gurobipy not yet supported on ${stdenv.hostPlatform.system}";
 
+  hass-nabucasa = callPackage ../development/python-modules/hass-nabucasa { };
+
   hbmqtt = callPackage ../development/python-modules/hbmqtt { };
 
   hiro = callPackage ../development/python-modules/hiro {};
@@ -2914,6 +2920,8 @@ in {
     inherit (pkgs) meson pkgconfig;
   };
 
+  python-lzf = callPackage ../development/python-modules/python-lzf { };
+
   pyramid = callPackage ../development/python-modules/pyramid { };
 
   pyramid_beaker = callPackage ../development/python-modules/pyramid_beaker { };
@@ -2939,6 +2947,10 @@ in {
   pytools = callPackage ../development/python-modules/pytools { };
 
   python-ctags3 = callPackage ../development/python-modules/python-ctags3 { };
+
+  python-lzo = callPackage ../development/python-modules/python-lzo {
+    inherit (pkgs) lzo;
+  };
 
   junos-eznc = callPackage ../development/python-modules/junos-eznc {};
 
@@ -5188,6 +5200,8 @@ in {
 
   snowballstemmer = callPackage ../development/python-modules/snowballstemmer { };
 
+  snitun = callPackage ../development/python-modules/snitun { };
+
   snscrape = callPackage ../development/python-modules/snscrape { };
 
   snug = callPackage ../development/python-modules/snug { };
@@ -5357,6 +5371,10 @@ in {
   ua-parser = callPackage ../development/python-modules/ua-parser { };
 
   uarray = callPackage ../development/python-modules/uarray { };
+
+  ueberzug = callPackage ../development/python-modules/ueberzug {
+    inherit (pkgs.xorg) libX11 libXext;
+  };
 
   ukpostcodeparser = callPackage ../development/python-modules/ukpostcodeparser { };
 
