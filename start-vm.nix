@@ -1,8 +1,6 @@
 with import ./. {};
 
 let
-  makeSquashfs = (callPackage nixos/lib/make-squashfs.nix {}).override;
-
   kernel' = linux_cros;
 
   kernel = with import lib/kernel.nix { inherit lib; inherit (kernel') version; };
