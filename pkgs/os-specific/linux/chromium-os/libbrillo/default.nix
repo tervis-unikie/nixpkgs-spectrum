@@ -17,7 +17,10 @@ common-mk {
   nativeBuildInputs = [ dbus_cplusplus go-protobuf ];
   buildInputs = [ libchrome curl minijail protobuf glib gtest modp_b64 ];
 
-  NIX_CFLAGS_COMPILE = [ "-Wno-error=sign-compare" ];
+  NIX_CFLAGS_COMPILE = [
+    "-Wno-error=sign-compare"
+    "-Wno-error=stringop-truncation"
+  ];
 
   postPatch = ''
     substituteInPlace common-mk/external_dependencies/BUILD.gn \

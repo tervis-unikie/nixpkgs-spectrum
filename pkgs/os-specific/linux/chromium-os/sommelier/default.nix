@@ -18,6 +18,7 @@ common-mk {
 
   NIX_CFLAGS_COMPILE = [
     "-Wno-error=sign-compare"
+    "-Wno-error=stringop-truncation"
     "-Wno-error=class-memaccess"
     "-Wno-error=maybe-uninitialized"
   ];

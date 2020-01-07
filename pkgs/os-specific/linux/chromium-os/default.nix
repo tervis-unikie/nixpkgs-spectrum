@@ -1,4 +1,4 @@
-{ newScope, fetchFromGitiles, symlinkJoin
+{ lib, newScope, fetchFromGitiles, symlinkJoin
 , linux_4_19, makeLinuxHeaders, modemmanager
 }:
 
