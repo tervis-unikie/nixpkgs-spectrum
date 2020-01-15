@@ -1,7 +1,7 @@
 From ad7338d648cfeffbd595e9a7681f746ce834d59e Mon Sep 17 00:00:00 2001
 From: Daniel Kurtz <djkurtz@chromium.org>
 Date: Mon, 3 Jun 2019 16:46:17 -0600
-Subject: [PATCH 4/9] libbrillo: Update for OpenSSL 1.1
+Subject: [PATCH 04/10] libbrillo: Update for OpenSSL 1.1
 
 OpenSSL 1.1 has made significant non-backwards compatible changes to its
 API as outlined in:
@@ -214,5 +214,5 @@ index eaf90c96a..3f96d12ee 100644
      return false;
  
 -- 
-2.23.0
+2.24.1
 

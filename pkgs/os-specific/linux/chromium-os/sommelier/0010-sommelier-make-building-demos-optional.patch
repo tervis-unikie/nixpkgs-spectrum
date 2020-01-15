@@ -1,0 +1,100 @@
+From a10869a6f73c3939b254b99125975568d29c6eed Mon Sep 17 00:00:00 2001
+From: Alyssa Ross <hi@alyssa.is>
+Date: Wed, 15 Jan 2020 21:36:43 +0000
+Subject: [PATCH 10/10] sommelier: make building demos optional
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+pkg-config was checked at GN evaluation time for libbrillo and
+libchrome, meaning that there was no way to build sommelier without
+them, even though they were only required for the demos, not for
+sommelier itself.
+
+Making the demo optional saves having to libbrillo and libchrome for
+the common case of building just sommelier, which themselves have lots
+of unusual dependencies.
+
+Thanks-to: Tomasz Śniatowski <tsniatowski@vewd.com>
+---
+ vm_tools/sommelier/BUILD.gn | 54 ++++++++++++++++++++++---------------
+ 1 file changed, 32 insertions(+), 22 deletions(-)
+
+diff --git a/vm_tools/sommelier/BUILD.gn b/vm_tools/sommelier/BUILD.gn
+index 498a0ccab..9b6cb00fe 100644
+--- a/vm_tools/sommelier/BUILD.gn
++++ b/vm_tools/sommelier/BUILD.gn
+@@ -4,12 +4,20 @@
+ 
+ import("wayland_protocol.gni")
+ 
++declare_args() {
++  use_demos = true
++}
++
+ group("all") {
+   deps = [
+     ":sommelier",
+-    ":wayland_demo",
+-    ":x11_demo",
+   ]
++  if (use_demos) {
++    deps += [
++      ":wayland_demo",
++      ":x11_demo",
++    ]
++  }
+ }
+ 
+ if (!defined(peer_cmd_prefix)) {
+@@ -123,25 +131,27 @@ executable("sommelier") {
+   ]
+ }
+ 
+-executable("wayland_demo") {
+-  pkg_deps = [
+-    "libbrillo-${libbase_ver}",
+-    "libchrome-${libbase_ver}",
+-    "wayland-client",
+-  ]
+-  libs = [ "wayland-client" ]
+-  sources = [
+-    "demos/wayland_demo.cc",
+-  ]
+-}
++if (use_demos) {
++  executable("wayland_demo") {
++    pkg_deps = [
++      "libbrillo-${libbase_ver}",
++      "libchrome-${libbase_ver}",
++      "wayland-client",
++    ]
++    libs = [ "wayland-client" ]
++    sources = [
++      "demos/wayland_demo.cc",
++    ]
++  }
+ 
+-executable("x11_demo") {
+-  pkg_deps = [
+-    "libbrillo-${libbase_ver}",
+-    "libchrome-${libbase_ver}",
+-  ]
+-  libs = [ "X11" ]
+-  sources = [
+-    "demos/x11_demo.cc",
+-  ]
++  executable("x11_demo") {
++    pkg_deps = [
++      "libbrillo-${libbase_ver}",
++      "libchrome-${libbase_ver}",
++    ]
++    libs = [ "X11" ]
++    sources = [
++      "demos/x11_demo.cc",
++    ]
++  }
+ }
+-- 
+2.24.1
+
