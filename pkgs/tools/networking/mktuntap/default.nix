@@ -1,13 +1,13 @@
 { stdenv, lib, fetchgit }:
 
-stdenv.mkDerivation {
-  pname = "mktuntap-unstable";
-  version = "2019-12-15";
+stdenv.mkDerivation rec {
+  pname = "mktuntap";
+  version = "1.0";
 
   src = fetchgit {
     url = "https://spectrum-os.org/git/mktuntap";
-    rev = "d37b0ea1f794a4d195323b16484ecc4f04cc4306";
-    sha256 = "17ygj3z91llkav5bclrd6cizqhrhpdjgfyyqhdxg8wwpcx8gs7xd";
+    rev = version;
+    sha256 = "136ichzd5811n289xqjyha81mln89yxq4a14w46ixnnx69905r47";
   };
 
   installFlags = [ "prefix=$(out)" ];

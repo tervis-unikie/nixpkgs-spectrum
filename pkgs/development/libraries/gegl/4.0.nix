@@ -63,6 +63,9 @@ stdenv.mkDerivation rec {
       url = "https://salsa.debian.org/gnome-team/gegl/raw/9b7520b38d87cd8ad4b39bf0b8c62d011da25169/debian/patches/increase_test_timeout.patch";
       sha256 = "1prc1h1aipjd9db0i1j7nzga4zvk3vl8qsjpz1jzv1wwvz02isly";
     })
+
+    # Remove gegl:simple / backend-file test that times out frequently
+    ./patches/no-simple-backend-file-test.patch
   ];
 
   nativeBuildInputs = [
@@ -118,7 +121,7 @@ stdenv.mkDerivation rec {
 
   # TODO: Fix missing math symbols in gegl seamless clone.
   # It only appears when we use packaged poly2tri-c instead of vendored one.
-  NIX_CFLAGS_COMPILE = [ "-lm" ];
+  NIX_CFLAGS_COMPILE = "-lm";
 
   postPatch = ''
     chmod +x tests/opencl/opencl_test.sh tests/buffer/buffer-tests-run.sh

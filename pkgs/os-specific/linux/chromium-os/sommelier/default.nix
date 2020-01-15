@@ -9,22 +9,26 @@ common-mk {
   platform2Patches = [
     ./0008-sommelier-don-t-leak-source-absolute-paths.patch
     ./0009-sommelier-use-stable-xdg-shell-protocol.patch
+    ./0010-sommelier-make-building-demos-optional.patch
   ];
 
   buildInputs = [
-    mesa grpc openssl libdrm protobuf wayland libxkbcommon vm_protos libbrillo
-    libchrome linuxHeaders c-ares zlib
+    mesa grpc openssl libdrm protobuf wayland libxkbcommon vm_protos
+    linuxHeaders c-ares zlib
   ] ++ (with xlibs; [ pixman libxcb libX11 ]);
+
+  gnArgs.use_demos = false;
 
   NIX_CFLAGS_COMPILE = [
     "-Wno-error=sign-compare"
+    "-Wno-error=stringop-truncation"
     "-Wno-error=class-memaccess"
     "-Wno-error=maybe-uninitialized"
   ];
 
   installPhase = ''
     mkdir -p $out/bin
-    install sommelier wayland_demo x11_demo $out/bin
+    install sommelier $out/bin
   '';
 
   meta = with lib; {

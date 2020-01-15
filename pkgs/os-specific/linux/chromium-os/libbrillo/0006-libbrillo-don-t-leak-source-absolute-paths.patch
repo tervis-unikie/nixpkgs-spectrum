@@ -1,7 +1,7 @@
 From 5c95aae10ef7968ab2d9cbdf1456798dc8f94890 Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Sun, 1 Dec 2019 14:55:21 +0000
-Subject: [PATCH 6/9] libbrillo: don't leak source-absolute paths
+Subject: [PATCH 06/10] libbrillo: don't leak source-absolute paths
 
 ---
  libbrillo/BUILD.gn | 7 +++----
@@ -26,5 +26,5 @@ index 75b6da6f2..a3a25865b 100644
             "(",
             "AS_NEEDED",
 -- 
-2.23.0
+2.24.1
 

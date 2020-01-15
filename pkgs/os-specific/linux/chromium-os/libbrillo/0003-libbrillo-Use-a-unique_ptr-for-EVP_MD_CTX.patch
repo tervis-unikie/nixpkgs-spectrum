@@ -1,7 +1,7 @@
 From d79343f36918fd99861426f658fdfb53237661f0 Mon Sep 17 00:00:00 2001
 From: Daniel Kurtz <djkurtz@chromium.org>
 Date: Thu, 17 Oct 2019 20:45:53 +1100
-Subject: [PATCH 3/9] libbrillo: Use a unique_ptr for EVP_MD_CTX
+Subject: [PATCH 03/10] libbrillo: Use a unique_ptr for EVP_MD_CTX
 
 In OpenSSL 1.1, the EVP_MD_CTX struct will become opaque, and therefore
 it will not be possible to allocate on the stack.
@@ -82,5 +82,5 @@ index 958b7ebb7..eaf90c96a 100644
    return rv == 1;
  }
 -- 
-2.23.0
+2.24.1
 

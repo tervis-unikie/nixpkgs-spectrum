@@ -1,4 +1,4 @@
-{ newScope, fetchFromGitiles, symlinkJoin
+{ lib, newScope, fetchFromGitiles, symlinkJoin
 , linux_4_19, makeLinuxHeaders, modemmanager
 }:
 
@@ -6,7 +6,7 @@ let
   self = with self; {
     callPackage = newScope self;
 
-    upstreamInfo = with builtins; fromJSON (readFile ./upstream-info.json);
+    upstreamInfo = lib.importJSON ./upstream-info.json;
 
     chromiumos-overlay = (fetchFromGitiles
       upstreamInfo.components."chromiumos/overlays/chromiumos-overlay") // {
