@@ -72,6 +72,7 @@ let
       if { s6-mount -t devpts -o gid=4,mode=620 none /dev/pts }
       if { s6-mount -t tmpfs none /dev/shm }
       if { s6-mount -t proc none /proc }
+      if { s6-ln -s ${mesa.drivers} /run/opengl-driver }
 
       if { ip addr add 10.0.10${toString tapFD}.2/24 dev eth0 }
       if { ip link set eth0 up }
