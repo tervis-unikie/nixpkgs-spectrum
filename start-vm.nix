@@ -115,7 +115,7 @@ let
         printf "%s\n" *
     ) \
         | xargs tar -cP --owner root:0 --group root:0 --hard-dereference \
-        | ${squashfs-tools-ng}/bin/tar2sqfs $out
+        | ${squashfs-tools-ng}/bin/tar2sqfs -c gzip -X level=1 $out
   '';
 
   makeVM =
