@@ -14,7 +14,9 @@
 /lib                        @edolstra @nbp @infinisil
 /lib/systems                @nbp @ericson2314 @matthewbauer
 /lib/generators.nix         @edolstra @nbp @Profpatsch
+/lib/cli.nix                @edolstra @nbp @Profpatsch
 /lib/debug.nix              @edolstra @nbp @Profpatsch
+/lib/asserts.nix            @edolstra @nbp @Profpatsch
 
 # Nixpkgs Internals
 /default.nix                          @nbp
@@ -82,6 +84,7 @@
 
 # Rust
 /pkgs/development/compilers/rust @Mic92 @LnL7
+/pkgs/build-support/rust @andir
 
 # Darwin-related
 /pkgs/stdenv/darwin         @NixOS/darwin-maintainers

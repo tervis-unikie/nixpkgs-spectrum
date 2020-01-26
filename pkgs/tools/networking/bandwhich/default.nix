@@ -2,16 +2,16 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "bandwhich";
-  version = "0.7.0";
+  version = "0.10.0";
 
   src = fetchFromGitHub {
     owner = "imsnif";
     repo = pname;
     rev = version;
-    sha256 = "1qrxxy6vhac1g6jzg30lqwcpjffyk2297jkd9j4rmwwf5cgip58a";
+    sha256 = "0xq2lv06dx7g00b4amk131krlsb6acsz7b228pn3iz6gy31fhz3y";
   };
 
-  cargoSha256 = "1rixpljqddwhryddzni5l6m4sjyn1krrj0ig0rzc701am7srhg3a";
+  cargoSha256 = "1sa81570cvvpqgdcpnb08b0q4c6ap8a2wxfp2z336jzbv0zgv8a6";
 
   buildInputs = stdenv.lib.optional stdenv.isDarwin Security;
 
@@ -26,7 +26,7 @@ rustPlatform.buildRustPackage rec {
     '';
     homepage = "https://github.com/imsnif/bandwhich";
     license = licenses.mit;
-    maintainers = with maintainers; [ filalex77 ];
+    maintainers = with maintainers; [ filalex77 ma27 ];
     platforms = platforms.unix;
   };
 }
