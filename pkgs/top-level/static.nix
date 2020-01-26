@@ -161,14 +161,10 @@ in {
   };
   mkl = super.mkl.override { enableStatic = true; };
   nix = super.nix.override { withAWS = false; };
-  # openssl 1.1 doesn't compile
-  openssl = super.openssl_1_0_2.override {
-    static = true;
-
-    # Don’t use new stdenv for openssl because it doesn’t like the
-    # --disable-shared flag
-    stdenv = super.stdenv;
-  };
+  openssl = (super.openssl_1_1.override { static = true; }).overrideAttrs (o: {
+    # OpenSSL doesn't like the `--enable-static` / `--disable-shared` flags.
+    configureFlags = (removeUnknownConfigureFlags o.configureFlags);
+  });
   arrow-cpp = super.arrow-cpp.override {
     enableShared = false;
     python = { pkgs = { python = null; numpy = null; }; };
@@ -185,20 +181,11 @@ in {
     static = true;
     twisted = null;
   };
-  double-conversion = super.double-conversion.override {
-    static = true;
-  };
   gmp = super.gmp.override {
     withStatic = true;
   };
   gflags = super.gflags.override {
     enableShared = false;
-  };
-  glog = super.glog.override {
-    static = true;
-  };
-  gtest = super.gtest.override {
-    static = true;
   };
   cdo = super.cdo.override {
     enable_all_static = true;
@@ -280,4 +267,6 @@ in {
   ) super.ocaml-ng;
 
   python27 = super.python27.override { static = true; };
+
+  libev = super.libev.override { static = true; };
 }
