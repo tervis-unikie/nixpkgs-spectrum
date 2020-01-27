@@ -59,7 +59,7 @@ let
   makeStage1 = { run ? null, tapFD }: writeScript "init-stage1" ''
     #! ${execline}/bin/execlineb -P
     export PATH ${lib.makeBinPath
-      [ s6-linux-init s6-portable-utils s6-linux-utils s6 execline busybox ]}
+      [ s6-linux-init s6-portable-utils s6-linux-utils s6 execline busybox sway-unwrapped ]}
     ${s6}/bin/s6-setsid -qb --
     umask 022
     if { s6-mount -t tmpfs -o mode=0755 tmpfs /run }
@@ -150,6 +150,11 @@ let
     '';
   };
 
+  swayConfig = writeText "sway-config" ''
+    xwayland disable
+    exec ${westonLite}/bin/weston-terminal --shell /bin/sh
+  '';
+
   waylandVM = makeVM {
     name = "wayland-vm";
     services.getty.run = writeScript "getty-run" ''
@@ -170,7 +175,7 @@ let
       env XDG_RUNTIME_DIR=/run/user/1000
 
       ${sommelier}/bin/sommelier
-      ${westonLite}/bin/weston-terminal --shell /bin/sh
+      ${sway-unwrapped}/bin/sway -Vc ${swayConfig}
     '';
     wayland = true;
     tapFD = 4;
