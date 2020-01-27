@@ -69,6 +69,7 @@ let
     background {
       s6-setsid --
       if { s6-mkdir -p /run/user/0 /dev/pts /dev/shm }
+      if { install -o user -g user -d /run/user/1000 }
       if { s6-mount -t devpts -o gid=4,mode=620 none /dev/pts }
       if { s6-mount -t tmpfs none /dev/shm }
       if { s6-mount -t proc none /proc }
@@ -95,6 +96,12 @@ let
 
   passwd = writeText "passwd" ''
     root:x:0:0:System administrator:/:/bin/sh
+    user:x:1000:1000:User:/:/bin/sh
+  '';
+
+  group = writeText "group" ''
+    root:x:0:root
+    user:x:1000:user
   '';
 
   makeRootfs = { services, run ? null, tapFD }: runCommand "rootfs" {} ''
@@ -104,6 +111,7 @@ let
     ln -s ${dash}/bin/dash bin/sh
     ln -s ${makeStage1 { inherit run tapFD; }} sbin/init
     cp ${passwd} etc/passwd
+    cp ${group} etc/group
     touch etc/login.defs
     cp -r ${makeServicesDir services} etc/service
   '';
@@ -155,6 +163,11 @@ let
         if -n { s6-mount -t 9p 10.0.103.2 /run/mnt }
         s6-sleep 1
       }
+
+      if { chown user /dev/wl0 }
+
+      ${s6}/bin/s6-applyuidgid -u 1000 -g 1000
+      env XDG_RUNTIME_DIR=/run/user/1000
 
       ${sommelier}/bin/sommelier
       ${westonLite}/bin/weston-terminal --shell /bin/sh
