@@ -15,6 +15,10 @@ stdenv.mkDerivation rec {
     sha256 = "0c0q1p9yss5kx4430ik3n89drqpmm2bvgl8fjlf6prac1a7xzqn8";
   };
 
+  patches = [
+    ./0001-backend-wayland-downgrade-to-wl_compositor-v3.patch
+  ];
+
   # $out for the library and $examples for the example programs (in examples):
   outputs = [ "out" "examples" ];
 
