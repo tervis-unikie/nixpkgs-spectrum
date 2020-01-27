@@ -1,0 +1,56 @@
+From 3b37c19286b621f266e6d447cd16f1f59a3cc24c Mon Sep 17 00:00:00 2001
+From: Alyssa Ross <hi@alyssa.is>
+Date: Thu, 23 Jan 2020 14:35:41 +0000
+Subject: [PATCH] backend/wayland: downgrade to wl_compositor v3
+
+Sommelier does not support v4.
+
+Rather than calculating exact surface-relative damage regions instead
+of the previous buffer-relative ones, just damage the whole surface.
+It'll do for now.
+---
+ backend/wayland/backend.c |  2 +-
+ backend/wayland/output.c  | 14 +-------------
+ 2 files changed, 2 insertions(+), 14 deletions(-)
+
+diff --git a/backend/wayland/backend.c b/backend/wayland/backend.c
+index e5858158..67f848ba 100644
+--- a/backend/wayland/backend.c
++++ b/backend/wayland/backend.c
+@@ -101,7 +101,7 @@ static void registry_global(void *data, struct wl_registry *registry,
+ 
+ 	if (strcmp(iface, wl_compositor_interface.name) == 0) {
+ 		wl->compositor = wl_registry_bind(registry, name,
+-			&wl_compositor_interface, 4);
++			&wl_compositor_interface, 3);
+ 	} else if (strcmp(iface, wl_seat_interface.name) == 0) {
+ 		wl->seat = wl_registry_bind(registry, name,
+ 			&wl_seat_interface, 5);
+diff --git a/backend/wayland/output.c b/backend/wayland/output.c
+index 7a3a08d0..f332ad93 100644
+--- a/backend/wayland/output.c
++++ b/backend/wayland/output.c
+@@ -248,19 +248,7 @@ static bool output_commit(struct wlr_output *wlr_output) {
+ 			wl_surface_attach(output->surface,
+ 				output->pending_buffer->wl_buffer, 0, 0);
+ 
+-			if (damage == NULL) {
+-				wl_surface_damage_buffer(output->surface,
+-					0, 0, INT32_MAX, INT32_MAX);
+-			} else {
+-				int rects_len;
+-				pixman_box32_t *rects =
+-					pixman_region32_rectangles(damage, &rects_len);
+-				for (int i = 0; i < rects_len; i++) {
+-					pixman_box32_t *r = &rects[i];
+-					wl_surface_damage_buffer(output->surface, r->x1, r->y1,
+-						r->x2 - r->x1, r->y2 - r->y1);
+-				}
+-			}
++			wl_surface_damage(output->surface, 0, 0, INT32_MAX, INT32_MAX);
+ 			wl_surface_commit(output->surface);
+ 
+ 			output->pending_buffer = NULL;
+-- 
+2.24.1
+
