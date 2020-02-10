@@ -18,6 +18,7 @@ components = [
     'aosp/platform/external/modp_b64',
     'chromiumos/overlays/chromiumos-overlay',
     'chromiumos/platform/crosvm',
+    'chromiumos/platform/minigbm',
     'chromiumos/platform2',
     'chromiumos/third_party/adhd',
     'chromiumos/third_party/kernel',

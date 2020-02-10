@@ -39,6 +39,8 @@ let
       inherit (linux) version src;
     };
 
+    minigbm = callPackage ./minigbm { };
+
     modemmanager = callPackage ./modem-manager {
       inherit modemmanager;
     };
