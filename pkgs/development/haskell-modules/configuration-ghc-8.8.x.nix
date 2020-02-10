@@ -70,7 +70,7 @@ self: super: {
   xmobar = doJailbreak super.xmobar;
 
   # use latest version to fix the build
-  brick = self.brick_0_50_1;
+  brick = self.brick_0_51;
   dbus = self.dbus_1_2_11;
   doctemplates = self.doctemplates_0_8;
   exact-pi = doJailbreak super.exact-pi;
@@ -82,16 +82,16 @@ self: super: {
   HaTeX = self.HaTeX_3_22_0_0;
   HsYAML = self.HsYAML_0_2_1_0;
   json-autotype = doJailbreak super.json-autotype;
-  lens = self.lens_4_18_1;
+  lens = self.lens_4_19;
   memory = self.memory_0_15_0;
   microlens = self.microlens_0_4_11_2;
-  microlens-ghc = self.microlens-ghc_0_4_11_1;
+  microlens-ghc = self.microlens-ghc_0_4_12;
   microlens-mtl = self.microlens-mtl_0_2_0_1;
-  microlens-platform = self.microlens-platform_0_4_0;
-  microlens-th = self.microlens-th_0_4_3_2;
+  microlens-platform = self.microlens-platform_0_4_1;
+  microlens-th = self.microlens-th_0_4_3_4;
   network = self.network_3_1_1_1;
   optparse-applicative = self.optparse-applicative_0_15_1_0;
-  pandoc = self.pandoc_2_9_1_1;
+  pandoc = dontCheck super.pandoc_2_9_1_1;        # https://github.com/jgm/pandoc/issues/6086
   pandoc-types = self.pandoc-types_1_20;
   prettyprinter = self.prettyprinter_1_6_0;
   primitive = dontCheck super.primitive_0_7_0_0;  # evaluating the test suite gives an infinite recursion
@@ -143,5 +143,11 @@ self: super: {
   easytest = markBroken super.easytest;
   easytest_0_3 = markBroken super.easytest_0_3;
   haskell-src = markBrokenVersion "1.0.3.0" super.haskell-src;
+
+  # The LTS-14.x version of the dependencies are too old.
+  policeman = super.policeman.overrideScope (self: super: { ansi-terminal = self.ansi-terminal_0_10_2; relude = self.relude_0_6_0_0; });
+
+  # https://github.com/kowainik/relude/issues/241
+  relude_0_6_0_0 = dontCheck super.relude_0_6_0_0;
 
 }
