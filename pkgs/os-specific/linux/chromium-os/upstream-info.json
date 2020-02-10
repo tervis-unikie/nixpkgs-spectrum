@@ -26,6 +26,12 @@
       "rev": "cfb7db44eb9e5a0bca9a22bfb985252ef74ab251",
       "sha256": "0gm1ggyzh9qfizm36jmh71c3anygxj1840cm94h71kzg9kiw0330"
     },
+    "chromiumos/platform/minigbm": {
+      "name": "minigbm",
+      "url": "https://chromium.googlesource.com/chromiumos/platform/minigbm",
+      "rev": "8312ec228d0c96e4c7cca85b8fd141dd6dd9e15e",
+      "sha256": "08gfdxbhrqclfrs3r0pwrncnf4i29xv1jnrx8gp7i84wcrcvgmgz"
+    },
     "chromiumos/platform2": {
       "name": "platform2",
       "url": "https://chromium.googlesource.com/chromiumos/platform2",
