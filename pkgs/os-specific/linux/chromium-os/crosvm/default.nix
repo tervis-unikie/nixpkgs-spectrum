@@ -66,7 +66,7 @@ in
     passthru = {
       inherit adhdSrc;
       src = crosvmSrc;
-      updateScript = ./update.py;
+      updateScript = ../update.py;
     };
 
     meta = with stdenv.lib; {
