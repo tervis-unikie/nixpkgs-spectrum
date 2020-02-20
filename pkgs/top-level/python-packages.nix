@@ -5080,6 +5080,8 @@ in {
   python-simple-hipchat = callPackage ../development/python-modules/python-simple-hipchat {};
   python_simple_hipchat = self.python-simple-hipchat;
 
+  scs = callPackage ../development/python-modules/scs { scs = pkgs.scs; };
+
   python_keyczar = callPackage ../development/python-modules/python_keyczar { };
 
   python-language-server = callPackage ../development/python-modules/python-language-server {};
@@ -6490,8 +6492,6 @@ in {
   mailcap-fix = callPackage ../development/python-modules/mailcap-fix { };
 
   maildir-deduplicate = callPackage ../development/python-modules/maildir-deduplicate { };
-
-  mps-youtube = callPackage ../development/python-modules/mps-youtube { };
 
   d2to1 = callPackage ../development/python-modules/d2to1 { };
 

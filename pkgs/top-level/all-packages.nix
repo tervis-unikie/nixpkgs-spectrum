@@ -1774,6 +1774,8 @@ in
 
   fwup = callPackage ../tools/misc/fwup { };
 
+  fx_cast_bridge = callPackage ../tools/misc/fx_cast { };
+
   fzf = callPackage ../tools/misc/fzf { };
 
   fzf-zsh = callPackage ../shells/zsh/fzf-zsh { };
@@ -6730,8 +6732,6 @@ in
     w3m = w3m-batch;
   };
 
-  netalyzr = callPackage ../tools/networking/netalyzr { };
-
   swaks = callPackage ../tools/networking/swaks { };
 
   swiften = callPackage ../development/libraries/swiften { };
@@ -9134,7 +9134,7 @@ in
   kanif = callPackage ../applications/networking/cluster/kanif { };
 
   lumo = callPackage ../development/interpreters/clojurescript/lumo {
-    nodejs = nodejs-10_x;
+    nodejs = nodejs-13_x;
   };
 
   lxappearance = callPackage ../desktops/lxde/core/lxappearance {
@@ -20463,6 +20463,8 @@ in
   mm-common = callPackage ../development/libraries/mm-common { };
 
   mpc-qt = libsForQt5.callPackage ../applications/video/mpc-qt { };
+
+  mps-youtube = callPackage ../applications/misc/mps-youtube { };
 
   mplayer = callPackage ../applications/video/mplayer ({
     libdvdnav = libdvdnav_4_2_1;
