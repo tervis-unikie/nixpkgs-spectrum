@@ -145,6 +145,12 @@ stdenv.mkDerivation {
       ln -s $out/share/git/contrib/completion/git-completion.bash $out/share/bash-completion/completions/git
       mkdir -p $out/etc/bash_completion.d
       ln -s $out/share/git/contrib/completion/git-prompt.sh $out/etc/bash_completion.d/
+      mkdir -p $out/share/zsh/site-functions
+      ln -s $out/share/git/contrib/completion/git-completion.zsh $out/share/zsh/site-functions/_git
+
+      # Patch the zsh completion script so it can find the Bash completion script.
+      sed -i -e "/locations=(/a \${"\t\t"}'$out/share/git/contrib/completion/git-completion.bash'" \
+        $out/share/git/contrib/completion/git-completion.zsh
 
       # grep is a runtime dependency, need to patch so that it's found
       substituteInPlace $out/libexec/git-core/git-sh-setup \
@@ -228,6 +234,7 @@ stdenv.mkDerivation {
        for prog in bin/gitk libexec/git-core/{git-gui,git-citool,git-gui--askpass}; do
          sed -i -e "s|exec 'wish'|exec '${tk}/bin/wish'|g" \
                 -e "s|exec wish|exec '${tk}/bin/wish'|g" \
+                -e "s|exec \"[^\"]*/MacOS/Wish\"|exec '${tk}/bin/wish'|g" \
                 "$out/$prog"
        done
        ln -s $out/share/git/contrib/completion/git-completion.bash $out/share/bash-completion/completions/gitk

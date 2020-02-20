@@ -35,9 +35,18 @@ let
 
     linux = self.linux_4_19;
 
-    linuxHeaders = makeLinuxHeaders {
+    linuxHeaders = (makeLinuxHeaders {
       inherit (linux) version src;
-    };
+    }).overrideAttrs ({ nativeBuildInputs, ... }: {
+      # makeLinuxHeaders is designed for Linux 5.5, which has a
+      # different header build system from 4.19, currently used by
+      # Chromium OS.  When the Chromium OS kernel bumps to a new major
+      # version, try removing this override to see if it's still
+      # necessary.  If it builds without it, the override can go.
+      buildPhase = ''
+        make headers_install $makeFlags
+      '';
+    });
 
     minigbm = callPackage ./minigbm { };
 
