@@ -7,7 +7,7 @@ let
 in
 
 with lib;
-with import ../../../../lib/kernel.nix { inherit lib version; };
+with lib.kernel;
 
 buildLinux (args // rec {
   inherit (versionData) version;
