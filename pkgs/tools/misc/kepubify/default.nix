@@ -1,23 +1,25 @@
-{ lib, fetchFromGitHub, buildGoModule }:
+{ stdenv, fetchFromGitHub, buildGoModule, Security }:
 
 buildGoModule rec {
   pname = "kepubify";
-  version = "3.0.0";
+  version = "3.1.0";
 
   src = fetchFromGitHub {
     owner = "geek1011";
     repo = pname;
     rev = "v${version}";
-    sha256 = "168n4xbhjrzwzlhvakmsd0nwqjwgibphkwzq5hcxrk9ywpqpxjad";
+    sha256 = "17zhfq1nfdas4k5yzyr82zs3r3mm4n8f907ih1ckx081hy4g7a2p";
   };
 
   modSha256 = "18q9ywsjc2v1bsmw7307dpd4v5m7v80hbhijkfrkcyqzj34jrq43";
 
   buildFlagsArray = [ "-ldflags=-s -w -X main.version=${version}" ];
 
+  buildInputs = stdenv.lib.optionals stdenv.isDarwin [ Security ];
+
   subPackages = [ "." "covergen" "seriesmeta" ];
 
-  meta = with lib; {
+  meta = with stdenv.lib; {
     description = "EPUB to KEPUB converter";
     homepage = "https://pgaskin.net/kepubify";
     license = licenses.mit;

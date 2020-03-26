@@ -3,7 +3,7 @@ with import ./. {};
 let
   kernel' = linux_cros;
 
-  kernel = with import lib/kernel.nix { inherit lib; inherit (kernel') version; };
+  kernel = with lib.kernel;
     kernel'.override { structuredExtraConfig = {
                          VIRTIO_PCI = yes;
                          VIRTIO_BLK = yes;

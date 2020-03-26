@@ -113,6 +113,7 @@ mapAliases ({
   etcdctl = etcd; # added 2018-04-25
   exfat-utils = exfat;                  # 2015-09-11
   facette = throw "facette has been removed."; # added 2020-01-06
+  fetchFromGithub = throw "You meant fetchFromGitHub, with a capital H.";
   ffadoFull = ffado; # added 2018-05-01
   firefox-esr-wrapper = firefox-esr;  # 2016-01
   firefox-wrapper = firefox;          # 2016-01
@@ -131,6 +132,7 @@ mapAliases ({
 
   firestr = throw "firestr has been removed."; # added 2019-12-08
   flameGraph = flamegraph; # added 2018-04-25
+  foldingathome = fahclient; # added 2020-09-03
   font-awesome-ttf = font-awesome; # 2018-02-25
   # 2019-10-31
   fontconfig-ultimate = throw ''
@@ -210,6 +212,7 @@ mapAliases ({
   krename-qt5 = krename; # added 2017-02-18
   keymon = throw "keymon has been removed from nixpkgs, as it's abandoned and archived."; # 2019-12-10
   kvm = qemu_kvm; # added 2018-04-25
+  latinmodern-math = lmmath;
   letsencrypt = certbot; # added 2016-05-16
   libaudit = audit; # added 2018-04-25
   libcanberra_gtk2 = libcanberra-gtk2; # added 2018-02-25
@@ -232,7 +235,9 @@ mapAliases ({
   libintlOrEmpty = stdenv.lib.optional (!stdenv.isLinux || stdenv.hostPlatform.libc != "glibc") gettext; # added 2018-03-14
   libjson_rpc_cpp = libjson-rpc-cpp; # added 2017-02-28
   liblapackWithoutAtlas = liblapack; # added 2018-11-05
+  liblrdf = lrdf; # added 2018-04-25
   libqrencode = qrencode;  # added 2019-01-01
+  librdf = lrdf; # added 2020-03-22
   librecad2 = librecad;  # backwards compatibility alias, added 2015-10
   libsysfs = sysfsutils; # added 2018-04-25
   libtidy = html-tidy;  # added 2014-12-21
@@ -423,6 +428,30 @@ mapAliases ({
   smbclient = samba; # added 2018-04-25
   slim = throw "slim has been removed. Please use a different display-manager"; # added 2019-11-11
   slimThemes = throw "slimThemes has been removed because slim has been also"; # added 2019-11-11
+  sundials_3 = throw "removed 2020-02. outdated and no longer needed";
+
+  # added 2020-02-10
+  sourceHanSansPackages = {
+    japanese = source-han-sans;
+    korean = source-han-sans;
+    simplified-chinese = source-han-sans;
+    traditional-chinese = source-han-sans;
+  };
+  source-han-sans-japanese = source-han-sans;
+  source-han-sans-korean = source-han-sans;
+  source-han-sans-simplified-chinese = source-han-sans;
+  source-han-sans-traditional-chinese = source-han-sans;
+  sourceHanSerifPackages = {
+    japanese = source-han-serif;
+    korean = source-han-serif;
+    simplified-chinese = source-han-serif;
+    traditional-chinese = source-han-serif;
+  };
+  source-han-serif-japanese = source-han-serif;
+  source-han-serif-korean = source-han-serif;
+  source-han-serif-simplified-chinese = source-han-serif;
+  source-han-serif-traditional-chinese = source-han-serif;
+
   net_snmp = net-snmp; # added 2019-12-21
   spaceOrbit = space-orbit; # addewd 2016-05-23
   speech_tools = speech-tools; # added 2018-04-25
@@ -454,6 +483,7 @@ mapAliases ({
   telnet = inetutils; # added 2018-05-15
   terraform-provider-ibm = terraform-providers.ibm; # added 2018-09-28
   terraform-provider-libvirt = terraform-providers.libvirt; # added 2018-09-28
+  terraform-provider-lxd = terraform-providers.lxd; # added 2020-03-16
   terraform-provider-nixos = terraform-providers.nixos; # added 2018-09-28
   tesseract_4 = tesseract4; # added 2018-12-19
   testdisk-photorec = throw "This package was a duplicate, please use testdisk or testdisk-qt instead"; # added 2019-10-13
@@ -462,6 +492,7 @@ mapAliases ({
   tex-gyre-schola-math = tex-gyre-math.schola; # added 2018-04-03
   tex-gyre-termes-math = tex-gyre-math.termes; # added 2018-04-03
   tftp_hpa = tftp-hpa; # added 2015-04-03
+  tomcat85 = tomcat8; # added 2020-03-11
   torbrowser = tor-browser-bundle-bin; # added 2017-04-05
   transporter = throw "transporter has been removed. It was archived upstream, so it's considered abandoned.";
   trang = jing-trang; # added 2018-04-25
@@ -496,7 +527,7 @@ mapAliases ({
   morituri = whipper; # added 2018-09-13
   xfceUnstable = xfce4-14; # added 2019-09-17
   xfce4-14 = xfce;
-  xfce4-12 = xfce;
+  xfce4-12 = throw "xfce4-12 has been replaced by xfce4-14"; # added 2020-03-14
   x11 = xlibsWrapper; # added 2015-09
   xbmc = kodi; # added 2018-04-25
   xbmcPlain = kodiPlain; # added 2018-04-25
@@ -508,6 +539,7 @@ mapAliases ({
   xf86_input_multitouch = throw "xf86_input_multitouch has been removed from nixpkgs."; # added 2020-01-20
   xlibs = xorg; # added 2015-09
   xpraGtk3 = xpra; # added 2018-09-13
+  xv = xxv; # added 2020-02-22
   youtubeDL = youtube-dl;  # added 2014-10-26
   zdfmediathk = mediathekview; # added 2019-01-19
   gnome_user_docs = gnome-user-docs; # added 2019-11-20
