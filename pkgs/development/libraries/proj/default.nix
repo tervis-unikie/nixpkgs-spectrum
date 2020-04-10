@@ -1,7 +1,7 @@
 { stdenv, fetchFromGitHub, pkg-config, sqlite, autoreconfHook }:
 
 stdenv.mkDerivation rec {
-  name = "proj";
+  pname = "proj";
   version = "6.3.1";
 
   src = fetchFromGitHub {
@@ -21,7 +21,7 @@ stdenv.mkDerivation rec {
 
   meta = with stdenv.lib; {
     description = "Cartographic Projections Library";
-    homepage = https://proj4.org;
+    homepage = "https://proj4.org";
     license = licenses.mit;
     platforms = platforms.linux ++ platforms.darwin;
     maintainers = with maintainers; [ vbgl ];

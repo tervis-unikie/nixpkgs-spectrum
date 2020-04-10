@@ -42,7 +42,7 @@ let
     bazelTarget = ":pip_pkg";
 
     fetchAttrs = {
-      sha256 = "0135nxxvkmjzpd80r1g9fdkk9h62g0xlvp32g5zgk0hkma5kq0bx";
+      sha256 = "0sjjj9z1dhilhpc8pq4154czrb79z9cm044jvn75kxcjv6v5l2m5";
     };
 
     buildAttrs = {
@@ -103,7 +103,7 @@ in buildPythonPackage {
 
   meta = with lib; {
     description = "Library for probabilistic reasoning and statistical analysis";
-    homepage = https://www.tensorflow.org/probability/;
+    homepage = "https://www.tensorflow.org/probability/";
     license = licenses.asl20;
     maintainers = with maintainers; [ timokau ];
   };

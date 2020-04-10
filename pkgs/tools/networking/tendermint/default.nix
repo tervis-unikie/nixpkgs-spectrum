@@ -1,4 +1,4 @@
-{ stdenv, fetchFromGitHub, buildGoModule, Security }:
+{ stdenv, fetchFromGitHub, buildGoModule }:
 
 buildGoModule rec {
   pname = "tendermint";
@@ -13,11 +13,9 @@ buildGoModule rec {
 
   modSha256 = "1h51zgvjq3bm09yhm54rk8a86cqa1zma3mx6pb0kq7k72xvhpx0a";
 
-  buildInputs = stdenv.lib.optionals stdenv.isDarwin [ Security ];
-
   meta = with stdenv.lib; {
     description = "Byzantine-Fault Tolerant State Machines. Or Blockchain, for short.";
-    homepage = https://tendermint.com/;
+    homepage = "https://tendermint.com/";
     license = licenses.asl20;
     maintainers = with maintainers; [ alexfmpe ];
     platforms = platforms.linux ++ platforms.darwin;

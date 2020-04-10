@@ -20,7 +20,8 @@ python3Packages.buildPythonApplication rec {
     inherit src;
     sourceRoot = "source/rust";
     cargoSha256 = "0cqy0s55pkg6hww86h7qip4xaidh6g8lcypdj84n2x374jq38c5d";
-    buildInputs = [ pkgconfig openssl ] ++ stdenv.lib.optionals stdenv.isDarwin [ CoreServices Security ];
+    nativeBuildInputs = [ pkgconfig ];
+    buildInputs = [ openssl ] ++ stdenv.lib.optionals stdenv.isDarwin [ CoreServices Security ];
   };
 
   propagatedBuildInputs = with python3Packages; [
@@ -65,7 +66,7 @@ python3Packages.buildPythonApplication rec {
   '';
 
   meta = with stdenv.lib; {
-    homepage = https://github.com/pimutils/vdirsyncer;
+    homepage = "https://github.com/pimutils/vdirsyncer";
     description = "Synchronize calendars and contacts";
     maintainers = with maintainers; [ matthiasbeyer gebner ];
     license = licenses.mit;
