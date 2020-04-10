@@ -2,13 +2,13 @@
 
 stdenv.mkDerivation rec {
   pname = "matcha";
-  version = "2020-03-24";
+  version = "2020-04-03";
 
   src = fetchFromGitHub {
     owner = "vinceliuice";
     repo = pname;
     rev = version;
-    sha256 = "13lcv2cihb24zjsdzhh188kd1rga49mzfa2sddqd63pqxxph188z";
+    sha256 = "0arnc12zsbypv550dv5j22z4hkc58yncxqhc03xcmxjw1h8lzrwv";
   };
 
   buildInputs = [ gdk-pixbuf librsvg ];

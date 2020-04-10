@@ -11,10 +11,7 @@ let
     '';
 
     # Prevent these __init__'s from violating PEP420, only needed for python2
-    postInstall = (attrs.postInstall or "") + ''
-      rm $out/${python.sitePackages}/azure/{,__pycache__/}__init__.* \
-         $out/${python.sitePackages}/azure/cli/{,__pycache__/}__init__.*
-    '';
+    pythonNamespaces = [ "azure.cli" ];
 
     checkInputs = [ mock pytest ] ++ (attrs.checkInputs or []);
     checkPhase = attrs.checkPhase or ''
@@ -39,9 +36,7 @@ let
       '';
 
       # force PEP420
-      postInstall = ''
-        rm -f $out/${py.sitePackages}/azure/{,mgmt/}__init__.py
-      '';
+      pythonNamespaces = [ "azure.mgmt" ];
     });
 
   py = python.override {
@@ -115,6 +110,9 @@ let
           HOME=$TMPDIR pytest -k 'not test_create_telemetry_note_file_from_scratch'
         '';
       };
+
+      azure-batch = overrideAzureMgmtPackage super.azure-batch "8.0.0" "zip"
+        "1j8nibnics9vakhqiwnjv7bwril7mfyz1svcvvsrb9a4wbdd12wi";
 
       azure-mgmt-policyinsights = overrideAzureMgmtPackage super.azure-mgmt-policyinsights "0.4.0" "zip"
         "1b69rz9wm0jvc54vx3b7h633x8gags51xwxrkp6myar40jggxw6g";
@@ -277,9 +275,7 @@ let
         propagatedBuildInputs = with self; [
           azure-common azure-nspkg msrest msrestazure cryptography
         ];
-        postInstall = ''
-          rm -f $out/${self.python.sitePackages}/azure/__init__.py
-        '';
+        pythonNamespaces = [ "azure" ];
         pythonImportsCheck = [ ];
       });
 

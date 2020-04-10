@@ -22,7 +22,7 @@ let
     makeFlags = [
       "platform=${{
         linux = "unix";
-        darwin = "unix";
+        darwin = "osx";
         windows = "win";
       }.${stdenv.hostPlatform.parsed.kernel.name} or stdenv.hostPlatform.parsed.kernel.name}"
       "ARCH=${{
@@ -51,7 +51,7 @@ let
     meta = with stdenv.lib; {
       inherit (a) description license;
       broken = a.broken or false;
-      homepage = https://www.libretro.com/;
+      homepage = "https://www.libretro.com/";
       maintainers = with maintainers; [ edwtjo hrdinka MP2E ];
       platforms = platforms.unix;
     };

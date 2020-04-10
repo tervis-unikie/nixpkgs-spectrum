@@ -1,4 +1,4 @@
-{ stdenv, buildGoModule, fetchFromGitHub, Security }:
+{ stdenv, buildGoModule, fetchFromGitHub }:
 
 buildGoModule rec {
   pname = "git-bug";
@@ -15,8 +15,6 @@ buildGoModule rec {
 
   modSha256 = "1cfn49cijiarzzczrpd28x1k7ib98xyzlvn3zghwk2ngfgiah3ld";
 
-  buildInputs = stdenv.lib.optionals stdenv.isDarwin [ Security ];
-
   buildFlagsArray = ''
     -ldflags= 
       -X ${goPackagePath}/commands.GitCommit=${rev}
@@ -32,7 +30,7 @@ buildGoModule rec {
 
   meta = with stdenv.lib; {
     description = "Distributed bug tracker embedded in Git";
-    homepage = https://github.com/MichaelMure/git-bug;
+    homepage = "https://github.com/MichaelMure/git-bug";
     license = licenses.gpl3;
     platforms = platforms.all;
     maintainers = with maintainers; [ royneary ];

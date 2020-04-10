@@ -75,6 +75,24 @@ services.xserver.displayManager.defaultSession = "xfce+icewm";
 </programlisting>
     </para>
    </listitem>
+   <listitem>
+    <para>
+     The testing driver implementation in NixOS is now in Python <filename>make-test-python.nix</filename>.
+     This was done by Jacek Galowicz (<link xlink:href="https://github.com/tfc">@tfc</link>), and with the
+     collaboration of Julian Stecklina (<link xlink:href="https://github.com/blitz">@blitz</link>) and
+     Jana Traue (<link xlink:href="https://github.com/jtraue">@jtraue</link>). All documentation has been updated to use this
+     testing driver, and a vast majority of the 286 tests in NixOS were ported to python driver. In 20.09 the Perl driver implementation,
+     <filename>make-test.nix</filename>, is slated for removal. This should give users of the NixOS integration framework
+     a transitory period to rewrite their tests to use the Python implementation. Users of the Perl driver will see
+     this warning everytime they use it:
+<screen>
+<prompt>$ </prompt>warning: Perl VM tests are deprecated and will be removed for 20.09.
+Please update your tests to use the python test driver.
+See https://github.com/NixOS/nixpkgs/pull/71684 for details.
+</screen>
+     API compatibility is planned to be kept for at least the next release with the perl driver.
+    </para>
+   </listitem>
   </itemizedlist>
  </section>
 
@@ -127,6 +145,17 @@ services.xserver.displayManager.defaultSession = "xfce+icewm";
   </para>
 
   <itemizedlist>
+   <listitem>
+    <para>
+     The <package>dhcpcd</package> package <link xlink:href="https://roy.marples.name/archives/dhcpcd-discuss/0002621.html">
+     does not request IPv4 addresses for tap and bridge interfaces anymore by default</link>.
+     In order to still get an address on a bridge interface, one has to disable
+     <literal>networking.useDHCP</literal> and explicitly enable
+     <literal>networking.interfaces.&lt;name&gt;.useDHCP</literal> on
+     every interface, that should get an address via DHCP. This way, dhcpcd
+     is configured in an explicit way about which interface to run on.
+    </para>
+   </listitem>
    <listitem>
     <para>
       GnuPG is now built without support for a graphical passphrase entry
@@ -697,6 +726,72 @@ auth required pam_succeed_if.so uid >= 1000 quiet
      </para>
     </warning>
    </listitem>
+   <listitem>
+    <para>
+     <package>Hydra</package> has gained a massive performance improvement due to
+     <link xlink:href="https://github.com/NixOS/hydra/pull/710">some database schema
+     changes</link> by adding several IDs and better indexing. However, it's necessary
+     to upgrade Hydra in multiple steps:
+     <itemizedlist>
+      <listitem>
+       <para>
+        At first, an older version of Hydra needs to be deployed which adds those
+        (nullable) columns. When having set <link linkend="opt-system.stateVersion">stateVersion
+        </link> to a value older than <literal>20.03</literal>, this package will be selected
+        by default from the module when upgrading. Otherwise, the package can be deployed using
+        the following config:
+<programlisting>{ pkgs, ... }: {
+  <link linkend="opt-services.hydra.package">services.hydra.package</link> = pkgs.hydra-migration;
+}</programlisting>
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        Automatically fill the newly added ID columns on the server by running the following
+        command:
+<screen>
+<prompt>$ </prompt>hydra-backfill-ids
+</screen>
+        <warning>
+         <para>Please note that this process can take a while depending on your database-size!</para>
+        </warning>
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        Deploy a newer version of Hydra to activate the DB optimizations. This can be done by
+        using <package>hydra-unstable</package>. This package already includes
+        <link xlink:href="https://github.com/nixos/rfcs/pull/49">flake-support</link> and is
+        therefore compiled against <package>pkgs.nixFlakes</package>.
+        <warning>
+         <para>
+          If your <link linkend="opt-system.stateVersion">stateVersion</link> is set to
+          <literal>20.03</literal> or greater, <package>hydra-unstable</package> will be used
+          automatically! This will break your setup if you didn't run the migration.
+         </para>
+        </warning>
+        Please note that Hydra is currently not available with <package>nixStable</package>
+        as this doesn't compile anymore.
+       </para>
+      </listitem>
+     </itemizedlist>
+     <warning>
+      <para>
+       <package>pkgs.hydra</package> has been removed to ensure a graceful database-migration
+       using the dedicated package-attributes. If you still have <package>pkgs.hydra</package>
+       defined in e.g. an overlay, an assertion error will be thrown. To circumvent this,
+       you need to set <xref linkend="opt-services.hydra.package" /> to <package>pkgs.hydra</package>
+       explicitly and make sure you know what you're doing!
+      </para>
+     </warning>
+    </para>
+   </listitem>
+   <listitem>
+     <para>
+       The TokuDB storage engine will be disabled in <package>mariadb</package> 10.5. It is recommended to switch
+       to RocksDB. See also <link xlink:href="https://mariadb.com/kb/en/tokudb/">TokuDB</link>.
+     </para>
+   </listitem>
   </itemizedlist>
  </section>
 
@@ -761,8 +856,8 @@ auth required pam_succeed_if.so uid >= 1000 quiet
    </listitem>
    <listitem>
     <para>
-     Predicatbly named network-interfaces get renamed in stage-1. This means that it's possible
-     to use the proper interface name for e.g. dropbear-setups.
+     Predictably named network interfaces get renamed in stage-1. This means that it is possible
+     to use the proper interface name for e.g. Dropbear setups.
     </para>
     <para>
      For further reference, please read <link xlink:href="https://github.com/NixOS/nixpkgs/pull/68953">#68953</link> or the corresponding <link xlink:href="https://discourse.nixos.org/t/predictable-network-interface-names-in-initrd/4055">discourse thread</link>.
@@ -828,6 +923,15 @@ auth required pam_succeed_if.so uid >= 1000 quiet
   <listitem>
    <para>
     <package>mongodb</package> has been updated to version <literal>3.4.24</literal>.
+    <warning>
+     <para>
+      Please note that <package>mongodb</package> has been relicensed under their own
+      <link xlink:href="https://www.mongodb.com/licensing/server-side-public-license/faq"><literal>
+      sspl</literal></link>-license. Since it's not entirely free and not OSI-approved,
+      it's listed as non-free. This means that Hydra doesn't provide prebuilt
+      <package>mongodb</package>-packages and needs to be built locally.
+     </para>
+    </warning>
    </para>
   </listitem>
   </itemizedlist>

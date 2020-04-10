@@ -17,7 +17,7 @@ let
 
     meta = with stdenv.lib; {
       description = "Sharing solution for files, calendars, contacts and more";
-      homepage = https://nextcloud.com;
+      homepage = "https://nextcloud.com";
       maintainers = with maintainers; [ schneefux bachp globin fpletz ma27 ];
       license = licenses.agpl3Plus;
       platforms = with platforms; unix;
@@ -31,7 +31,7 @@ in {
   };
 
   nextcloud18 = generic {
-    version = "18.0.2";
-    sha256 = "10fbdq0366iai2kpw6v6p78mnn9gz8x0xzsbqrp109yx4c4nccyh";
+    version = "18.0.3";
+    sha256 = "0wpxa35zj81i541j3cjq6klsjwwc5slryzvjjl7zjc32004yfrvv";
   };
 }
