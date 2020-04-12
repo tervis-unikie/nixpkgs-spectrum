@@ -412,6 +412,17 @@ let
               "test ignore_main ... ok"
             ];
           };
+      procMacroInPrelude = {
+        procMacro = true;
+        src = symlinkJoin {
+          name = "proc-macro-in-prelude";
+          paths = [
+            (mkFile "src/lib.rs" ''
+              use proc_macro::TokenTree;
+            '')
+          ];
+        };
+      };
     };
     brotliCrates = (callPackage ./brotli-crates.nix {});
     tests = lib.mapAttrs (key: value: mkTest (value // lib.optionalAttrs (!value?crateName) { crateName = key; })) cases;
