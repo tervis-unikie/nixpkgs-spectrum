@@ -27,7 +27,7 @@ components = [
 
 git_root = 'https://chromium.googlesource.com/'
 manifest_versions = f'{git_root}chromiumos/manifest-versions'
-buildspecs_url = f'{manifest_versions}/+/refs/heads/master/paladin/buildspecs/'
+buildspecs_url = f'{manifest_versions}/+/refs/heads/master/full/buildspecs/'
 
 # CrOS version numbers look like this:
 # [<chrome-major-version>.]<tip-build>.<branch-build>.<branch-branch-build>
