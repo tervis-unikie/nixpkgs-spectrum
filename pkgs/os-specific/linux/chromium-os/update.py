@@ -14,7 +14,6 @@ from urllib.request import urlopen
 
 # ChromiumOS components used in Nixpkgs
 components = [
-    'aosp/platform/external/libchrome',
     'aosp/platform/external/modp_b64',
     'chromiumos/overlays/chromiumos-overlay',
     'chromiumos/platform/crosvm',

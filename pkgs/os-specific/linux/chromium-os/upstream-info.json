@@ -1,13 +1,6 @@
 {
   "version": "79.12607.0.0-rc4",
   "components": {
-    "aosp/platform/external/libchrome": {
-      "name": "libchrome",
-      "url": "https://chromium.googlesource.com/aosp/platform/external/libchrome",
-      "rev": "78e77b7f04d2d1be4868a9696c30e38be73b37cc",
-      "sha256": "0fq394hwdfi7zfiakcr4nqr40v6lajznq7ix6pgngd8fa8wrjmkr",
-      "version": "462023"
-    },
     "aosp/platform/external/modp_b64": {
       "name": "modp_b64",
       "url": "https://chromium.googlesource.com/aosp/platform/external/modp_b64",

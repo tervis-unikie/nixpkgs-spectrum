@@ -1,6 +1,6 @@
 { common-mk, lib
 , mesa, grpc, openssl, libdrm, xlibs, protobuf, wayland, libxkbcommon, vm_protos
-, libbrillo, libchrome, linuxHeaders, c-ares, zlib
+, linuxHeaders, c-ares, zlib
 }:
 
 common-mk {

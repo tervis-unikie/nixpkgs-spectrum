@@ -25,10 +25,6 @@ let
       passthru.updateScript = ./update.py;
     };
 
-    libbrillo = callPackage ./libbrillo { };
-
-    libchrome = callPackage ./libchrome { };
-
     linux_4_19 = callPackage ../kernel/linux-cros.nix {
       inherit (linux_4_19) kernelPatches;
     };

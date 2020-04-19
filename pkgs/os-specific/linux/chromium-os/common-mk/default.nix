@@ -1,5 +1,5 @@
 { stdenv, lib, fetchFromGitiles, upstreamInfo, gn, pkgconfig, python3, ninja
-, libchrome
+# , libchrome
 }:
 
 { platformSubdir
@@ -73,7 +73,7 @@ stdenv.mkDerivation ({
     ar = "ar";
     cc = "cc";
     cxx = "c++";
-    libbase_ver = libchrome.version;
+    # libbase_ver = libchrome.version;
     libdir = placeholder "out";
     pkg_config = "pkg-config";
     platform2_root = ".";
