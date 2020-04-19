@@ -1,5 +1,5 @@
 { stdenv, rustPlatform, fetchFromGitiles, upstreamInfo
-, pkgconfig, minijail, dtc, libusb1, libcap
+, pkgconfig, minijail, dtc, libusb1, libcap, linux
 }:
 
 let
@@ -43,7 +43,7 @@ in
       ./default-seccomp-policy-dir.diff
     ];
 
-    cargoSha256 = "1s9nfgfqk140hg08i0xzylnrgrx84dqss0vnvhxnydwy9q03nk7r";
+    cargoSha256 = "0lhivwvdihslwp81i3sa5q88p5hr83bzkvklrcgf6x73arwk8kdz";
 
     nativeBuildInputs = [ pkgconfig ];
 
@@ -57,6 +57,8 @@ in
     preBuild = ''
       export DEFAULT_SECCOMP_POLICY_DIR=$out/share/policy
     '';
+
+    CROSVM_CARGO_TEST_KERNEL_BINARY = "${linux}/bzImage";
 
     postInstall = ''
       mkdir -p $out/share/policy/

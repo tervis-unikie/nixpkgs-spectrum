@@ -1,61 +1,60 @@
 {
-  "version": "79.12607.0.0-rc4",
+  "version": "81.12871.0.0-rc1",
   "components": {
-    "aosp/platform/external/libchrome": {
-      "name": "libchrome",
-      "url": "https://chromium.googlesource.com/aosp/platform/external/libchrome",
-      "rev": "78e77b7f04d2d1be4868a9696c30e38be73b37cc",
-      "sha256": "0fq394hwdfi7zfiakcr4nqr40v6lajznq7ix6pgngd8fa8wrjmkr",
-      "version": "462023"
-    },
     "aosp/platform/external/modp_b64": {
       "name": "modp_b64",
       "url": "https://chromium.googlesource.com/aosp/platform/external/modp_b64",
-      "rev": "11a6fc258c6765a43b973b15e86fb4bce7675202",
-      "sha256": "06wjrqm7j6vkzlms1mj1czbdhsd8sxpyii43vqr456c2mzvrzr0n"
+      "rev": "ae26ad8516036774fd3b6e84a98a89955dcf5f61",
+      "sha256": "03ja5fkq3wk0qcnfnqcj09lciky6n6zdj544xs1jfssjhz9yj8hi"
     },
     "chromiumos/overlays/chromiumos-overlay": {
       "name": "chromiumos-overlay",
       "url": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay",
-      "rev": "a02872323ae57e95572106a76255ac28a24dd34f",
-      "sha256": "07j5scnmcx95mp4wy1wnx20kawlhydc90cnp8andbvn7rjkz1fbk"
+      "rev": "be285b729ef2af700cc248f741af20c387b5a1bc",
+      "sha256": "18y2icdb3hxqxxaaz8sylw21q2qwcpjyns75ig7ahc4vc1k5hg7s"
     },
     "chromiumos/platform/crosvm": {
       "name": "crosvm",
       "url": "https://chromium.googlesource.com/chromiumos/platform/crosvm",
-      "rev": "cfb7db44eb9e5a0bca9a22bfb985252ef74ab251",
-      "sha256": "0gm1ggyzh9qfizm36jmh71c3anygxj1840cm94h71kzg9kiw0330"
+      "rev": "8b8c01e1ad31718932491e4aee63f56109a138e2",
+      "sha256": "1qmf1k06pwynh15c3nr9m6v90z2pkk930xniwvlvbvnazrk4rllg"
     },
     "chromiumos/platform/minigbm": {
       "name": "minigbm",
       "url": "https://chromium.googlesource.com/chromiumos/platform/minigbm",
-      "rev": "8312ec228d0c96e4c7cca85b8fd141dd6dd9e15e",
-      "sha256": "08gfdxbhrqclfrs3r0pwrncnf4i29xv1jnrx8gp7i84wcrcvgmgz"
+      "rev": "fbfb338e7db246f05ae68da97141fbd49481584b",
+      "sha256": "11p6v4nmqivyqyc8lmypbwqv9q819lhx6v3igfsv3455mmq02kcb"
     },
     "chromiumos/platform2": {
       "name": "platform2",
       "url": "https://chromium.googlesource.com/chromiumos/platform2",
-      "rev": "dfa3da3447127dc941aacfee56617dd6ec7ae1c1",
-      "sha256": "1vgvapn0cn0g8n7h7l0f4n1jqnzb6hkcbkymr5dn0v2zb5s04inn"
+      "rev": "6e0d88d0bea8e7cb28a310298cc8c77ed742f60a",
+      "sha256": "13vrbnl3ck8cxiyifc58cs9i0yby92vp5si27ihrx33v6bdlir4s"
     },
     "chromiumos/third_party/adhd": {
       "name": "adhd",
       "url": "https://chromium.googlesource.com/chromiumos/third_party/adhd",
-      "rev": "a8df1c52bde3bfd2aebc1d7adcd6f195eb212cb1",
-      "sha256": "1hyvnvwr5ka9zw4h7hhl6fpsfl2acp3zy4wr5qrw8s1cn8ljr9vy"
+      "rev": "f361d5b02623274723bff251dafa1e2a2887b013",
+      "sha256": "1p8iwjwgmcgmzri03ik2jaid8l0ch0bzn6z9z64dix1hlrvrlliw"
     },
     "chromiumos/third_party/kernel": {
       "name": "kernel",
       "url": "https://chromium.googlesource.com/chromiumos/third_party/kernel",
-      "rev": "96bfeffb29ca01693d3b444c4e01eefaf5514055",
-      "sha256": "11svqzq01xv6p82dz8440kknz0bn1v2g3jhh00g73g4kyxr8lq62",
-      "version": "4.19.79"
+      "rev": "17611b6e636c8ccae25e873e659d69c20b215815",
+      "sha256": "0an8w3660v2zf2crb68ambg7vzw2rajpjmcby1am08qy37lqsfkd",
+      "version": "5.4.16"
+    },
+    "chromiumos/third_party/libqmi": {
+      "name": "libqmi",
+      "url": "https://chromium.googlesource.com/chromiumos/third_party/libqmi",
+      "rev": "6267c12fef0be9a95d687bf4b476593eeffbaaf1",
+      "sha256": "00yjjcngjkbgxmmf79ciddk9yq393a94230ahq8vszyfygzhs3rz"
     },
     "chromiumos/third_party/modemmanager-next": {
       "name": "modemmanager-next",
       "url": "https://chromium.googlesource.com/chromiumos/third_party/modemmanager-next",
-      "rev": "8eb16ade574b2292497e76c07b1ab0ee6e3dd44e",
-      "sha256": "0ss26bh3f8gzbrxxg6mkif6p9jf2l6m5kazvpr0qdzd8gqh9pca3"
+      "rev": "a4d3a4de1fdab7c282f1a188d2d3d0aaa24f0698",
+      "sha256": "1b1l1jfiyl7fnm29pp9npi0gdlqcw1jmmbigf0qlndqdh0ly2izg"
     }
   }
 }

@@ -1,7 +1,7 @@
-From a10869a6f73c3939b254b99125975568d29c6eed Mon Sep 17 00:00:00 2001
+From 8774d76f1b57092df9004d654fd075d7691b9f12 Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Wed, 15 Jan 2020 21:36:43 +0000
-Subject: [PATCH 10/10] sommelier: make building demos optional
+Subject: [PATCH 6/6] sommelier: make building demos optional
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -21,7 +21,7 @@ Thanks-to: Tomasz Śniatowski <tsniatowski@vewd.com>
  1 file changed, 32 insertions(+), 22 deletions(-)
 
 diff --git a/vm_tools/sommelier/BUILD.gn b/vm_tools/sommelier/BUILD.gn
-index 498a0ccab..9b6cb00fe 100644
+index 4330560a1..cbb752745 100644
 --- a/vm_tools/sommelier/BUILD.gn
 +++ b/vm_tools/sommelier/BUILD.gn
 @@ -4,12 +4,20 @@
@@ -53,7 +53,7 @@ index 498a0ccab..9b6cb00fe 100644
  
 -executable("wayland_demo") {
 -  pkg_deps = [
--    "libbrillo-${libbase_ver}",
+-    "libbrillo",
 -    "libchrome-${libbase_ver}",
 -    "wayland-client",
 -  ]
@@ -65,7 +65,7 @@ index 498a0ccab..9b6cb00fe 100644
 +if (use_demos) {
 +  executable("wayland_demo") {
 +    pkg_deps = [
-+      "libbrillo-${libbase_ver}",
++      "libbrillo",
 +      "libchrome-${libbase_ver}",
 +      "wayland-client",
 +    ]
@@ -77,7 +77,7 @@ index 498a0ccab..9b6cb00fe 100644
  
 -executable("x11_demo") {
 -  pkg_deps = [
--    "libbrillo-${libbase_ver}",
+-    "libbrillo",
 -    "libchrome-${libbase_ver}",
 -  ]
 -  libs = [ "X11" ]
@@ -86,7 +86,7 @@ index 498a0ccab..9b6cb00fe 100644
 -  ]
 +  executable("x11_demo") {
 +    pkg_deps = [
-+      "libbrillo-${libbase_ver}",
++      "libbrillo",
 +      "libchrome-${libbase_ver}",
 +    ]
 +    libs = [ "X11" ]
@@ -96,5 +96,5 @@ index 498a0ccab..9b6cb00fe 100644
 +  }
  }
 -- 
-2.24.1
+2.25.1
 

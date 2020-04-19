@@ -14,7 +14,6 @@ from urllib.request import urlopen
 
 # ChromiumOS components used in Nixpkgs
 components = [
-    'aosp/platform/external/libchrome',
     'aosp/platform/external/modp_b64',
     'chromiumos/overlays/chromiumos-overlay',
     'chromiumos/platform/crosvm',
@@ -22,12 +21,13 @@ components = [
     'chromiumos/platform2',
     'chromiumos/third_party/adhd',
     'chromiumos/third_party/kernel',
+    'chromiumos/third_party/libqmi',
     'chromiumos/third_party/modemmanager-next',
 ]
 
 git_root = 'https://chromium.googlesource.com/'
 manifest_versions = f'{git_root}chromiumos/manifest-versions'
-buildspecs_url = f'{manifest_versions}/+/refs/heads/master/paladin/buildspecs/'
+buildspecs_url = f'{manifest_versions}/+/refs/heads/master/full/buildspecs/'
 
 # CrOS version numbers look like this:
 # [<chrome-major-version>.]<tip-build>.<branch-build>.<branch-branch-build>
