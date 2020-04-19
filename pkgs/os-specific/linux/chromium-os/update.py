@@ -21,6 +21,7 @@ components = [
     'chromiumos/platform2',
     'chromiumos/third_party/adhd',
     'chromiumos/third_party/kernel',
+    'chromiumos/third_party/libqmi',
     'chromiumos/third_party/modemmanager-next',
 ]
 

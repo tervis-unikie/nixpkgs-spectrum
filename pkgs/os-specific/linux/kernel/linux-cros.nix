@@ -29,6 +29,6 @@ buildLinux (args // rec {
     # Enabling this (the default) caused a build failure.  If you can
     # archieve a successful build with this enabled, go ahead and
     # enable it.
-    TCG_CR50_SPI = no;
+    ANALOGIX_ANX7625 = no;
   } // (args.structuredExtraConfig or {});
 } // (args.argsOverride or {}))

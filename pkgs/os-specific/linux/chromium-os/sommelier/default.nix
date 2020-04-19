@@ -7,9 +7,9 @@ common-mk {
   platformSubdir = "vm_tools/sommelier";
 
   platform2Patches = [
-    ./0008-sommelier-don-t-leak-source-absolute-paths.patch
-    ./0009-sommelier-use-stable-xdg-shell-protocol.patch
-    ./0010-sommelier-make-building-demos-optional.patch
+    ./0004-sommelier-don-t-leak-source-absolute-paths.patch
+    ./0005-sommelier-use-stable-xdg-shell-protocol.patch
+    ./0006-sommelier-make-building-demos-optional.patch
   ];
 
   buildInputs = [

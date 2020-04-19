@@ -1,4 +1,6 @@
-{ modemmanager, lib, fetchFromGitiles, upstreamInfo, autoreconfHook, libxslt }:
+{ modemmanager, lib, fetchFromGitiles, upstreamInfo, autoreconfHook
+, libqmi, libxslt
+}:
 
 modemmanager.overrideAttrs (
   { pname, nativeBuildInputs ? [], passthru ? {}, meta ? {}, ... }:
@@ -9,7 +11,7 @@ modemmanager.overrideAttrs (
     src = fetchFromGitiles
       upstreamInfo.components."chromiumos/third_party/modemmanager-next";
 
-    nativeBuildInputs = nativeBuildInputs ++ [ autoreconfHook libxslt ];
+    nativeBuildInputs = nativeBuildInputs ++ [ autoreconfHook libqmi libxslt ];
 
     passthru = passthru // {
       updateScript = ../update.py;

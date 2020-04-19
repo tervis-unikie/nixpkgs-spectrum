@@ -1,7 +1,7 @@
-From ab753b1f376a9a348a0d3a6cc106d097bb4160c3 Mon Sep 17 00:00:00 2001
+From 5068e64b2fdedca0a4a9f1894335af8587c4c55a Mon Sep 17 00:00:00 2001
 From: Puck Meerburg <puck@puckipedia.com>
 Date: Tue, 3 Dec 2019 18:06:14 +0000
-Subject: [PATCH 09/10] sommelier: use stable xdg-shell protocol
+Subject: [PATCH 5/6] sommelier: use stable xdg-shell protocol
 
 From https://github.com/wayland-project/weston/commit/d8d9f5e6e16c8f6a3c06763d5f56c27dc9a6e52e:
 
@@ -19,7 +19,7 @@ From https://github.com/wayland-project/weston/commit/d8d9f5e6e16c8f6a3c06763d5f
  rename vm_tools/sommelier/protocol/{xdg-shell-unstable-v6.xml => xdg-shell.xml} (79%)
 
 diff --git a/vm_tools/sommelier/BUILD.gn b/vm_tools/sommelier/BUILD.gn
-index 871c142bc..498a0ccab 100644
+index 5027628d2..4330560a1 100644
 --- a/vm_tools/sommelier/BUILD.gn
 +++ b/vm_tools/sommelier/BUILD.gn
 @@ -68,7 +68,7 @@ wayland_protocol_library("sommelier-protocol") {
@@ -1200,7 +1200,7 @@ index ecd0fc647..a3ba0d6e1 100644
 +                          sl_bind_host_xdg_wm_base);
  }
 diff --git a/vm_tools/sommelier/sommelier.c b/vm_tools/sommelier/sommelier.c
-index 3637385a5..fba0d1277 100644
+index d87bced03..5e03d8978 100644
 --- a/vm_tools/sommelier/sommelier.c
 +++ b/vm_tools/sommelier/sommelier.c
 @@ -35,7 +35,7 @@
@@ -1675,7 +1675,7 @@ index 3637385a5..fba0d1277 100644
      }
    } else if (event->atom == XCB_ATOM_WM_HINTS) {
      struct sl_window* window = sl_lookup_window(ctx, event->window);
-@@ -3530,7 +3531,7 @@ int main(int argc, char** argv) {
+@@ -3536,7 +3537,7 @@ int main(int argc, char** argv) {
        .shm = NULL,
        .shell = NULL,
        .data_device_manager = NULL,
@@ -1744,5 +1744,5 @@ index b851b5c8d..7e6daf773 100644
  struct sl_global* sl_gtk_shell_global_create(struct sl_context* ctx);
  
 -- 
-2.24.1
+2.25.1
 

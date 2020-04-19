@@ -1,5 +1,5 @@
 { lib, newScope, fetchFromGitiles, symlinkJoin
-, linux_4_19, makeLinuxHeaders, modemmanager
+, libqmi, linux_5_4, makeLinuxHeaders, modemmanager
 }:
 
 let
@@ -25,23 +25,18 @@ let
       passthru.updateScript = ./update.py;
     };
 
-    linux_4_19 = callPackage ../kernel/linux-cros.nix {
-      inherit (linux_4_19) kernelPatches;
+    libqmi = callPackage ./libqmi {
+      inherit libqmi;
     };
 
-    linux = self.linux_4_19;
+    linux_5_4 = callPackage ../kernel/linux-cros.nix {
+      inherit (linux_5_4) kernelPatches;
+    };
+
+    linux = self.linux_5_4;
 
     linuxHeaders = (makeLinuxHeaders {
       inherit (linux) version src;
-    }).overrideAttrs ({ nativeBuildInputs, ... }: {
-      # makeLinuxHeaders is designed for Linux 5.5, which has a
-      # different header build system from 4.19, currently used by
-      # Chromium OS.  When the Chromium OS kernel bumps to a new major
-      # version, try removing this override to see if it's still
-      # necessary.  If it builds without it, the override can go.
-      buildPhase = ''
-        make headers_install $makeFlags
-      '';
     });
 
     minigbm = callPackage ./minigbm { };
