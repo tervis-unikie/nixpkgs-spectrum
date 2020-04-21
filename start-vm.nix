@@ -59,7 +59,9 @@ let
   makeStage1 = { run ? null, tapFD }: writeScript "init-stage1" ''
     #! ${execline}/bin/execlineb -P
     export PATH ${lib.makeBinPath
-      [ s6-linux-init s6-portable-utils s6-linux-utils s6 execline busybox sway-unwrapped ]}
+      [ s6-linux-init s6-portable-utils s6-linux-utils s6 execline busybox sway-unwrapped
+        gcc emacs26-nox zsh
+      ]}
     ${s6}/bin/s6-setsid -qb --
     umask 022
     if { s6-mount -t tmpfs -o mode=0755 tmpfs /run }
@@ -159,7 +161,7 @@ let
 
   swayConfig = writeText "sway-config" ''
     xwayland disable
-    exec ${westonLite}/bin/weston-terminal --shell /bin/sh
+    exec ${westonLite}/bin/weston-terminal --shell ${zsh}/bin/zsh
   '';
 
   waylandVM = makeVM {
