@@ -14446,6 +14446,8 @@ in
 
   spdk = callPackage ../development/libraries/spdk { };
 
+  spectrumPackages = callPackage ../os-specific/linux/spectrum { };
+
   speechd = callPackage ../development/libraries/speechd { };
 
   speech-tools = callPackage ../development/libraries/speech-tools {};
