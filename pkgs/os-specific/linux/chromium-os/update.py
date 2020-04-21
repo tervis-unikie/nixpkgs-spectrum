@@ -99,15 +99,6 @@ for component in components:
         'sha256': sha256,
     }
 
-# Get the version number of libchrome.
-chromiumos_overlay = paths['chromiumos/overlays/chromiumos-overlay']
-contents = scandir(f'{chromiumos_overlay}/chromeos-base/libchrome')
-libchrome_version = lambda name: fullmatch(r'libchrome-(\d+)\.ebuild', name)[1]
-ebuilds = [f for f in contents if f.is_file(follow_symlinks=False)]
-versions = [libchrome_version(f.name) for f in ebuilds]
-latest = sorted(versions, key=int)[-1]
-data['components']['aosp/platform/external/libchrome']['version'] = latest
-
 # Get the version number of the kernel.
 kernel = paths['chromiumos/third_party/kernel']
 makefile = open(f'{kernel}/Makefile').read()
