@@ -106,6 +106,8 @@ let
     user:x:1000:user
   '';
 
+  fontsConf = makeFontsConf { fontDirectories = [ source-code-pro ]; };
+
   makeRootfs = { services, run ? null, tapFD }: runCommand "rootfs" {} ''
     mkdir $out
     cd $out
@@ -114,6 +116,10 @@ let
     ln -s ${makeStage1 { inherit run tapFD; }} sbin/init
     cp ${passwd} etc/passwd
     cp ${group} etc/group
+
+    mkdir etc/fonts
+    ln -s ${fontsConf} etc/fonts/fonts.conf
+
     touch etc/login.defs
     cp -r ${makeServicesDir services} etc/service
   '';
