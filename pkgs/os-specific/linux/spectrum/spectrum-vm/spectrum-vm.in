@@ -58,9 +58,17 @@ if [ "$#" -ne 0 ]; then
     ex_usage 1 >&2
 fi
 
-exec "$crosvm" run \
-    --wayland-sock "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" \
-    -s "$XDG_RUNTIME_DIR" \
+set +e
+if [ -n "$XDG_RUNTIME_DIR" ]
+then
+    set -- -s "$XDG_RUNTIME_DIR"
+    if [ -n "$WAYLAND_DISPLAY" ]
+    then set -- "$@" --wayland-sock "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY"
+    fi
+fi
+set -e
+
+exec "$crosvm" run "$@" \
     -p init=/sbin/init \
     -p "spectrumcmd=$(printf %s "$command" | base64)" \
     --root "$rootfs" \
