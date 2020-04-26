@@ -14446,6 +14446,8 @@ in
 
   spdk = callPackage ../development/libraries/spdk { };
 
+  spectrumPackages = callPackage ../os-specific/linux/spectrum { };
+
   speechd = callPackage ../development/libraries/speechd { };
 
   speech-tools = callPackage ../development/libraries/speech-tools {};
@@ -19776,6 +19778,9 @@ in
   heimer = libsForQt5.callPackage ../applications/misc/heimer { };
 
   hello = callPackage ../applications/misc/hello { };
+
+  hello-wayland = callPackage ../applications/graphics/hello-wayland { };
+
   hello-unfree = callPackage ../applications/misc/hello-unfree { };
 
   helmholtz = callPackage ../applications/audio/pd-plugins/helmholtz { };
