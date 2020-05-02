@@ -22457,9 +22457,14 @@ in
     "https://way-cooler.org/blog/2020/01/09/way-cooler-post-mortem.html");
 
   wf-config = callPackage ../applications/window-managers/wayfire/wf-config.nix { };
-  wayfire = callPackage ../applications/window-managers/wayfire { };
-  wf-shell = callPackage ../applications/window-managers/wayfire/wf-shell.nix { };
-  wcm = callPackage ../applications/window-managers/wayfire/wcm.nix { };
+
+  wayfireApplications-unwrapped = callPackage ../applications/window-managers/wayfire/applications.nix { };
+  wayfirePlugins = callPackage ../applications/window-managers/wayfire/plugins.nix {
+    inherit (wayfireApplications-unwrapped) wayfire;
+  };
+
+  wayfireApplications = wayfireApplications-unwrapped.withPlugins (plugins: [ plugins.wf-shell ]);
+  inherit (wayfireApplications) wayfire wcm;
 
   waypipe = callPackage ../applications/networking/remote/waypipe { };
 
