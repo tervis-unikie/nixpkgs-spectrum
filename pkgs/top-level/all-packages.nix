@@ -22457,6 +22457,7 @@ in
     "https://way-cooler.org/blog/2020/01/09/way-cooler-post-mortem.html");
 
   wf-config = callPackage ../applications/window-managers/wayfire/wf-config.nix { };
+  wayfire = callPackage ../applications/window-managers/wayfire { };
 
   waypipe = callPackage ../applications/networking/remote/waypipe { };
 
