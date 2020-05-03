@@ -22459,6 +22459,7 @@ in
   wf-config = callPackage ../applications/window-managers/wayfire/wf-config.nix { };
   wayfire = callPackage ../applications/window-managers/wayfire { };
   wf-shell = callPackage ../applications/window-managers/wayfire/wf-shell.nix { };
+  wcm = callPackage ../applications/window-managers/wayfire/wcm.nix { };
 
   waypipe = callPackage ../applications/networking/remote/waypipe { };
 

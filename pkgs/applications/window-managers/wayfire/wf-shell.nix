@@ -31,6 +31,16 @@ stdenv.mkDerivation rec {
       url = "https://github.com/WayfireWM/wf-shell/commit/482f00455f0b0e08e3fffc844c865e43c80df84b.patch";
       sha256 = "0zcwgshdd5d03fnkz30nmpzv0xv3085iqjmn61r05bin8v2b2b2h";
     })
+
+    # Generate and install a wf-shell.pc file, so that other packages
+    # can find wf-shell's metadata directory, rather than assuming
+    # it's the same as Wayfire's.  Remove if
+    # <https://github.com/WayfireWM/wf-shell/pull/54> is applied
+    # upstream.
+    (fetchpatch {
+      url = "https://github.com/WayfireWM/wf-shell/commit/2c97d63cde3fd683f3b4159f459a5116e1a539f3.patch";
+      sha256 = "0pfi6x1ddm9bbhmy48bxmgvqpl754d3f7q91703mzfza0rlwpr4q";
+    })
   ];
 
   strictDeps = true;
