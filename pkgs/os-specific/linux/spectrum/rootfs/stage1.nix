@@ -29,6 +29,7 @@ writeScript "init-stage1" ''
     if { s6-mount -t proc none /proc }
     if { s6-ln -s ${mesa.drivers} /run/opengl-driver }
 
+    export HOME /
     export XDG_RUNTIME_DIR /run/user/0
     foreground {
       ifelse { test -n $spectrumcmd }

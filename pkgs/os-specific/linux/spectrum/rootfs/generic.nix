@@ -31,11 +31,11 @@ let
     mkdir $out
     cd $out
 
-    mkdir bin sbin dev etc proc run tmp
+    mkdir bin sbin dev proc run tmp
     ln -s ${dash}/bin/dash bin/sh
     ln -s ${makeStage1 { inherit run; }} sbin/init
-    cp ${./etc/passwd} etc/passwd
-    cp ${./etc/group} etc/group
+    cp -r ${./etc} etc
+    chmod u+w etc
 
     mkdir etc/fonts
     ln -s ${fontsConf} etc/fonts/fonts.conf

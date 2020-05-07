@@ -1,7 +1,7 @@
 { runCommandNoCC, writeScript, writeText, makeFontsConf, writeReferencesToFile
 , lib, dash, busybox, execline, s6, s6-portable-utils, s6-linux-utils
 , s6-linux-init, mesa, squashfs-tools-ng
-, source-code-pro, zsh, emacs26-nox, gcc, sway-unwrapped, sommelier, westonLite
+, source-code-pro, zsh, emacs26-nox, gcc, wayfire, sommelier, westonLite
 }:
 
 let
@@ -12,7 +12,7 @@ let
   };
 
   path = [
-    zsh emacs26-nox gcc sway-unwrapped sommelier westonLite busybox s6 execline
+    zsh emacs26-nox gcc wayfire sommelier westonLite busybox s6 execline
   ];
 
   login = writeScript "login" ''
@@ -21,11 +21,18 @@ let
     ${busybox}/bin/login -p -f root $@
   '';
 
-  swayConfig = writeText "sway-config" ''
-    xwayland disable
-    input * xkb_layout dvorak
+  # This can't be /etc/wayfire/defaults.ini because autostart entries
+  # from that file aren't applied.
+  wayfireConfig = writeText "wayfire-config" ''
+    [core]
+    xwayland = false
 
-    exec weston-terminal --shell ${zsh}/bin/zsh
+    [input]
+    xkb_layout = us
+    xkb_variant = dvorak
+
+    [autostart]
+    terminal = weston-terminal --shell $(command -v zsh)
   '';
 in
 
@@ -44,7 +51,7 @@ makeRootfs {
     export PATH ${lib.makeBinPath path}
 
     ${sommelier}/bin/sommelier
-    sway -Vc ${swayConfig}
+    wayfire -c ${wayfireConfig}
   '';
 
   fonts = [ source-code-pro ];
