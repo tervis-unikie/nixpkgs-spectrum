@@ -3,12 +3,13 @@ set -ue
 
 ex_usage() {
     cat <<EOF
-Usage: $(basename "$0") [OPTION]...
+Usage: $(basename "$0") [OPTION]... [-- CROSVM_OPTIONS]
 
   -c COMMAND         shell command to run inside VM
   -C, --crosvm PATH  path to custom crosvm executable
   -k, --kernel PATH  path to custom kernel image
   -f, --rootfs PATH  path to custom root file system image
+  -- CROSVM_OPTIONS  extra arguments to pass to crosvm
 EOF
     exit "$1"
 }
@@ -54,22 +55,19 @@ do
     esac
 done
 
-if [ "$#" -ne 0 ]; then
-    ex_usage 1 >&2
-fi
-
 set +e
 if [ -n "$XDG_RUNTIME_DIR" ]
 then
-    set -- -s "$XDG_RUNTIME_DIR"
+    set -- -s "$XDG_RUNTIME_DIR" "$@"
     if [ -n "$WAYLAND_DISPLAY" ]
-    then set -- "$@" --wayland-sock "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY"
+    then set -- --wayland-sock "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" "$@"
     fi
 fi
 set -e
 
-exec "$crosvm" run "$@" \
+exec "$crosvm" run \
     -p init=/sbin/init \
     -p "spectrumcmd=$(printf %s "$command" | base64)" \
     --root "$rootfs" \
+    "$@" \
     "$kernel"
