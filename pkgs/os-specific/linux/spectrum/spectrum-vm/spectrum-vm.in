@@ -67,7 +67,7 @@ set -e
 
 exec "$crosvm" run \
     -p init=/sbin/init \
-    -p "spectrumcmd=$(printf %s "$command" | base64)" \
+    -p "spectrumcmd=$(printf %s "$command" | base64 -w0)" \
     --root "$rootfs" \
     "$@" \
     "$kernel"
