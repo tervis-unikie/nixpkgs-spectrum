@@ -1,4 +1,4 @@
-{ stdenv, rustPlatform, fetchFromGitiles, upstreamInfo
+{ stdenv, lib, rustPlatform, fetchFromGitiles, upstreamInfo
 , pkgconfig, minijail, dtc, libusb1, libcap, linux
 }:
 
@@ -58,12 +58,14 @@ in
       export DEFAULT_SECCOMP_POLICY_DIR=$out/share/policy
     '';
 
-    CROSVM_CARGO_TEST_KERNEL_BINARY = "${linux}/bzImage";
-
     postInstall = ''
       mkdir -p $out/share/policy/
       cp seccomp/${arch}/* $out/share/policy/
     '';
+
+    CROSVM_CARGO_TEST_KERNEL_BINARY =
+      lib.optionalString (stdenv.buildPlatform == stdenv.hostPlatform)
+        "${linux}/${stdenv.hostPlatform.platform.kernelTarget}";
 
     passthru = {
       inherit adhdSrc;
@@ -71,7 +73,7 @@ in
       updateScript = ../update.py;
     };
 
-    meta = with stdenv.lib; {
+    meta = with lib; {
       description = "A secure virtual machine monitor for KVM";
       homepage = "https://chromium.googlesource.com/chromiumos/platform/crosvm/";
       maintainers = with maintainers; [ qyliss ];

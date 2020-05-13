@@ -11,6 +11,7 @@
 , Cocoa, CoreFoundation, CoreServices
 , buildVimPluginFrom2Nix
 , nodePackages
+, dasht
 
 # coc-go dependency
 , go
@@ -21,7 +22,7 @@
 # vim-go dependencies
 , asmfmt, delve, errcheck, godef, golint
 , gomodifytags, gotags, gotools, go-motion
-, gnused, reftools, gogetdoc, gometalinter
+, gnused, reftools, gogetdoc, golangci-lint
 , impl, iferr, gocode, gocode-gomod, go-tools
 
 # direnv-vim dependencies
@@ -56,16 +57,16 @@ self: super: {
   };
 
   LanguageClient-neovim = let
-    version = "0.1.156";
+    version = "0.1.157";
     LanguageClient-neovim-src = fetchurl {
       url = "https://github.com/autozimu/LanguageClient-neovim/archive/${version}.tar.gz";
-      sha256 = "0bf2va6lpgw7wqpwpfidijbzphhvw48hyc2b529qv12vwgnd1shq";
+      sha256 = "1ccq5akkm8n612ni5g7w7v5gv73g7p1d9i92k0bnsy33fvi3pmnh";
     };
     LanguageClient-neovim-bin = rustPlatform.buildRustPackage {
       name = "LanguageClient-neovim-bin";
       src = LanguageClient-neovim-src;
 
-      cargoSha256 = "0w66fcrlaxf6zgkrfpgfybfbm759fzimnr3pjq6sm14frar7lhr6";
+      cargoSha256 = "0r3f7sixkvgfrw0j81bxj1jpam5si9dnivrw63s29cvjxrdbnmqz";
       buildInputs = stdenv.lib.optionals stdenv.isDarwin [ CoreServices ];
 
       # FIXME: Use impure version of CoreFoundation because of missing symbols.
@@ -198,19 +199,6 @@ self: super: {
     src = "${nodePackages.coc-metals}/lib/node_modules/coc-metals";
   };
 
-  # Only official releases contains the required index.js file
-  # NB: Make sure you pick a rev from the release branch!
-  coc-nvim = buildVimPluginFrom2Nix rec {
-    pname = "coc-nvim";
-    version = "2020-01-05";
-    src = fetchFromGitHub {
-      owner = "neoclide";
-      repo = "coc.nvim";
-      rev = "984779f2f825626aa9d441746d8b4ee079137c65";
-      sha256 = "0w7qnhi7wikr789h3w5p59l8wd81czpvbzbdanf8klf9ap4ma3yg";
-    };
-  };
-
   coc-pairs = buildVimPluginFrom2Nix {
     pname = "coc-pairs";
     version = nodePackages.coc-pairs.version;
@@ -239,6 +227,12 @@ self: super: {
     pname = "coc-rls";
     version = nodePackages.coc-rls.version;
     src = "${nodePackages.coc-rls}/lib/node_modules/coc-rls";
+  };
+
+  coc-rust-analyzer = buildVimPluginFrom2Nix {
+    pname = "coc-rust-analyzer";
+    version = nodePackages.coc-rust-analyzer.version;
+    src = "${nodePackages.coc-rust-analyzer}/lib/node_modules/coc-rust-analyzer";
   };
 
   coc-smartf = buildVimPluginFrom2Nix {
@@ -530,6 +524,13 @@ self: super: {
     dependencies = with super; [ vim-maktaba ];
   });
 
+  vim-dasht = super.vim-dasht.overrideAttrs(old: {
+    preFixup = ''
+      substituteInPlace $out/share/vim-plugins/vim-dasht/autoload/dasht.vim \
+        --replace "['dasht']" "['${dasht}/bin/dasht']"
+    '';
+  });
+
   vim-easytags = super.vim-easytags.overrideAttrs(old: {
     dependencies = with super; [ vim-misc ];
     patches = [
@@ -555,7 +556,7 @@ self: super: {
       godef
       gogetdoc
       golint
-      gometalinter
+      golangci-lint
       gomodifytags
       gotags
       gotools

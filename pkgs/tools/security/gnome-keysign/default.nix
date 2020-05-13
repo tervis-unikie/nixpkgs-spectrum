@@ -53,7 +53,7 @@ python3.pkgs.buildPythonApplication rec {
     gst_all_1.gstreamer
     gst_all_1.gst-plugins-base
     (gst_all_1.gst-plugins-good.override { gtkSupport = true; })
-    gst_all_1.gst-plugins-bad # for zbar plug-in
+    (gst_all_1.gst-plugins-bad.override { enableZbar = true; }) # for zbar plug-in
   ];
 
   propagatedBuildInputs = with python3.pkgs; [
@@ -84,7 +84,7 @@ python3.pkgs.buildPythonApplication rec {
     description = "GTK/GNOME application to use GnuPG for signing other peoples’ keys";
     homepage = "https://wiki.gnome.org/Apps/Keysign";
     license = licenses.gpl3Plus;
-    maintainers = gnome3.maintainers;
+    maintainers = teams.gnome.members;
     platforms = platforms.linux;
   };
 }

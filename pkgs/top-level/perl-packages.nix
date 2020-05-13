@@ -3114,6 +3114,19 @@ let
     };
   };
 
+  ConfigProperties = buildPerlPackage {
+    pname = "Config-Properties";
+    version = "1.80";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/S/SA/SALVA/Config-Properties-1.80.tar.gz";
+      sha256 = "5d04395be7e14e970a03ea952fb7629ae304d97c031f90cc1c29bd0a6a62fc40";
+    };
+    meta = {
+      description = "Read and write property files";
+      license = with stdenv.lib.licenses; [ artistic1 gpl1Plus ];
+    };
+  };
+
   ConfigSimple = buildPerlPackage {
     pname = "Config-Simple";
     version = "4.58";
@@ -3221,6 +3234,19 @@ let
       description = "Encoding and decoding of base32 strings";
       license = with stdenv.lib.licenses; [ artistic1 gpl1Plus ];
       maintainers = [ maintainers.sgo ];
+    };
+  };
+
+  ConvertBencode = buildPerlPackage rec {
+    pname = "Convert-Bencode";
+    version = "1.03";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/O/OR/ORCLEV/${pname}-${version}.tar.gz";
+      sha256 = "0v2ywj18px67mg97xnrdq9mnlzgqvj92pr2g47g9c9b9cpw3v7r6";
+    };
+    meta = {
+      description = "Functions for converting to/from bencoded strings";
+      license = with stdenv.lib.licenses; [ artistic1 gpl1Plus ];
     };
   };
 
@@ -7878,6 +7904,20 @@ let
     };
   };
 
+  GitAutofixup = buildPerlPackage rec {
+    pname = "GitAutofixup";
+    version = "0.002007";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/T/TO/TORBIAK/App-Git-Autofixup-${version}.tar.gz";
+      sha256 = "1ydy15pibva0qr5vrv5mqyzw3zlc3wbszzv7932vh7m88vv6gfr6";
+    };
+    meta = {
+      maintainers = [ maintainers.DamienCassou ];
+      description = "Create fixup commits for topic branches";
+      license = stdenv.lib.licenses.artistic2;
+    };
+  };
+
   GitPurePerl = buildPerlPackage {
     pname = "Git-PurePerl";
     version = "0.53";
@@ -12248,6 +12288,22 @@ let
       description = "Mojolicious server status plugin";
       license = with stdenv.lib.licenses; [ artistic2 ];
       maintainers = [ maintainers.thoughtpolice ];
+    };
+  };
+
+  MojoliciousPluginTextExceptions = buildPerlPackage {
+    pname = "Mojolicious-Plugin-TextExceptions";
+    version = "0.01";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/M/MR/MRAMBERG/Mojolicious-Plugin-TextExceptions-0.01.tar.gz";
+      sha256 = "070daf284c5d3832b7fde42120eaf747aea4cc75de8ff807f77accc84fe4f22e";
+    };
+    propagatedBuildInputs = [ Mojolicious ];
+    meta = {
+      homepage = "https://github.com/marcusramberg/mojolicious-plugin-textexceptions";
+      description = "Render exceptions as text in command line user agents";
+      license = stdenv.lib.licenses.artistic2;
+      maintainers = [ maintainers.sgo ];
     };
   };
 
@@ -16811,7 +16867,7 @@ let
       sha256 = "f98a10c625640170cdda408cccc72bdd7f66f8ebe5f59dec1b96185171ef11d0";
     };
     meta = {
-      #homepage = http://web-cpan.berlios.de/modules/Statistics-Descriptive/; # berlios shut down; I found no replacement
+      #homepage = "http://web-cpan.berlios.de/modules/Statistics-Descriptive/"; # berlios shut down; I found no replacement
       description = "Module of basic descriptive statistical functions";
       license = with stdenv.lib.licenses; [ artistic1 gpl1Plus ];
     };
@@ -16966,6 +17022,20 @@ let
     };
   };
 
+  StringInterpolate = buildPerlPackage {
+    pname = "String-Interpolate";
+    version = "0.32";
+    src = fetchurl {
+      url = mirror://cpan/authors/id/N/NE/NEILB/String-Interpolate-0.32.tar.gz;
+      sha256 = "15fwbpz3jdpdgmz794iw9hz2caxrnrw9pdwprxxkanpm92cdhaf7";
+    };
+    meta = with stdenv.lib; {
+      # https://metacpan.org/pod/String::Interpolate
+      description = "String::Interpolate - Wrapper for builtin the Perl interpolation engine.";
+      license = licenses.gpl1Plus;
+    };
+  };
+
   StringMkPasswd = buildPerlPackage {
     pname = "String-MkPasswd";
     version = "0.05";
@@ -17009,6 +17079,20 @@ let
     meta = {
       # http://cpansearch.perl.org/src/ROSCH/String-ShellQuote-1.04/README
       license = with stdenv.lib.licenses; [ artistic1 gpl1Plus ];
+    };
+  };
+
+  StringSimilarity = buildPerlPackage {
+    pname = "String-Similarity";
+    version = "1.04";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/M/ML/MLEHMANN/String-Similarity-1.04.tar.gz";
+      sha256 = "0i9j3hljxw7j6yiii9nsscfj009vw6zv1q8cxwd75jxvj0idm3hz";
+    };
+    doCheck = true;
+    meta = {
+      license = with stdenv.lib.licenses; [ gpl2 ];
+      description = "Calculate the similarity of two strings";
     };
   };
 
@@ -21094,12 +21178,13 @@ let
 
   XMLParser = buildPerlPackage {
     pname = "XML-Parser";
-    version = "2.44";
+    version = "2.46";
     src = fetchurl {
-      url = "mirror://cpan/authors/id/T/TO/TODDR/XML-Parser-2.44.tar.gz";
-      sha256 = "05ij0g6bfn27iaggxf8nl5rhlwx6f6p6xmdav6rjcly3x5zd1s8s";
+      url = "mirror://cpan/authors/id/T/TO/TODDR/XML-Parser-2.46.tar.gz";
+      sha256 = "0pai3ik47q7rgnix9644c673fwydz52gqkxr9kxwq765j4j36cfk";
     };
-    patchPhase = stdenv.lib.optionalString (stdenv.buildPlatform != stdenv.hostPlatform) ''
+    patches = [ ../development/perl-modules/xml-parser-0001-HACK-Assumes-Expat-paths-are-good.patch ];
+    postPatch = stdenv.lib.optionalString (stdenv.buildPlatform != stdenv.hostPlatform) ''
       substituteInPlace Expat/Makefile.PL --replace 'use English;' '#'
     '' + stdenv.lib.optionalString stdenv.isCygwin ''
       sed -i"" -e "s@my \$compiler = File::Spec->catfile(\$path, \$cc\[0\]) \. \$Config{_exe};@my \$compiler = File::Spec->catfile(\$path, \$cc\[0\]) \. (\$^O eq 'cygwin' ? \"\" : \$Config{_exe});@" inc/Devel/CheckLib.pm

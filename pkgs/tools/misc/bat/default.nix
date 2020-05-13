@@ -4,17 +4,22 @@
 
 rustPlatform.buildRustPackage rec {
   pname   = "bat";
-  version = "0.13.0";
+  version = "0.15.1";
 
   src = fetchFromGitHub {
     owner  = "sharkdp";
     repo   = pname;
     rev    = "v${version}";
-    sha256 = "1kaa6ps6v1wk9qs63h116k4pbz7y9mfbfxfbq7g89yjhzkjmh6xc";
+    sha256 = "10cs94ja1dmn0f24gqkcy8rf68b3b43k6qpbb5njbg0hcx3x6cyj";
     fetchSubmodules = true;
   };
 
-  cargoSha256 = "01l1y124gjh6gf9z1jkbpfzh0w92hrgwvsmqkqdw3a9pa4w5f6yg";
+  cargoSha256 = "13cphi08bp6lg054acgliir8dx2jajll4m3c4xxy04skmx555zr8";
+
+  # Disable test that's broken on macOS.
+  # This should probably be removed on the next release.
+  # https://github.com/sharkdp/bat/issues/983
+  patches = [ ./macos.patch ];
 
   nativeBuildInputs = [ pkgconfig llvmPackages.libclang installShellFiles makeWrapper ];
 

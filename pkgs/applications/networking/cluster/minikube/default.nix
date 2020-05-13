@@ -1,67 +1,56 @@
 { stdenv
 , buildGoModule
 , fetchFromGitHub
-, pkgconfig
-, makeWrapper
 , go-bindata
+, installShellFiles
+, pkg-config
+, which
 , libvirt
 , vmnet
 }:
 
 buildGoModule rec {
-  pname   = "minikube";
-  version = "1.8.1";
-  # for -ldflags
-  commit  = "cbda04cf6bbe65e987ae52bb393c10099ab62014";
+  pname = "minikube";
+  version = "1.10.0";
 
-  goPackagePath = "k8s.io/minikube";
-  subPackages   = [ "cmd/minikube" ];
-  modSha256     = "1wyz8aq291lx614ilqrcgzdc8rjxbd6v3rv1fy6r2m6snyysycfn";
+  # for -ldflags
+  commit = "f318680e7e5bf539f7fadeaaf198f4e468393fb9";
+
+  modSha256 = "1g94jjwr5higg1b297zwp6grkj7if3mrdafjq9vls9y2svh11xr8";
 
   src = fetchFromGitHub {
-    owner  = "kubernetes";
-    repo   = "minikube";
-    rev    = "v${version}";
-    sha256 = "1nf0n701rw3anp8j7k3f553ipqwpzzxci41zsi0il4l35dpln5g0";
+    owner = "kubernetes";
+    repo = "minikube";
+    rev = "v${version}";
+    sha256 = "0n7px2ww00jllgm6qdax09q80gqk2qi23jfk90mnwphwjrqrggfp";
   };
 
-  nativeBuildInputs = [ pkgconfig go-bindata makeWrapper ];
-  buildInputs = stdenv.lib.optionals stdenv.isLinux [ libvirt ]
-    ++ stdenv.lib.optionals stdenv.isDarwin [ vmnet ];
+  nativeBuildInputs = [ go-bindata installShellFiles pkg-config which ];
 
-  preBuild = ''
-    go-bindata -nomemcopy -o pkg/minikube/assets/assets.go -pkg assets deploy/addons/...
-    go-bindata -nomemcopy -o pkg/minikube/translate/translations.go -pkg translate translations/...
+  buildInputs = if stdenv.isDarwin then [ vmnet ] else if stdenv.isLinux then [ libvirt ] else null;
 
-    VERSION_MAJOR=$(grep "^VERSION_MAJOR" Makefile | sed "s/^.*\s//")
-    VERSION_MINOR=$(grep "^VERSION_MINOR" Makefile | sed "s/^.*\s//")
-    ISO_VERSION=v$VERSION_MAJOR.$VERSION_MINOR.0
-    ISO_BUCKET=$(grep "^ISO_BUCKET" Makefile | sed "s/^.*\s//")
-
-    export buildFlagsArray="-ldflags=\
-      -X ${goPackagePath}/pkg/version.version=v${version} \
-      -X ${goPackagePath}/pkg/version.isoVersion=$ISO_VERSION \
-      -X ${goPackagePath}/pkg/version.isoPath=$ISO_BUCKET \
-      -X ${goPackagePath}/pkg/version.gitCommitID=${commit} \
-      -X ${goPackagePath}/pkg/drivers/kvm.version=v${version} \
-      -X ${goPackagePath}/pkg/drivers/kvm.gitCommitID=${commit} \
-      -X ${goPackagePath}/pkg/drivers/hyperkit.version=v${version} \
-      -X ${goPackagePath}/pkg/drivers/hyperkit.gitCommitID=${commit}"
+  buildPhase = ''
+    make COMMIT=${commit}
   '';
 
-  postInstall = ''
-    mkdir -p $out/share/bash-completion/completions/
-    MINIKUBE_WANTUPDATENOTIFICATION=false MINIKUBE_WANTKUBECTLDOWNLOADMSG=false HOME=$PWD $out/bin/minikube completion bash > $out/share/bash-completion/completions/minikube
+  installPhase = ''
+    install out/minikube -Dt $out/bin
 
-    mkdir -p $out/share/zsh/site-functions/
-    MINIKUBE_WANTUPDATENOTIFICATION=false MINIKUBE_WANTKUBECTLDOWNLOADMSG=false HOME=$PWD $out/bin/minikube completion zsh > $out/share/zsh/site-functions/_minikube
+    export HOME=$PWD
+    export MINIKUBE_WANTUPDATENOTIFICATION=false
+    export MINIKUBE_WANTKUBECTLDOWNLOADMSG=false
+
+    for shell in bash zsh; do
+      $out/bin/minikube completion $shell > minikube.$shell
+      installShellCompletion minikube.$shell
+    done
   '';
 
   meta = with stdenv.lib; {
-    homepage    = "https://github.com/kubernetes/minikube";
+    homepage = "https://minikube.sigs.k8s.io";
     description = "A tool that makes it easy to run Kubernetes locally";
-    license     = licenses.asl20;
+    license = licenses.asl20;
     maintainers = with maintainers; [ ebzzry copumpkin vdemeester atkinschang ];
-    platforms   = with platforms; unix;
+    platforms = platforms.unix;
   };
 }
