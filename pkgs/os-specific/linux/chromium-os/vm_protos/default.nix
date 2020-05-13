@@ -7,6 +7,8 @@ common-mk {
   nativeBuildInputs = [ go-protobuf ];
   buildInputs = [ grpc openssl protobuf ];
 
+  NIX_CFLAGS_COMPILE = [ "-Wno-error=array-bounds" ];
+
   postPatch = ''
     substituteInPlace common-mk/proto_library.gni \
         --replace /usr/bin/grpc_cpp_plugin ${grpc}/bin/grpc_cpp_plugin
