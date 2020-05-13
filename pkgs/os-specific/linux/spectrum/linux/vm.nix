@@ -19,6 +19,7 @@ linux.override {
     HW_RANDOM_VIRTIO = yes;
 
     NET_9P = yes;
+    NET_9P_VIRTIO = yes;
     "9P_FS" = yes;
   };
 }
