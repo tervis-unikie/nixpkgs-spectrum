@@ -1,7 +1,7 @@
 From 1fa4de5b2228c40b25fd6333a74ae7535d73bcce Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Sun, 1 Dec 2019 17:04:04 +0000
-Subject: [PATCH 4/6] sommelier: don't leak source-absolute paths
+Subject: [PATCH 4/7] sommelier: don't leak source-absolute paths
 
 ---
  vm_tools/sommelier/wayland_protocol.gni | 2 +-
@@ -21,5 +21,5 @@ index 4f18a0c10..b1bd5d659 100644
      }
    }
 -- 
-2.25.1
+2.26.2
 

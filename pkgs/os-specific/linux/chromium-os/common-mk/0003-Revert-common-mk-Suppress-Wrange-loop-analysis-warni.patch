@@ -1,7 +1,7 @@
 From b3add805d98e01488d71cbad51206f3a4949bb1c Mon Sep 17 00:00:00 2001
 From: Denis Nikitin <denik@chromium.org>
 Date: Wed, 5 Feb 2020 18:43:38 +0000
-Subject: [PATCH 3/6] Revert "common-mk: Suppress -Wrange-loop-analysis
+Subject: [PATCH 3/7] Revert "common-mk: Suppress -Wrange-loop-analysis
  warning"
 
 This reverts commit 09298dce8d31b5744a83784d027a3fd1e312eb6d.
@@ -68,5 +68,5 @@ index 7c0601b18..dc02a6979 100644
    cflags_c = [ "-std=gnu11" ] + external_cppflags + external_cxxflags
    cflags_cc = [ "-std=gnu++14" ] + external_cppflags + external_cxxflags
 -- 
-2.25.1
+2.26.2
 

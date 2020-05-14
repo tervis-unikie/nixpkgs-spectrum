@@ -10,6 +10,7 @@ common-mk {
     ./0004-sommelier-don-t-leak-source-absolute-paths.patch
     ./0005-sommelier-use-stable-xdg-shell-protocol.patch
     ./0006-sommelier-make-building-demos-optional.patch
+    ./0007-vm_tools-sommelier-Log-the-value-of-strerror-when-as.patch
   ];
 
   buildInputs = [

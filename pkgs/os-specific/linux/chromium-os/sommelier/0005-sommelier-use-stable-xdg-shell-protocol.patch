@@ -1,7 +1,7 @@
 From 5068e64b2fdedca0a4a9f1894335af8587c4c55a Mon Sep 17 00:00:00 2001
 From: Puck Meerburg <puck@puckipedia.com>
 Date: Tue, 3 Dec 2019 18:06:14 +0000
-Subject: [PATCH 5/6] sommelier: use stable xdg-shell protocol
+Subject: [PATCH 5/7] sommelier: use stable xdg-shell protocol
 
 From https://github.com/wayland-project/weston/commit/d8d9f5e6e16c8f6a3c06763d5f56c27dc9a6e52e:
 
@@ -1744,5 +1744,5 @@ index b851b5c8d..7e6daf773 100644
  struct sl_global* sl_gtk_shell_global_create(struct sl_context* ctx);
  
 -- 
-2.25.1
+2.26.2
 
