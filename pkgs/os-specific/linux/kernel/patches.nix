@@ -92,4 +92,9 @@
     name = "mac_nvme_t2";
     patch = ./mac-nvme-t2.patch;
   };
+
+  virtwl_multiple_sockets = {
+    name = "virtwl_multiple_sockets";
+    patch = ./0001-CHROMIUM-virtwl-Support-multiple-host-sockets.patch;
+  };
 }

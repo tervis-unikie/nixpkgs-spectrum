@@ -30,13 +30,15 @@ let
     };
 
     linux_5_4 = callPackage ../kernel/linux-cros.nix {
-      inherit (linux_5_4) kernelPatches;
+      kernelPatches = linux_5_4.kernelPatches ++ (with kernelPatches; [
+        virtwl_multiple_sockets
+      ]);
     };
 
     linux = self.linux_5_4;
 
     linuxHeaders = (makeLinuxHeaders {
-      inherit (linux) version src;
+      inherit (linux) version src patches;
     });
 
     minigbm = callPackage ./minigbm { };
