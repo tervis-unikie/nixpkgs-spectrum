@@ -1,5 +1,5 @@
 { lib, newScope, fetchFromGitiles, symlinkJoin
-, libqmi, linux_5_4, makeLinuxHeaders, modemmanager
+, kernelPatches, libqmi, linux_5_4, makeLinuxHeaders, modemmanager
 }:
 
 let
