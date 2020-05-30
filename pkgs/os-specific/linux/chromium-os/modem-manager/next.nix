@@ -1,5 +1,5 @@
 { modemmanager, lib, fetchFromGitiles, upstreamInfo, autoreconfHook
-, libqmi, libxslt
+, autoconf-archive, libqmi, libxslt
 }:
 
 modemmanager.overrideAttrs (
@@ -11,7 +11,8 @@ modemmanager.overrideAttrs (
     src = fetchFromGitiles
       upstreamInfo.components."src/third_party/modemmanager-next";
 
-    nativeBuildInputs = nativeBuildInputs ++ [ autoreconfHook libqmi libxslt ];
+    nativeBuildInputs = nativeBuildInputs ++
+      [ autoreconfHook autoconf-archive libqmi libxslt ];
 
     passthru = passthru // {
       updateScript = ../update.py;

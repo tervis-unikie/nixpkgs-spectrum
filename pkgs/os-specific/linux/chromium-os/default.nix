@@ -30,9 +30,7 @@ let
     };
 
     linux_5_4 = callPackage ../kernel/linux-cros.nix {
-      kernelPatches = linux_5_4.kernelPatches ++ (with kernelPatches; [
-        virtwl_multiple_sockets
-      ]);
+      inherit (linux_5_4) kernelPatches;
     };
 
     linux = self.linux_5_4;

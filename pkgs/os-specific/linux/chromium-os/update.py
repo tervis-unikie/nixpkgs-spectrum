@@ -14,6 +14,7 @@ from urllib.request import urlopen
 
 # ChromiumOS components used in Nixpkgs
 component_paths = [
+    'src/aosp/external/minijail',
     'src/platform/crosvm',
     'src/platform/minigbm',
     'src/platform2',

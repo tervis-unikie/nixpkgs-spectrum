@@ -9,6 +9,8 @@ common-mk {
 
   NIX_CFLAGS_COMPILE = [ "-Wno-error=array-bounds" ];
 
+  platform2Patches = [ ./0003-vm_tools-proto-fix-parallel-build.patch ];
+
   postPatch = ''
     substituteInPlace common-mk/proto_library.gni \
         --replace /usr/bin/grpc_cpp_plugin ${grpc}/bin/grpc_cpp_plugin

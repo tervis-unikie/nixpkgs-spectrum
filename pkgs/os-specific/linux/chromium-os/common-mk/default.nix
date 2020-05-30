@@ -59,7 +59,6 @@ stdenv.mkDerivation ({
     '') ([
       ./0001-common-mk-don-t-leak-source-absolute-paths.patch
       ./0002-common-mk-.gn-don-t-hardcode-env-path.patch
-      ./0003-Revert-common-mk-Suppress-Wrange-loop-analysis-warni.patch
     ] ++ platform2Patches)}
 
     patchShebangs common-mk

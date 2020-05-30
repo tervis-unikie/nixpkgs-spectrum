@@ -8,11 +8,12 @@ let
     else if isx86_64 then "x86_64"
     else throw "no seccomp policy files available for host platform";
 
-  crosvmSrc = fetchFromGitiles
-    upstreamInfo.components."src/platform/crosvm";
-
-  adhdSrc = fetchFromGitiles
-    upstreamInfo.components."src/third_party/adhd";
+  getSrc = path: fetchFromGitiles upstreamInfo.components.${path};
+  srcs = lib.genAttrs [
+    "src/platform/crosvm"
+    "src/third_party/adhd"
+    "src/aosp/external/minijail"
+  ] getSrc;
 in
 
   rustPlatform.buildRustPackage rec {
@@ -22,28 +23,25 @@ in
     unpackPhase = ''
       runHook preUnpack
 
-      mkdir -p chromiumos/platform chromiumos/third_party
-
-      pushd chromiumos/platform
-      unpackFile ${crosvmSrc}
-      popd
-
-      pushd chromiumos/third_party
-      unpackFile ${adhdSrc}
-      popd
+      ${lib.concatStringsSep "\n" (lib.mapAttrsToList (path: src: ''
+        mkdir -p ${dirOf path}
+        pushd ${dirOf path}
+        unpackFile ${src}
+        popd
+      '') srcs)}
 
       chmod -R u+w -- "$sourceRoot"
 
       runHook postUnpack
     '';
 
-    sourceRoot = "chromiumos/platform/crosvm";
+    sourceRoot = "src/platform/crosvm";
 
     patches = [
       ./default-seccomp-policy-dir.diff
     ];
 
-    cargoSha256 = "0lhivwvdihslwp81i3sa5q88p5hr83bzkvklrcgf6x73arwk8kdz";
+    cargoSha256 = "0wzqn2n4vyv3bk39079yg1zbnriagi5xns928bzdqmq9djdcj21i";
 
     nativeBuildInputs = [ pkgconfig ];
 
@@ -68,8 +66,8 @@ in
         "${linux}/${stdenv.hostPlatform.platform.kernelTarget}";
 
     passthru = {
-      inherit adhdSrc;
-      src = crosvmSrc;
+      inherit srcs;
+      src = srcs.${sourceRoot};
       updateScript = ../update.py;
     };
 

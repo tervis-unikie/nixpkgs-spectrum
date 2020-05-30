@@ -1,7 +1,7 @@
-From ec1afec90fd8e391b93f53f0abd8bc11cdba0a32 Mon Sep 17 00:00:00 2001
+From 51ed7b957069bd3765222a466473c696755caa5e Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Sun, 24 Nov 2019 17:20:46 +0000
-Subject: [PATCH 2/7] common-mk: .gn: don't hardcode env path
+Subject: [PATCH 2/6] common-mk: .gn: don't hardcode env path
 
 This is needlessly non-portable.
 ---

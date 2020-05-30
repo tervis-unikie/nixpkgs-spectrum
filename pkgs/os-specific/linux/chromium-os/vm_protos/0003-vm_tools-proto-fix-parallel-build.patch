@@ -1,0 +1,39 @@
+From dfed9458bf7abc1dc8f33a3e16ee179cde88e4e2 Mon Sep 17 00:00:00 2001
+From: Alyssa Ross <hi@alyssa.is>
+Date: Tue, 2 Jun 2020 00:21:08 +0000
+Subject: [PATCH 3/6] vm_tools: proto: fix parallel build
+
+fuzzer-protos depends on vm-crash-rpcs, but this dependency wasn't
+declared, causing build failures like the following:
+
+[26/52] CXX obj/out/Release/gen/include/vm_protos/proto_bindings/libfuzzer-protos.fuzzer.grpc.pb.o
+FAILED: obj/out/Release/gen/include/vm_protos/proto_bindings/libfuzzer-protos.fuzzer.grpc.pb.o
+c++ -MMD -MF obj/out/Release/gen/include/vm_protos/proto_bindings/libfuzzer-protos.fuzzer.grpc.pb.o.d -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Igen/include -I../../common-mk -I/usr/include -Igen -Igen -Igen -Igen -Wall -Wunused -Wno-unused-parameter -Wunreachable-code -ggdb3 -fstack-protector-strong -Wformat=2 -fvisibility=internal -Wa,--noexecstack -Wimplicit-fallthrough -Werror --sysroot= -fPIE -fvisibility=default -pthread -I/nix/store/pjl2q3lny3c18ypqjcv0q3akyq89hg2i-grpc-1.28.1/include -I/nix/store/hya0y6slws66h99njc2yiz02irfv4n62-openssl-1.1.1g-dev/include -I/nix/store/mfpg3sk5vk9rm99hbpmd3dgvxqybd391-protobuf-3.8.0/include -pthread -I/nix/store/pjl2q3lny3c18ypqjcv0q3akyq89hg2i-grpc-1.28.1/include -I/nix/store/hya0y6slws66h99njc2yiz02irfv4n62-openssl-1.1.1g-dev/include -I/nix/store/mfpg3sk5vk9rm99hbpmd3dgvxqybd391-protobuf-3.8.0/include -Wno-unreachable-code -std=gnu++14 -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wno-psabi -c gen/include/vm_protos/proto_bindings/fuzzer.grpc.pb.cc -o obj/out/Release/gen/include/vm_protos/proto_bindings/libfuzzer-protos.fuzzer.grpc.pb.o
+In file included from gen/include/vm_protos/proto_bindings/fuzzer.grpc.pb.cc:5:
+gen/include/vm_protos/proto_bindings/fuzzer.pb.h:38:10: fatal error: vm_crash.pb.h: No such file or directory
+   38 | #include "vm_crash.pb.h"
+      |          ^~~~~~~~~~~~~~~
+compilation terminated.
+ninja: build stopped: subcommand failed.
+
+Reported-by: Cole Helbling <cole.e.helbling@outlook.com>
+Reviewed-by: Cole Helbling <cole.e.helbling@outlook.com>
+---
+ vm_tools/proto/BUILD.gn | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/vm_tools/proto/BUILD.gn b/vm_tools/proto/BUILD.gn
+index 713b81853..a25265cab 100644
+--- a/vm_tools/proto/BUILD.gn
++++ b/vm_tools/proto/BUILD.gn
+@@ -70,6 +70,7 @@ proto_library("fuzzer-protos") {
+   deps = [
+     ":container-rpcs",
+     ":tremplin-rpcs",
++    ":vm-crash-rpcs",
+   ]
+   sources = [
+     "${proto_in_dir}/fuzzer.proto",
+-- 
+2.26.2
+
