@@ -3,7 +3,7 @@
 , ... } @ args:
 
 let
-  versionData = upstreamInfo.components."chromiumos/third_party/kernel";
+  versionData = upstreamInfo.components."src/third_party/kernel/v5.4";
 in
 
 with lib;

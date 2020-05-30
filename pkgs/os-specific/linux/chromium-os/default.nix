@@ -9,7 +9,7 @@ let
     upstreamInfo = lib.importJSON ./upstream-info.json;
 
     chromiumos-overlay = (fetchFromGitiles
-      upstreamInfo.components."chromiumos/overlays/chromiumos-overlay") // {
+      upstreamInfo.components."src/third_party/chromiumos-overlay") // {
         passthru.updateScript = ./update.py;
       };
 

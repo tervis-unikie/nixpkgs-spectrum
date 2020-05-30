@@ -4,7 +4,7 @@ stdenv.mkDerivation {
   name = "minigbm";
   inherit (upstreamInfo) version;
 
-  src = fetchFromGitiles upstreamInfo.components."chromiumos/platform/minigbm";
+  src = fetchFromGitiles upstreamInfo.components."src/platform/minigbm";
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ libdrm ];

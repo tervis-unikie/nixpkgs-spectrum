@@ -9,10 +9,10 @@ let
     else throw "no seccomp policy files available for host platform";
 
   crosvmSrc = fetchFromGitiles
-    upstreamInfo.components."chromiumos/platform/crosvm";
+    upstreamInfo.components."src/platform/crosvm";
 
   adhdSrc = fetchFromGitiles
-    upstreamInfo.components."chromiumos/third_party/adhd";
+    upstreamInfo.components."src/third_party/adhd";
 in
 
   rustPlatform.buildRustPackage rec {

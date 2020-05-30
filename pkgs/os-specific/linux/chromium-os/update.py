@@ -13,16 +13,16 @@ from re import MULTILINE, fullmatch, match, search
 from urllib.request import urlopen
 
 # ChromiumOS components used in Nixpkgs
-components = [
-    'aosp/platform/external/modp_b64',
-    'chromiumos/overlays/chromiumos-overlay',
-    'chromiumos/platform/crosvm',
-    'chromiumos/platform/minigbm',
-    'chromiumos/platform2',
-    'chromiumos/third_party/adhd',
-    'chromiumos/third_party/kernel',
-    'chromiumos/third_party/libqmi',
-    'chromiumos/third_party/modemmanager-next',
+component_paths = [
+    'src/platform/crosvm',
+    'src/platform/minigbm',
+    'src/platform2',
+    'src/third_party/adhd',
+    'src/third_party/chromiumos-overlay',
+    'src/third_party/kernel/v5.4',
+    'src/third_party/libqmi',
+    'src/third_party/modemmanager-next',
+    'src/third_party/modp_b64',
 ]
 
 git_root = 'https://chromium.googlesource.com/'
@@ -65,14 +65,28 @@ with urlopen(f'{buildspecs_url}{chrome_major_version}/?format=TEXT') as resp:
     buildspecs.sort(reverse=True)
     buildspec = splitext(buildspecs[0])[0]
 
-revisions = {}
+components = {}
 
 # Read the buildspec, and extract the git revisions for each component.
 with urlopen(f'{buildspecs_url}{chrome_major_version}/{buildspec}.xml?format=TEXT') as resp:
     xml = base64.decodebytes(resp.read())
     root = etree.fromstring(xml)
+
+    default_remote = root.find('default').get('remote')
+    remotes = {}
+    for remote in root.findall('remote'):
+        remotes[remote.get('name')] = remote.get('fetch')
+
     for project in root.findall('project'):
-        revisions[project.get('name')] = project.get('revision')
+        name = project.get('name')
+        path = project.get('path')
+        remote_name = project.get('remote') or default_remote
+        remote = remotes[remote_name]
+
+        components[path] = {
+            'revision': project.get('revision'),
+            'url': f'{remote}/{name}',
+        }
 
 # Initialize the data that will be output from this script.  Leave the
 # rc number in buildspec so nobody else is subject to the same level
@@ -84,15 +98,15 @@ paths = {}
 # Fill in the 'components' dictionary with the output from
 # nix-prefetch-git, which can be passed straight to fetchGit when
 # imported by Nix.
-for component in components:
-    name = component.split('/')[-1]
-    url = f'{git_root}{component}'
-    rev = revisions[component]
+for path in component_paths:
+    name = path.split('/')[-1]
+    url = components[path]['url']
+    rev = components[path]['revision']
     tarball = f'{url}/+archive/{rev}.tar.gz'
     output = subprocess.check_output(['nix-prefetch-url', '--print-path', '--unpack', '--name', name, tarball])
-    (sha256, path) = output.decode('utf-8').splitlines()
-    paths[component] = path
-    data['components'][component] = {
+    (sha256, store_path) = output.decode('utf-8').splitlines()
+    paths[path] = store_path
+    data['components'][path] = {
         'name': name,
         'url': url,
         'rev': rev,
@@ -100,14 +114,14 @@ for component in components:
     }
 
 # Get the version number of the kernel.
-kernel = paths['chromiumos/third_party/kernel']
+kernel = paths['src/third_party/kernel/v5.4']
 makefile = open(f'{kernel}/Makefile').read()
 version = search(r'^VERSION = (.+)$', makefile, MULTILINE)[1]
 patchlevel = search(r'^PATCHLEVEL = (.*?)$', makefile, MULTILINE)[1]
 sublevel = search(r'^SUBLEVEL = (.*?)$', makefile, MULTILINE)[1]
 extra = search(r'^EXTRAVERSION =[ \t]*(.*?)$', makefile, MULTILINE)[1]
 full_ver = '.'.join(filter(None, [version, patchlevel, sublevel])) + extra
-data['components']['chromiumos/third_party/kernel']['version'] = full_ver
+data['components']['src/third_party/kernel/v5.4']['version'] = full_ver
 
 # Finally, write the output.
 with open(dirname(__file__) + '/upstream-info.json', 'w') as out:

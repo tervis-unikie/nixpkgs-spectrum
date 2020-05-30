@@ -8,7 +8,7 @@ libqmi.overrideAttrs (
     pname = "libqmi-unstable";
     version = "2019-12-16";
 
-    src = fetchFromGitiles upstreamInfo.components."chromiumos/third_party/libqmi";
+    src = fetchFromGitiles upstreamInfo.components."src/third_party/libqmi";
 
     nativeBuildInputs = nativeBuildInputs ++
       [ autoreconfHook autoconf-archive gtk-doc docbook-xsl-nons ];

@@ -24,7 +24,7 @@
 , ... } @ args:
 
 let
-  platform2 = fetchFromGitiles upstreamInfo.components."chromiumos/platform2";
+  platform2 = fetchFromGitiles upstreamInfo.components."src/platform2";
 
   attrsToGnList = lib.mapAttrsToList (name: value: "${name}=${toGn value}");
 

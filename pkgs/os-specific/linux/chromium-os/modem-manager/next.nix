@@ -9,7 +9,7 @@ modemmanager.overrideAttrs (
     version = "2019-10-17";
 
     src = fetchFromGitiles
-      upstreamInfo.components."chromiumos/third_party/modemmanager-next";
+      upstreamInfo.components."src/third_party/modemmanager-next";
 
     nativeBuildInputs = nativeBuildInputs ++ [ autoreconfHook libqmi libxslt ];
 

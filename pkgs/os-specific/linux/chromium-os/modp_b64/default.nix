@@ -3,7 +3,7 @@
 common-mk {
   platformSubdir = "modp_b64";
 
-  src = fetchFromGitiles upstreamInfo.components."aosp/platform/external/modp_b64";
+  src = fetchFromGitiles upstreamInfo.components."src/third_party/modp_b64";
 
   installPhase = ''
     mkdir -p $out/lib
