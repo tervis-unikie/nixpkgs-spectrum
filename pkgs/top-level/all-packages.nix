@@ -20027,7 +20027,9 @@ in
 
   wlr-randr = callPackage ../tools/misc/wlr-randr { };
 
-  wlroots = callPackage ../development/libraries/wlroots { };
+  wlroots = callPackage ../development/libraries/wlroots {
+    inherit (chromiumOSPackages) linuxHeaders;
+  };
 
   sway-unwrapped = callPackage ../applications/window-managers/sway { };
   sway = callPackage ../applications/window-managers/sway/wrapper.nix { };

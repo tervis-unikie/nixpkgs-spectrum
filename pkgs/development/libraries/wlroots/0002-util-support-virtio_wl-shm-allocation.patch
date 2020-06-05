@@ -1,0 +1,281 @@
+From 6262ddb96410fd2fd21edbd96d79f1149e698948 Mon Sep 17 00:00:00 2001
+From: Alyssa Ross <hi@alyssa.is>
+Date: Sat, 23 May 2020 03:42:33 +0000
+Subject: [PATCH 2/2] util: support virtio_wl shm allocation
+
+---
+ include/util/virtio_wl.h     | 14 ++++++
+ include/util/virtio_wl_shm.h |  8 +++
+ util/meson.build             |  2 +
+ util/shm.c                   | 12 +++++
+ util/virtio_wl.c             | 96 ++++++++++++++++++++++++++++++++++++
+ util/virtio_wl_shm.c         | 65 ++++++++++++++++++++++++
+ 6 files changed, 197 insertions(+)
+ create mode 100644 include/util/virtio_wl.h
+ create mode 100644 include/util/virtio_wl_shm.h
+ create mode 100644 util/virtio_wl.c
+ create mode 100644 util/virtio_wl_shm.c
+
+diff --git a/include/util/virtio_wl.h b/include/util/virtio_wl.h
+new file mode 100644
+index 00000000..ae5c19b5
+--- /dev/null
++++ b/include/util/virtio_wl.h
+@@ -0,0 +1,14 @@
++#ifndef UTIL_VIRTIO_WL_H
++#define UTIL_VIRTIO_WL_H
++
++struct virtwl_ioctl_txn;
++
++int virtio_wl_connect(const char *name, uint32_t flags);
++
++int32_t virtio_wl_sendmsg(int sockfd, struct virtwl_ioctl_txn *ioctl_txn);
++int32_t virtio_wl_send(int sockfd, const void *buf, uint32_t len);
++
++int32_t virtio_wl_recvmsg(int sockfd, struct virtwl_ioctl_txn *ioctl_txn);
++int32_t virtio_wl_recv(int sockfd, void *buf, uint32_t len);
++
++#endif
+diff --git a/include/util/virtio_wl_shm.h b/include/util/virtio_wl_shm.h
+new file mode 100644
+index 00000000..d9f9f045
+--- /dev/null
++++ b/include/util/virtio_wl_shm.h
+@@ -0,0 +1,8 @@
++#ifndef UTIL_VIRTIO_WL_SHM_H
++#define UTIL_VIRTIO_WL_SHM_H
++
++#include <stddef.h>
++
++int allocate_virtio_wl_shm_file(size_t size);
++
++#endif
+diff --git a/util/meson.build b/util/meson.build
+index c6614275..6ec6182b 100644
+--- a/util/meson.build
++++ b/util/meson.build
+@@ -4,4 +4,6 @@ wlr_files += files(
+ 	'region.c',
+ 	'shm.c',
+ 	'signal.c',
++	'virtio_wl.c',
++	'virtio_wl_shm.c',
+ )
+diff --git a/util/shm.c b/util/shm.c
+index f7c7303e..d8110904 100644
+--- a/util/shm.c
++++ b/util/shm.c
+@@ -2,11 +2,14 @@
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <string.h>
++#include <stdlib.h>
+ #include <sys/mman.h>
+ #include <time.h>
+ #include <unistd.h>
+ #include <wlr/config.h>
++#include <wlr/util/log.h>
+ #include "util/shm.h"
++#include "util/virtio_wl_shm.h"
+ 
+ static void randname(char *buf) {
+ 	struct timespec ts;
+@@ -19,6 +22,11 @@ static void randname(char *buf) {
+ }
+ 
+ int create_shm_file(void) {
++	if (getenv("WLR_VIRTIO_WL")) {
++		wlr_log(WLR_ERROR, "cannot use create_shm_file with virtio_wl");
++		return -1;
++	}
++
+ 	int retries = 100;
+ 	do {
+ 		char name[] = "/wlroots-XXXXXX";
+@@ -37,6 +45,10 @@ int create_shm_file(void) {
+ }
+ 
+ int allocate_shm_file(size_t size) {
++	if (getenv("WLR_VIRTIO_WL")) {
++		return allocate_virtio_wl_shm_file(size);
++	}
++
+ 	int fd = create_shm_file();
+ 	if (fd < 0) {
+ 		return -1;
+diff --git a/util/virtio_wl.c b/util/virtio_wl.c
+new file mode 100644
+index 00000000..e7ee58ac
+--- /dev/null
++++ b/util/virtio_wl.c
+@@ -0,0 +1,96 @@
++#define _POSIX_C_SOURCE 200809L
++
++#include <fcntl.h>
++#include <linux/virtwl.h>
++#include <stdint.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include "util/virtio_wl.h"
++
++// This is essentially vendored reusable library code, so I consider
++// it exempt from the wlroots style guide. :)
++
++int virtio_wl_connect(const char *name, uint32_t flags)
++{
++	static int wl_fd = -1;
++	if (wl_fd < 0)
++		wl_fd = open("/dev/wl0", O_RDWR | O_CLOEXEC);
++	if (wl_fd < 0)
++		return wl_fd;
++
++	struct virtwl_ioctl_new new_ctx = {
++		.type = name ? VIRTWL_IOCTL_NEW_CTX_NAMED : VIRTWL_IOCTL_NEW_CTX,
++		.fd = -1,
++		.flags = flags,
++	};
++	// Device assumes name 32 bytes long if not null terminated.
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wstringop-truncation"
++	if (name)
++		strncpy(new_ctx.name, name, sizeof(new_ctx.name));
++#pragma GCC diagnostic pop
++
++	if (ioctl(wl_fd, VIRTWL_IOCTL_NEW, &new_ctx))
++		return -1;
++
++	return new_ctx.fd;
++}
++
++int32_t virtio_wl_sendmsg(int sockfd, struct virtwl_ioctl_txn *ioctl_txn)
++{
++	int r = ioctl(sockfd, VIRTWL_IOCTL_SEND, ioctl_txn);
++	if (!r)
++		r = ioctl_txn->len > INT32_MAX ? INT32_MAX : ioctl_txn->len;
++	return r;
++}
++
++int32_t virtio_wl_send(int sockfd, const void *buf, uint32_t len)
++{
++	struct virtwl_ioctl_txn *ioctl_txn = malloc(sizeof(*ioctl_txn) + len);
++	if (!ioctl_txn)
++		return -1;
++
++	for (size_t i = 0; i < VIRTWL_SEND_MAX_ALLOCS; i++)
++		ioctl_txn->fds[i] = -1;
++
++	ioctl_txn->len = len;
++	memcpy((uint8_t *)ioctl_txn + sizeof(*ioctl_txn), buf, len);
++
++	int r = virtio_wl_sendmsg(sockfd, ioctl_txn);
++
++	free(ioctl_txn);
++	return r;
++}
++
++int32_t virtio_wl_recvmsg(int sockfd, struct virtwl_ioctl_txn *ioctl_txn)
++{
++	if (ioctl(sockfd, VIRTWL_IOCTL_RECV, ioctl_txn))
++		return -1;
++
++	return ioctl_txn->len > INT32_MAX ? INT32_MAX : ioctl_txn->len;
++}
++
++int32_t virtio_wl_recv(int sockfd, void *buf, uint32_t len)
++{
++	struct virtwl_ioctl_txn *ioctl_txn = malloc(sizeof(*ioctl_txn) + len);
++	if (!ioctl_txn)
++		return -1;
++
++	ioctl_txn->len = len;
++
++	int rv = virtio_wl_recvmsg(sockfd, ioctl_txn);
++	if (rv < 0)
++		goto cleanup;
++
++	memcpy(buf, (uint8_t *)ioctl_txn + sizeof(*ioctl_txn), ioctl_txn->len);
++
++	for (size_t i = 0; i < VIRTWL_SEND_MAX_ALLOCS; i++)
++		if (ioctl_txn->fds[i] >= 0)
++			close(ioctl_txn->fds[i]);
++
++ cleanup:
++	free(ioctl_txn);
++	return rv;
++}
+diff --git a/util/virtio_wl_shm.c b/util/virtio_wl_shm.c
+new file mode 100644
+index 00000000..b2109310
+--- /dev/null
++++ b/util/virtio_wl_shm.c
+@@ -0,0 +1,65 @@
++#include <assert.h>
++#include <errno.h>
++#include <linux/virtwl.h>
++#include <stdint.h>
++#include <stdlib.h>
++#include <string.h>
++#include "util/virtio_wl.h"
++#include "util/virtio_wl_shm.h"
++
++// This is essentially vendored reusable library code, so I consider
++// it exempt from the wlroots style guide. :)
++
++int allocate_virtio_wl_shm_file(size_t size)
++{
++	static const size_t NAME_SIZE = 224;
++	static const char *NAME = "wlroots";
++
++	int r;
++	uint8_t *message = NULL;
++	struct virtwl_ioctl_txn *ioctl_txn = NULL;
++
++	int conn = virtio_wl_connect("__crosvm_memfd", 0);
++	if (conn < 0)
++		return conn;
++
++	message = calloc(NAME_SIZE + 8, 1);
++	if (!message) {
++		r = -1;
++		goto cleanup;
++	}
++	strcpy((char *)message, NAME);
++
++	// Encode size as 64-bit little-endian unsigned integer.
++	for (uint8_t i = 0; i < 8; i++)
++		message[NAME_SIZE + i] = (uint8_t)((uint64_t)size >> (8 * i));
++
++	if ((r = virtio_wl_send(conn, message, NAME_SIZE + 8)) < 0)
++		 goto cleanup;
++
++	int32_t len = 1;
++	if (!(ioctl_txn = malloc(sizeof(*ioctl_txn) + len))) {
++		r = -1;
++		goto cleanup;
++	}
++	ioctl_txn->len = len;
++
++	if ((r = virtio_wl_recvmsg(conn, ioctl_txn)) < 0)
++		goto cleanup;
++
++	if (((uint8_t *)ioctl_txn + sizeof(*ioctl_txn))[0]) {
++		// We don't actually know why we didn't get the
++		// memory, but out of memory is a reasonable guess.
++		errno = ENOMEM;
++		r = -1;
++		goto cleanup;
++	}
++
++	r = ioctl_txn->fds[0];
++	assert(r >= 0);
++
++ cleanup:
++	free(message);
++	free(ioctl_txn);
++	return r;
++}
+-- 
+2.26.2
+

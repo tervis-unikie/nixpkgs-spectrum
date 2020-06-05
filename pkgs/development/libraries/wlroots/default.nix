@@ -1,7 +1,7 @@
 { stdenv, fetchFromGitHub, meson, ninja, pkg-config, wayland
 , libGL, wayland-protocols, libinput, libxkbcommon, pixman
 , xcbutilwm, libX11, libcap, xcbutilimage, xcbutilerrors, mesa
-, libpng, ffmpeg_4
+, libpng, ffmpeg_4, linuxHeaders
 }:
 
 stdenv.mkDerivation rec {
@@ -17,6 +17,7 @@ stdenv.mkDerivation rec {
 
   patches = [
     ./0001-backend-wayland-downgrade-to-wl_compositor-v3.patch
+    ./0002-util-support-virtio_wl-shm-allocation.patch
   ];
 
   # $out for the library and $examples for the example programs (in examples):
@@ -27,7 +28,7 @@ stdenv.mkDerivation rec {
   buildInputs = [
     libGL wayland-protocols libinput libxkbcommon pixman
     xcbutilwm libX11 libcap xcbutilimage xcbutilerrors mesa
-    libpng ffmpeg_4
+    libpng ffmpeg_4 linuxHeaders
   ];
 
   postInstall = ''

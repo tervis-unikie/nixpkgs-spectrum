@@ -1,7 +1,7 @@
-From 3b37c19286b621f266e6d447cd16f1f59a3cc24c Mon Sep 17 00:00:00 2001
+From 2b266b85c8bd07cfc4d6427081ca0eaff4410511 Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Thu, 23 Jan 2020 14:35:41 +0000
-Subject: [PATCH] backend/wayland: downgrade to wl_compositor v3
+Subject: [PATCH 1/2] backend/wayland: downgrade to wl_compositor v3
 
 Sommelier does not support v4.
 
@@ -52,5 +52,5 @@ index 7a3a08d0..f332ad93 100644
  
  			output->pending_buffer = NULL;
 -- 
-2.24.1
+2.26.2
 
