@@ -6,7 +6,6 @@
 , bc
 , blur-effect
 , coreutils
-, dbus-factory
 , deepin
 , deepin-gettext-tools
 , fontconfig
@@ -21,7 +20,7 @@
 , librsvg
 , poppler
 , pulseaudio
-, rfkill
+, utillinux
 , xcur2png
 }:
 
@@ -43,7 +42,6 @@ buildGoPackage rec {
   nativeBuildInputs = [
     pkgconfig
     deepin-gettext-tools # build
-    dbus-factory         # build
     deepin.setupHook
 
     # TODO: using $PATH to find run time executable does not work with cross compiling
@@ -51,7 +49,7 @@ buildGoPackage rec {
     blur-effect # run (is it really needed?)
     coreutils   # run (is it really needed?)
     fontconfig  # run (is it really needed?)
-    rfkill      # run
+    utillinux   # run
     xcur2png    # run
     grub2       # run (is it really needed?)
   ];
@@ -125,5 +123,6 @@ buildGoPackage rec {
     license = licenses.gpl3;
     platforms = platforms.linux;
     maintainers = with maintainers; [ romildo ];
+    broken = true; # 2020-08-22 https://hydra.nixos.org/build/125354866/nixlog/2
   };
 }

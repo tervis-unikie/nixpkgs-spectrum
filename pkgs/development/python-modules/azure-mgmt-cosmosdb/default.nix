@@ -10,12 +10,12 @@
 
 buildPythonPackage rec {
   pname = "azure-mgmt-cosmosdb";
-  version = "0.13.0";
+  version = "0.16.0";
 
   src = fetchPypi {
     inherit pname version;
     extension = "zip";
-    sha256 = "e83d21462f9d5b02e90f5590c4247ab73e0ff85fc4ac1fba32be119a15b10c98";
+    sha256 = "308aeabdff61bf35ceb7a3d6dd19f1ab69a041bd92c85ee24d98a624968697f3";
   };
 
   propagatedBuildInputs = [
