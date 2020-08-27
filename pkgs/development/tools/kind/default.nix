@@ -13,8 +13,10 @@ buildGoModule rec {
     sha256 = "0r301nqvycik8fwlghq0cymmq4rm7xp8haj39i2nynxyw8zk6zym";
   };
 
-  modSha256 = "1vfdyd4yj79f2n0w98k9h4sklxwg49ajlp1blvpslbzmpfkmcjsz";
-  goPackagePath = "sigs.k8s.io/kind";
+  vendorSha256 = "1qvbm8v8yah6r6cw1cvdw79yiwxb2amzdkkzvzbwigy0j4bvn9mi";
+
+  doCheck = false;
+
   subPackages = [ "." ];
 
   nativeBuildInputs = [ installShellFiles ];

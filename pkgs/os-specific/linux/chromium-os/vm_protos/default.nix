@@ -7,7 +7,10 @@ common-mk {
   nativeBuildInputs = [ go-protobuf ];
   buildInputs = [ grpc openssl protobuf ];
 
-  NIX_CFLAGS_COMPILE = [ "-Wno-error=array-bounds" ];
+  NIX_CFLAGS_COMPILE = [
+    "-Wno-error=array-bounds"
+    "-Wno-error=deprecated-declarations"
+  ];
 
   platform2Patches = [ ./0003-vm_tools-proto-fix-parallel-build.patch ];
 
