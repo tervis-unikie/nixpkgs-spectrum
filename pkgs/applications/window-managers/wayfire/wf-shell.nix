@@ -13,7 +13,6 @@ stdenv.mkDerivation rec {
     sha256 = "1w4jhy84v9ky9s1iw36msn8189a3pwkvvivyhl44pfc4fy31wj7s";
   };
 
-  strictDeps = true;
   nativeBuildInputs = [ meson ninja pkg-config wayland ];
   buildInputs = [
     alsaLib gnome3.gtkmm gtk-layer-shell pulseaudio wayfire wf-config
