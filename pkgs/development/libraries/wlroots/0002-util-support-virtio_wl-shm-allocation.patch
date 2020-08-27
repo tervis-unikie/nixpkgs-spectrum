@@ -1,4 +1,4 @@
-From 3e287337ef82eeb632bd7d67106785591351a3a8 Mon Sep 17 00:00:00 2001
+From 7a85901b79c8a3c82167b446ee20fc46f50b0e1c Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Sat, 23 May 2020 03:42:33 +0000
 Subject: [PATCH 2/2] util: support virtio_wl shm allocation
@@ -51,13 +51,13 @@ index 00000000..d9f9f045
 +
 +#endif
 diff --git a/util/meson.build b/util/meson.build
-index c6614275..6ec6182b 100644
+index 14cd59c5..87311b98 100644
 --- a/util/meson.build
 +++ b/util/meson.build
-@@ -4,4 +4,6 @@ wlr_files += files(
- 	'region.c',
+@@ -6,4 +6,6 @@ wlr_files += files(
  	'shm.c',
  	'signal.c',
+ 	'time.c',
 +	'virtio_wl.c',
 +	'virtio_wl_shm.c',
  )
@@ -277,5 +277,5 @@ index 00000000..b2109310
 +	return r;
 +}
 -- 
-2.26.2
+2.27.0
 
