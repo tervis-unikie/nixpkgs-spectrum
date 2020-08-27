@@ -1,6 +1,6 @@
 { common-mk, lib
-, mesa, grpc, openssl, libdrm, xlibs, protobuf, wayland, libxkbcommon, vm_protos
-, linuxHeaders, c-ares, zlib
+, abseil-cpp, mesa, grpc, openssl, libdrm, xlibs, protobuf, wayland
+, libxkbcommon, vm_protos, linuxHeaders, c-ares, zlib
 }:
 
 common-mk {
@@ -13,7 +13,7 @@ common-mk {
   ];
 
   buildInputs = [
-    mesa grpc openssl libdrm protobuf wayland libxkbcommon vm_protos
+    abseil-cpp mesa grpc openssl libdrm protobuf wayland libxkbcommon vm_protos
     linuxHeaders c-ares zlib
   ] ++ (with xlibs; [ pixman libxcb libX11 ]);
 
