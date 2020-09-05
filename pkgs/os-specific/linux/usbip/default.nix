@@ -5,7 +5,9 @@ stdenv.mkDerivation {
 
   src = kernel.src;
 
-  patches = lib.optionals (lib.versionAtLeast "5.4" kernel.version) [
+  patches = [
+    ./usbipd-add-s6-readiness-notification.patch
+  ] ++ lib.optionals (lib.versionAtLeast "5.4" kernel.version) [
     # fixes build with gcc8
     ./fix-snprintf-truncation.patch
     # fixes build with gcc9

@@ -1,0 +1,165 @@
+From 112a36a9dfddfbcb757c61a81cd7fe528622a307 Mon Sep 17 00:00:00 2001
+From: Alyssa Ross <hi@alyssa.is>
+Date: Sat, 5 Sep 2020 11:45:03 +0000
+Subject: [PATCH] usbip: tools: usbipd: add s6 readiness notification
+
+This implements the s6 readiness notification protocol[1].  When the
+daemon has started and is listening on its socket(s), it will emit a
+readiness notification on a user-specified file descriptor.
+
+systemd-based systems can also use the readiness notification, using
+the sdnotify-wrapper program[2].
+
+[1]: https://skarnet.org/software/s6/s6-supervise.html
+[2]: https://skarnet.org/software/misc/sdnotify-wrapper.c
+---
+ tools/usb/usbip/src/usbipd.c | 70 ++++++++++++++++++++++++++++--------
+ 1 file changed, 55 insertions(+), 15 deletions(-)
+
+diff --git a/tools/usb/usbip/src/usbipd.c b/tools/usb/usbip/src/usbipd.c
+index 48398a78e88af..4ee41040735f4 100644
+--- a/tools/usb/usbip/src/usbipd.c
++++ b/tools/usb/usbip/src/usbipd.c
+@@ -22,6 +22,7 @@
+ #include <arpa/inet.h>
+ #include <sys/socket.h>
+ #include <netinet/in.h>
++#include <fcntl.h>
+ 
+ #ifdef HAVE_LIBWRAP
+ #include <tcpd.h>
+@@ -65,6 +66,10 @@ static const char usbipd_help_string[] =
+ 	"	-D, --daemon\n"
+ 	"		Run as a daemon process.\n"
+ 	"\n"
++	"	-nFD, --notify-fd FD\n"
++	"		Once ready to receive connections, write a line feed\n"
++	"		character to FD, then close it.\n"
++	"\n"
+ 	"	-d, --debug\n"
+ 	"		Print debugging information.\n"
+ 	"\n"
+@@ -88,6 +93,30 @@ static void usbipd_help(void)
+ 	printf("%s\n", usbipd_help_string);
+ }
+ 
++static int parse_notify_fd(char *arg)
++{
++	dbg("parsing notify-fd arg '%s'", arg);
++	char *end;
++	unsigned long int notify_fd = strtoul(arg, &end, 10);
++
++	if (end == arg) {
++		err("notify-fd: could not parse '%s' as decimal integer", arg);
++		return -1;
++	}
++
++	if (*end != '\0') {
++		err("notify-fd: garbage at end of '%s'", arg);
++		return -1;
++	}
++
++	if (fcntl(notify_fd, F_GETFD) == -1) {
++		err("notify-fd: %s", strerror(errno));
++		return -1;
++	}
++
++	return notify_fd;
++}
++
+ static int recv_request_import(int sockfd)
+ {
+ 	struct op_import_request req;
+@@ -488,7 +517,7 @@ static void remove_pid_file(void)
+ 	}
+ }
+ 
+-static int do_standalone_mode(int daemonize, int ipv4, int ipv6)
++static int do_standalone_mode(int daemonize, int notify_fd, int ipv4, int ipv6)
+ {
+ 	struct addrinfo *ai_head;
+ 	int sockfdlist[MAXSOCKFD];
+@@ -543,6 +572,13 @@ static int do_standalone_mode(int daemonize, int ipv4, int ipv6)
+ 
+ 	dbg("listening on %d address%s", nsockfd, (nsockfd == 1) ? "" : "es");
+ 
++	if (notify_fd != -1) {
++		const char lf[] = { '\n' };
++		if (write(notify_fd, lf, sizeof lf) == -1)
++			err("failed to notify readiness");
++		close(notify_fd);
++	}
++
+ 	fds = calloc(nsockfd, sizeof(struct pollfd));
+ 	for (i = 0; i < nsockfd; i++) {
+ 		fds[i].fd = sockfdlist[i];
+@@ -586,17 +622,18 @@ static int do_standalone_mode(int daemonize, int ipv4, int ipv6)
+ int main(int argc, char *argv[])
+ {
+ 	static const struct option longopts[] = {
+-		{ "ipv4",     no_argument,       NULL, '4' },
+-		{ "ipv6",     no_argument,       NULL, '6' },
+-		{ "daemon",   no_argument,       NULL, 'D' },
+-		{ "daemon",   no_argument,       NULL, 'D' },
+-		{ "debug",    no_argument,       NULL, 'd' },
+-		{ "device",   no_argument,       NULL, 'e' },
+-		{ "pid",      optional_argument, NULL, 'P' },
+-		{ "tcp-port", required_argument, NULL, 't' },
+-		{ "help",     no_argument,       NULL, 'h' },
+-		{ "version",  no_argument,       NULL, 'v' },
+-		{ NULL,	      0,                 NULL,  0  }
++		{ "ipv4",      no_argument,       NULL, '4' },
++		{ "ipv6",      no_argument,       NULL, '6' },
++		{ "daemon",    no_argument,       NULL, 'D' },
++		{ "daemon",    no_argument,       NULL, 'D' },
++		{ "notify-fd", required_argument, NULL, 'n' },
++		{ "debug",     no_argument,       NULL, 'd' },
++		{ "device",    no_argument,       NULL, 'e' },
++		{ "pid",       optional_argument, NULL, 'P' },
++		{ "tcp-port",  required_argument, NULL, 't' },
++		{ "help",      no_argument,       NULL, 'h' },
++		{ "version",   no_argument,       NULL, 'v' },
++		{ NULL,	       0,                 NULL,  0  }
+ 	};
+ 
+ 	enum {
+@@ -605,7 +642,7 @@ int main(int argc, char *argv[])
+ 		cmd_version
+ 	} cmd;
+ 
+-	int daemonize = 0;
++	int daemonize = 0, notify_fd = -1;
+ 	int ipv4 = 0, ipv6 = 0;
+ 	int opt, rc = -1;
+ 
+@@ -620,7 +657,7 @@ int main(int argc, char *argv[])
+ 	cmd = cmd_standalone_mode;
+ 	driver = &host_driver;
+ 	for (;;) {
+-		opt = getopt_long(argc, argv, "46DdeP::t:hv", longopts, NULL);
++		opt = getopt_long(argc, argv, "46Dn:deP::t:hv", longopts, NULL);
+ 
+ 		if (opt == -1)
+ 			break;
+@@ -635,6 +672,9 @@ int main(int argc, char *argv[])
+ 		case 'D':
+ 			daemonize = 1;
+ 			break;
++		case 'n':
++			notify_fd = parse_notify_fd(optarg);
++			break;
+ 		case 'd':
+ 			usbip_use_debug = 1;
+ 			break;
+@@ -665,7 +705,7 @@ int main(int argc, char *argv[])
+ 
+ 	switch (cmd) {
+ 	case cmd_standalone_mode:
+-		rc = do_standalone_mode(daemonize, ipv4, ipv6);
++		rc = do_standalone_mode(daemonize, notify_fd, ipv4, ipv6);
+ 		remove_pid_file();
+ 		break;
+ 	case cmd_version:
+-- 
+2.27.0
+
