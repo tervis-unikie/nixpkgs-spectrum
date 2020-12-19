@@ -36,7 +36,8 @@ let
     mkdir $out
     cd $out
 
-    mkdir bin sbin dev proc run sys tmp
+    mkdir -p bin sbin dev proc run sys tmp var/lib
+    ln -s /run var/run
     ln -s ${dash}/bin/dash bin/sh
     ln -s ${stage1} sbin/init
     cp -r ${./etc} etc

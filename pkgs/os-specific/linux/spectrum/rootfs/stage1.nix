@@ -26,10 +26,13 @@ writeScript "init-stage1" ''
 
     if { s6-mkdir -p /run/user/0 /dev/pts /dev/shm }
     if { install -o user -g user -d /run/user/1000 }
+
     if { s6-mount -t devpts -o gid=4,mode=620 none /dev/pts }
     if { s6-mount -t tmpfs none /dev/shm }
+    if { s6-mount -t tmpfs none /var/lib }
     if { s6-mount -t proc none /proc }
     if { s6-mount -t sysfs none /sys }
+
     if { s6-ln -s ${mesa.drivers} /run/opengl-driver }
 
     s6-rc change ok-all
