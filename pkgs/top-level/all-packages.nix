@@ -15145,6 +15145,7 @@ in
     s6-portable-utils = callPackage ../tools/misc/s6-portable-utils { };
     s6-rc = callPackage ../tools/system/s6-rc { };
 
+    mdevd = callPackage ../os-specific/linux/mdevd { };
     nsss = callPackage ../development/libraries/nsss { };
     utmps = callPackage ../development/libraries/utmps { };
     sdnotify-wrapper = callPackage ../os-specific/linux/sdnotify-wrapper { };
@@ -17945,6 +17946,8 @@ in
 
   mdadm = mdadm4;
   mdadm4 = callPackage ../os-specific/linux/mdadm { };
+
+  inherit (skawarePackages) mdevd;
 
   metastore = callPackage ../os-specific/linux/metastore { };
 
