@@ -1,4 +1,4 @@
-{ lib, linux, kernelPatches }:
+{ lib, linux, kernelPatches, structuredExtraConfig ? {} }:
 
 with lib.kernel;
 
@@ -24,5 +24,5 @@ linux.override {
     NET_9P = yes;
     NET_9P_VIRTIO = yes;
     "9P_FS" = yes;
-  };
+  } // structuredExtraConfig;
 }
