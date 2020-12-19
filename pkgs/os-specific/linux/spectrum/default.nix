@@ -8,6 +8,8 @@ let
 
     linux_vm = callPackage ./linux/vm.nix { linux = linux_cros; };
 
+    makeRootfs = callPackage ./rootfs/generic.nix { };
+
     rootfs = callPackage ./rootfs { };
   };
 in

@@ -1,16 +1,9 @@
-{ runCommandNoCC, writeScript, writeText, makeFontsConf, writeReferencesToFile
-, lib, dash, busybox, execline, s6, s6-portable-utils, s6-linux-utils
-, s6-linux-init, mesa, squashfs-tools-ng
-, source-code-pro, zsh, emacs26-nox, gcc, wayfire, sommelier, westonLite
+{ writeScript, writeText, lib, makeRootfs
+, busybox, execline, s6, sommelier, source-code-pro, wayfire, zsh
+, gcc, emacs26-nox, westonLite
 }:
 
 let
-  makeRootfs = import ./generic.nix {
-    inherit runCommandNoCC writeScript writeReferencesToFile makeFontsConf lib
-      dash execline s6 s6-portable-utils s6-linux-utils s6-linux-init busybox
-      mesa squashfs-tools-ng;
-  };
-
   path = [
     zsh emacs26-nox gcc wayfire sommelier westonLite busybox s6 execline
   ];
