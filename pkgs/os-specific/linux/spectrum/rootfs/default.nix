@@ -35,17 +35,44 @@ makeRootfs {
     ${busybox}/bin/getty -i -n -l ${login} 38400 ttyS0
   '';
 
-  run = ''
-    if { chown user /dev/wl0 }
+  rcServices.ok-all = {
+    type = writeText "ok-all-type" ''
+      bundle
+    '';
+    contents = writeText "ok-all-contents" ''
+      wayfire
+    '';
+  };
 
-    s6-applyuidgid -u 1000 -g 1000
-    export XDG_RUNTIME_DIR /run/user/1000
+  rcServices.wayfire = {
+    type = writeText "wayfire-type" ''
+      longrun
+    '';
+    run = writeScript "wayfire-run" ''
+      #! ${execline}/bin/execlineb -S0
 
-    export PATH ${lib.makeBinPath path}
+      s6-applyuidgid -u 1000 -g 1000
 
-    ${sommelier}/bin/sommelier
-    wayfire -c ${wayfireConfig}
-  '';
+      export HOME /
+      export PATH ${lib.makeBinPath path}
+      export XDG_RUNTIME_DIR /run/user/1000
+
+      ${sommelier}/bin/sommelier
+      wayfire -c ${wayfireConfig}
+    '';
+    dependencies = writeText "wayfire-dependencies" ''
+      wl0
+    '';
+  };
+
+  rcServices.wl0 = {
+    type = writeText "wl0-type" ''
+      oneshot
+    '';
+    up = writeText "wl0-run" ''
+      chown user /dev/wl0
+    '';
+  };
 
   fonts = [ source-code-pro ];
 }
