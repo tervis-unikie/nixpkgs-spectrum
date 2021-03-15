@@ -31,7 +31,7 @@ let
     mkdir $out
     cd $out
 
-    mkdir bin sbin dev proc run tmp
+    mkdir bin sbin dev proc run sys tmp
     ln -s ${dash}/bin/dash bin/sh
     ln -s ${makeStage1 { inherit run; }} sbin/init
     cp -r ${./etc} etc
