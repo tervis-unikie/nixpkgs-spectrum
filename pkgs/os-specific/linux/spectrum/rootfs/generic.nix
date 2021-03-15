@@ -8,7 +8,8 @@
 let
   makeStage1 = import ./stage1.nix {
     inherit writeScript lib
-      execline s6 s6-portable-utils s6-linux-utils s6-linux-init busybox mesa;
+      execline s6 s6-portable-utils s6-linux-utils s6-linux-init busybox mesa
+      path;
   };
 
   makeServicesDir = import ./services.nix {

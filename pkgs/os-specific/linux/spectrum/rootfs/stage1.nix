@@ -1,16 +1,19 @@
 { writeScript, lib
 , execline, s6, s6-portable-utils, s6-linux-utils, s6-linux-init, busybox, mesa
+, path ? []
 }:
 
 { run ? "true" }:
 
 let
-  path = [ s6 s6-portable-utils s6-linux-utils s6-linux-init busybox execline ];
+  path' = path ++ [
+    s6 s6-portable-utils s6-linux-utils s6-linux-init busybox execline
+  ];
 in
 
 writeScript "init-stage1" ''
   #! ${execline}/bin/execlineb -P
-  export PATH ${lib.makeBinPath path}
+  export PATH ${lib.makeBinPath path'}
   ${s6}/bin/s6-setsid -qb --
 
   importas -i spectrumcmd spectrumcmd
