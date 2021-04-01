@@ -276,6 +276,12 @@ mapAliases ({
   linuxPackages_testing_hardened = throw "linuxPackages_testing_hardened has been removed, please use linuxPackages_latest_hardened";
   linux_testing_hardened = throw "linux_testing_hardened has been removed, please use linux_latest_hardened";
 
+  # added 2021-04-04
+  linuxPackages_xen_dom0 = linuxPackages;
+  linuxPackages_latest_xen_dom0 = linuxPackages_latest;
+  linuxPackages_xen_dom0_hardened = linuxPackages_hardened;
+  linuxPackages_latest_xen_dom0_hardened = linuxPackages_latest_hardened;
+
   linux-steam-integration = throw "linux-steam-integration has been removed, as the upstream project has been abandoned"; # added 2020-05-22
   loadcaffe = throw "loadcaffe has been removed, as the upstream project has been abandoned"; # added 2020-03-28
   lttngTools = lttng-tools;  # added 2014-07-31
