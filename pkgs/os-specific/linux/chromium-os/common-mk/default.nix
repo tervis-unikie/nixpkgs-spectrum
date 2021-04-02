@@ -64,7 +64,11 @@ stdenv.mkDerivation ({
     patchShebangs common-mk
   '' + (lib.optionalString (!stdenv.cc.isClang) ''
     substituteInPlace common-mk/BUILD.gn \
-        --replace '"-Wno-c99-designator",' ""
+        --replace '"-Wno-c99-designator",' "" \
+        --replace '"-Wstring-compare",' "" \
+        --replace '"-Wstring-plus-int",' "" \
+        --replace '"-Wxor-used-as-pow",' "" \
+        --replace '"-Wunreachable-code-return",' ""
   '') + postPatch;
 
   nativeBuildInputs = [ gn pkgconfig python3 ninja ] ++ nativeBuildInputs;

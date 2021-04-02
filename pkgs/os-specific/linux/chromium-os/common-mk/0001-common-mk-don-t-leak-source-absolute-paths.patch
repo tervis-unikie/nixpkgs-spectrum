@@ -1,23 +1,25 @@
-From 22f33cfdfacc8c4536a8bf883b4c8b54e30599a3 Mon Sep 17 00:00:00 2001
+From 8b87e0d6ee0e645d1ac2b27c2fba0c97f2929e31 Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Sun, 24 Nov 2019 16:56:11 +0000
-Subject: [PATCH 1/6] common-mk: don't leak source-absolute paths
+Subject: [PATCH 1/4] common-mk: don't leak source-absolute paths
 
 Source-absolute paths like //vm_tools/whatever were being leaked to
 subprocesses, which of course didn't know how to understand them.
 With this patch, source-absolute paths are only used to tell GN the
 outputs, and normal Unix paths are passed to subprocesses.
 ---
- common-mk/external_dependencies/BUILD.gn |  3 ++-
- common-mk/pkg_config.gni                 |  7 +++----
- common-mk/proto_library.gni              | 21 +++++++++++----------
- 3 files changed, 16 insertions(+), 15 deletions(-)
+ common-mk/external_dependencies/BUILD.gn    |  3 ++-
+ common-mk/mojom_bindings_generator.gni      | 12 ++++++------
+ common-mk/mojom_type_mappings_generator.gni |  2 +-
+ common-mk/pkg_config.gni                    |  5 +++--
+ common-mk/proto_library.gni                 | 21 +++++++++++----------
+ 5 files changed, 23 insertions(+), 20 deletions(-)
 
 diff --git a/common-mk/external_dependencies/BUILD.gn b/common-mk/external_dependencies/BUILD.gn
-index 61f571b38..4cb7b93cf 100644
+index dbf45368ff..94aae4e2e2 100644
 --- a/common-mk/external_dependencies/BUILD.gn
 +++ b/common-mk/external_dependencies/BUILD.gn
-@@ -47,6 +47,7 @@ genxml2cpp("dbus-proxies") {
+@@ -45,6 +45,7 @@ genxml2cpp("dbus-proxies") {
  action("cloud_policy_proto_generator") {
    policy_resources_dir = "${sysroot}/usr/share/policy_resources"
    proto_out_dir = "${target_gen_dir}/proto"
@@ -25,26 +27,91 @@ index 61f571b38..4cb7b93cf 100644
    policy_tools_dir = "${sysroot}/usr/share/policy_tools"
  
    script = "${policy_tools_dir}/generate_policy_source.py"
-@@ -58,7 +59,7 @@ action("cloud_policy_proto_generator") {
-     "${proto_out_dir}/cloud_policy.proto",
+@@ -54,7 +55,7 @@ action("cloud_policy_proto_generator") {
    ]
+   outputs = [ "${proto_out_dir}/cloud_policy.proto" ]
    args = [
 -    "--cloud-policy-protobuf=${proto_out_dir}/cloud_policy.proto",
 +    "--cloud-policy-protobuf=${cloud_policy_protobuf_dir}/cloud_policy.proto",
      "--chrome-version-file=${policy_resources_dir}/VERSION",
      "--target-platform=chromeos",
      "--policy-templates-file=${policy_resources_dir}/policy_templates.json",
+diff --git a/common-mk/mojom_bindings_generator.gni b/common-mk/mojom_bindings_generator.gni
+index 038c20ed36..205d7d3037 100644
+--- a/common-mk/mojom_bindings_generator.gni
++++ b/common-mk/mojom_bindings_generator.gni
+@@ -100,7 +100,7 @@ template("generate_mojom_bindings_gen") {
+     args = [
+       "mkdir",
+       "-p",
+-      mojo_templates_dir,
++      rebase_path(mojo_templates_dir),
+     ]
+   }
+ 
+@@ -116,7 +116,7 @@ template("generate_mojom_bindings_gen") {
+     args = [
+       "--use_bundled_pylibs",
+       "-o",
+-      mojo_templates_dir,
++      rebase_path(mojo_templates_dir),
+       "precompile",
+     ]
+     deps = [ ":${mojo_templates_dir_action_name}" ]
+@@ -143,7 +143,7 @@ template("generate_mojom_bindings_gen") {
+     args = [
+       "--mojom-file-list={{response_file_name}}",
+       "--output-root",
+-      _mojo_output_base,
++      rebase_path(_mojo_output_base),
+       "--input-root",
+       mojo_root,  # Mojo depth.
+       "--input-root",
+@@ -188,11 +188,11 @@ template("generate_mojom_bindings_gen") {
+              mojom_bindings_generator,
+              "--use_bundled_pylibs",
+              "--output_dir",
+-             _mojo_output_base,
++             rebase_path(_mojo_output_base),
+              "generate",
+              "--filelist={{response_file_name}}",
+              "--bytecode_path",
+-             mojo_templates_dir,
++             rebase_path(mojo_templates_dir),
+              "-I",
+              mojo_root,  # Mojo include path.
+              "-d",
+@@ -216,7 +216,7 @@ template("generate_mojom_bindings_gen") {
+       foreach(typemap, invoker.typemaps) {
+         args += [
+           "--typemap",
+-          typemap,
++          rebase_path(typemap),
+         ]
+       }
+     }
+diff --git a/common-mk/mojom_type_mappings_generator.gni b/common-mk/mojom_type_mappings_generator.gni
+index ff09397111..959a8b6ca9 100644
+--- a/common-mk/mojom_type_mappings_generator.gni
++++ b/common-mk/mojom_type_mappings_generator.gni
+@@ -21,7 +21,7 @@ template("generate_mojom_type_mappings") {
+     outputs = [ "$target_gen_dir/${target_name}_typemapping" ]
+     args = [
+              "--output",
+-             "$target_gen_dir/${target_name}_typemapping",
++             rebase_path("$target_gen_dir/${target_name}_typemapping"),
+            ] + rebase_path(sources, root_build_dir)
+   }
+ }
 diff --git a/common-mk/pkg_config.gni b/common-mk/pkg_config.gni
-index af3c3fb4c..151c49e56 100644
+index 24e2cf1401..151c49e560 100644
 --- a/common-mk/pkg_config.gni
 +++ b/common-mk/pkg_config.gni
-@@ -81,12 +81,11 @@ template("generate_pkg_config") {
+@@ -81,10 +81,11 @@ template("generate_pkg_config") {
      if (!defined(output_name)) {
        output_name = name
      }
--    outputs = [
--      "${target_out_dir}/${output_name}.pc",
--    ]
+-    outputs = [ "${target_out_dir}/${output_name}.pc" ]
 +    lib_path = "${target_out_dir}/${output_name}.pc"
 +    outputs = [ lib_path ]
  
@@ -55,7 +122,7 @@ index af3c3fb4c..151c49e56 100644
        args += [ "--description=" + description ]
      }
 diff --git a/common-mk/proto_library.gni b/common-mk/proto_library.gni
-index 7fcb08341..692704288 100644
+index 68b7904acc..2bef5f44ef 100644
 --- a/common-mk/proto_library.gni
 +++ b/common-mk/proto_library.gni
 @@ -56,7 +56,7 @@ template("proto_library") {
@@ -106,7 +173,7 @@ index 7fcb08341..692704288 100644
        outputs += [
          "${cc_dir}/{{source_name_part}}.pb.cc",
          "${cc_dir}/{{source_name_part}}.pb.h",
-@@ -208,7 +207,9 @@ template("goproto_library") {
+@@ -218,7 +217,9 @@ template("goproto_library") {
      # otherwise file descriptor var name will conflict.
      # cf) https://github.com/golang/protobuf/issues/109
  
@@ -116,16 +183,16 @@ index 7fcb08341..692704288 100644
  
      # Build protoc command line to run.
      script = "//common-mk/file_generator_wrapper.py"
-@@ -224,7 +225,7 @@ template("goproto_library") {
-       "--proto_path",
-       "${sysroot}/usr/share/proto",
+@@ -258,7 +259,7 @@ template("goproto_library") {
        "--go_out",
--      "${go_out_prefix}${root_gen_dir}/${proto_out_dir}",
-+      "${go_out_prefix}${proto_out_dir}",
+ 
+       # go_out_prefix can be empty, so we can always add a colon here.
+-      "${go_out_prefix}:${root_gen_dir}/${proto_out_dir}",
++      "${go_out_prefix}:${proto_out_dir}",
      ]
      foreach(source, sources) {
        args += [ rebase_path(source) ]
-@@ -234,7 +235,7 @@ template("goproto_library") {
+@@ -268,7 +269,7 @@ template("goproto_library") {
      outputs = []
      foreach(source, invoker.sources) {
        name = get_path_info(source, "name")
@@ -135,5 +202,5 @@ index 7fcb08341..692704288 100644
    }
  }
 -- 
-2.26.2
+2.30.0
 

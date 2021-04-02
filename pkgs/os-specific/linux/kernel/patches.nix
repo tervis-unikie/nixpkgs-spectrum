@@ -92,13 +92,4 @@
     name = "mac_nvme_t2";
     patch = ./mac-nvme-t2.patch;
   };
-
-  # https://github.com/cloud-hypervisor/cloud-hypervisor/blob/8b7aafad16ee8a23d7178a7f7aa6d2c1ec509b5d/docs/hotplug.md#kernel-support
-  evged = {
-    name = "evged";
-    patch = fetchpatch {
-      url = "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/patch?id=ac36d37e943635fc072e9d4f47e40a48fbcdb3f0";
-      sha256 = "0hzl3s2fmsvz54hq478lqi14dwry8a5g2b2awsssxf0r2ga15jk5";
-    };
-  };
 }

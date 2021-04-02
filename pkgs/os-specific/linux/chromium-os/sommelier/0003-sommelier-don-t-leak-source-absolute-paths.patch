@@ -1,17 +1,17 @@
-From 7fd2b67e7b265f7c2014ce7183c483f34e1a8ec9 Mon Sep 17 00:00:00 2001
+From 98cff9d9c6cd0642ecb54f0fbb799a6a9c666035 Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Sun, 1 Dec 2019 17:04:04 +0000
-Subject: [PATCH 4/6] sommelier: don't leak source-absolute paths
+Subject: [PATCH 3/4] sommelier: don't leak source-absolute paths
 
 ---
  vm_tools/sommelier/wayland_protocol.gni | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/vm_tools/sommelier/wayland_protocol.gni b/vm_tools/sommelier/wayland_protocol.gni
-index 4f18a0c10..b1bd5d659 100644
+index f894adf81d..28bb5a006b 100644
 --- a/vm_tools/sommelier/wayland_protocol.gni
 +++ b/vm_tools/sommelier/wayland_protocol.gni
-@@ -44,7 +44,7 @@ template("wayland_protocol_library") {
+@@ -42,7 +42,7 @@ template("wayland_protocol_library") {
          "wayland-scanner",
          g.subcommand,
          "{{source}}",
@@ -21,5 +21,5 @@ index 4f18a0c10..b1bd5d659 100644
      }
    }
 -- 
-2.26.2
+2.30.0
 

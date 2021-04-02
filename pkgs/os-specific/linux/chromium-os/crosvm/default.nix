@@ -1,5 +1,6 @@
 { stdenv, lib, rustPlatform, fetchFromGitiles, upstreamInfo
-, pkgconfig, minijail, dtc, libusb1, libcap, linux
+, pkgconfig, minigbm, minijail, wayland, wayland-protocols, dtc, libusb1, libcap
+, linux
 }:
 
 let
@@ -13,6 +14,7 @@ let
     "src/platform/crosvm"
     "src/third_party/adhd"
     "src/aosp/external/minijail"
+    "src/platform2"
   ] getSrc;
 in
 
@@ -37,20 +39,25 @@ in
 
     sourceRoot = "src/platform/crosvm";
 
+    cargoPatches = [ ./Regenerate-Cargo.lock.patch ];
+
     patches = [
       ./default-seccomp-policy-dir.diff
-      ./0001-crosvm-support-setting-guest-MAC-from-tap-fd.patch
+      ./VIRTIO_NET_F_MAC.patch
     ];
 
-    cargoSha256 = "0wzqn2n4vyv3bk39079yg1zbnriagi5xns928bzdqmq9djdcj21i";
+    cargoSha256 = "0rrhgchrf6ac5393rxlkff0kd3xs7xixxshcdpag3lxjgg0j62af";
 
-    nativeBuildInputs = [ pkgconfig ];
+    nativeBuildInputs = [ pkgconfig wayland ];
 
-    buildInputs = [ dtc libcap libusb1 minijail ];
+    buildInputs = [ dtc libcap libusb1 minigbm minijail wayland wayland-protocols ];
 
     postPatch = ''
       sed -i "s|/usr/share/policy/crosvm/|$out/share/policy/|g" \
              seccomp/*/*.policy
+
+      # No /dev/log in the sandbox.
+      sed -i '/^[[:space:]]*syslog::init().unwrap();$/d' tests/boot.rs
     '';
 
     preBuild = ''
@@ -61,6 +68,9 @@ in
       mkdir -p $out/share/policy/
       cp seccomp/${arch}/* $out/share/policy/
     '';
+
+    # Boot test often hangs on AMD.
+    doCheck = !stdenv.buildPlatform.isx86_64;
 
     CROSVM_CARGO_TEST_KERNEL_BINARY =
       lib.optionalString (stdenv.buildPlatform == stdenv.hostPlatform)

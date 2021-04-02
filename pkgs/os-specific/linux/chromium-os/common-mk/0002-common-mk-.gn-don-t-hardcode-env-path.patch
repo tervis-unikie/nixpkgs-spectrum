@@ -1,7 +1,7 @@
-From 51ed7b957069bd3765222a466473c696755caa5e Mon Sep 17 00:00:00 2001
+From 1589ff7aa30d61be9ebe4b53a1b8d504b72ff4de Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Sun, 24 Nov 2019 17:20:46 +0000
-Subject: [PATCH 2/6] common-mk: .gn: don't hardcode env path
+Subject: [PATCH 2/4] common-mk: .gn: don't hardcode env path
 
 This is needlessly non-portable.
 ---
@@ -9,7 +9,7 @@ This is needlessly non-portable.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/.gn b/.gn
-index e7dba8c91..e29fcd61e 100644
+index e7dba8c91c..e29fcd61ee 100644
 --- a/.gn
 +++ b/.gn
 @@ -7,4 +7,4 @@ root = "//common-mk/gn_root/:"
@@ -19,5 +19,5 @@ index e7dba8c91..e29fcd61e 100644
 -script_executable = "/usr/bin/env"
 +script_executable = "env"
 -- 
-2.26.2
+2.30.0
 

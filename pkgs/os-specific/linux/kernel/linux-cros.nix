@@ -29,6 +29,10 @@ buildLinux (args // rec {
     # Enabling this (the default) caused a build failure.  If you can
     # archieve a successful build with this enabled, go ahead and
     # enable it.
-    ANALOGIX_ANX7625 = no;
+    VIDEO_INTEL_IPU6 = no;
+
+    # RTW88_8822*E were being selected as Y when N/m/? are the only valid options
+    RTW88_8822BE = lib.mkForce module;
+    RTW88_8822CE = lib.mkForce module;
   } // (args.structuredExtraConfig or {});
 } // (args.argsOverride or {}))
