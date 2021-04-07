@@ -1,8 +1,11 @@
-{ lib, linux }:
+{ lib, linux, kernelPatches }:
 
 with lib.kernel;
 
 linux.override {
+  # Fix hotplugging with cloud-hypervisor.
+  kernelPatches = linux.kernelPatches ++ [ kernelPatches.evged ];
+
   structuredExtraConfig = {
     VIRTIO_PCI = yes;
     VIRTIO_BLK = yes;
