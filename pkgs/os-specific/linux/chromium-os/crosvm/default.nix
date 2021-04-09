@@ -39,6 +39,7 @@ in
 
     patches = [
       ./default-seccomp-policy-dir.diff
+      ./0001-crosvm-support-setting-guest-MAC-from-tap-fd.patch
     ];
 
     cargoSha256 = "0wzqn2n4vyv3bk39079yg1zbnriagi5xns928bzdqmq9djdcj21i";
