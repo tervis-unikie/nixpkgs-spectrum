@@ -1,2 +1,3 @@
 root:x:0:root
+messagebus:x:4:messagebus
 user:x:1000:user
