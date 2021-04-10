@@ -8,6 +8,8 @@ let
 
     spectrum-vm = callPackage ./spectrum-vm { linux = linux_vm; };
 
+    spectrum-testhost = callPackage ./testhost { };
+
     linux_vm = callPackage ./linux/vm.nix { linux = linux_cros; };
 
     makeRootfs = callPackage ./rootfs { };
