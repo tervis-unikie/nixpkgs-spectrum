@@ -1,6 +1,6 @@
 { runCommandNoCC, writeScript, writeReferencesToFile, makeFontsConf, lib
 , dash, execline, s6, s6-rc, s6-portable-utils, s6-linux-utils, s6-linux-init, busybox
-, mesa, squashfs-tools-ng, makeDBusConf
+, mesa, squashfs-tools-ng, makeDBusConf, connman
 }:
 
 { services, rcServices ? {}, fonts ? [], path ? [] }:
@@ -44,7 +44,7 @@ let
     chmod u+w etc
     ln -s ${makeDBusConf {
       suidHelper = "/run/dbus-daemon-launch-helper";
-      serviceDirectories = [];
+      serviceDirectories = [ connman ];
     }} etc/dbus-1
 
     mkdir etc/fonts
