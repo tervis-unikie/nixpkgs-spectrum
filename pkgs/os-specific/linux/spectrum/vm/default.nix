@@ -1,0 +1,5 @@
+{ callPackage }:
+
+{
+  comp = callPackage ./comp { };
+}

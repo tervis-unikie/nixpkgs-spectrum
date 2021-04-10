@@ -1,4 +1,4 @@
-{ stdenv, lib, makeWrapper, utillinux, crosvm, linux, rootfs }:
+{ stdenv, lib, makeWrapper, utillinux, crosvm, linux, sys-vms }:
 
 stdenv.mkDerivation {
   name = "spectrum-vm";
@@ -18,8 +18,8 @@ stdenv.mkDerivation {
 
   getopt = "${lib.getBin utillinux}/bin/getopt";
   crosvm = "${lib.getBin crosvm}/bin/crosvm";
-  kernel = "${linux}/bzImage";
-  rootfs = rootfs.squashfs;
+  kernel = "${sys-vms.comp.linux}/bzImage";
+  rootfs = sys-vms.comp.rootfs.squashfs;
 
   installPhase = ''
     mkdir -p $out/bin
