@@ -10,7 +10,7 @@ let
 
     linux_vm = callPackage ./linux/vm.nix { linux = linux_cros; };
 
-    makeRootfs = callPackage ./rootfs/generic.nix { };
+    makeRootfs = callPackage ./rootfs { };
   };
 in
 self
