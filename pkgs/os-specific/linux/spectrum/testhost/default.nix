@@ -142,7 +142,9 @@ let
             printf "%s" $PCI_LOCATION
           }
 
-          # (Re)bind the device to the VFIO PCI driver.
+          # Tell the VFIO driver it should support our device.  This
+          # is allowed to fail because it might already know that, in
+          # which case it'll return EEXIST.
           if { modprobe vfio-pci }
           backtick -in device_id {
             if { dd bs=2 skip=1 count=2 status=none if=''${PCI_PATH}/vendor }
@@ -154,6 +156,20 @@ let
             redirfd -w 1 /sys/bus/pci/drivers/vfio-pci/new_id
             printf "%s" $device_id
           }
+
+          # Bind the device to the VFIO driver.  This is allowed to
+          # fail because the new_id operation we just tried will have
+          # bound it automatically for us if it succeeded.  In such a
+          # case, the kernel will return ENODEV (conistency!).
+          foreground {
+            redirfd -w 1 /sys/bus/pci/drivers/vfio-pci/bind
+            printf "%s" $PCI_LOCATION
+          }
+
+          # Because we allow both new_id and bind to fail, we need to
+          # manually make sure now that at least one of them succeeded
+          # and the device is actually attached to the vfio-driver.
+          if { test -e /sys/bus/pci/drivers/vfio-pci/''${PCI_LOCATION} }
 
           foreground { mkdir env }
 
