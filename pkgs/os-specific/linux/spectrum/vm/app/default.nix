@@ -28,20 +28,15 @@ runCommand "vm-app" rec {
       up = writeText "net-up" ''
         backtick -i LOCAL_IP {
           pipeline { ip -j link show eth0 }
-          pipeline { jq -r ".[0].address | split(\":\") | .[3:6] | \"0x\" + .[]" }
-          xargs printf "100.%d.%d.%d"
+          pipeline { jq -r ".[0].address | split(\":\") | .[4:6] | \"0x\" + .[]" }
+          xargs printf "100.64.%d.%d"
         }
         importas -iu LOCAL_IP LOCAL_IP
 
-        backtick -i REMOTE_IP {
-          jq -jn --arg localip $LOCAL_IP
-            "$localip | split(\".\") | .[3] |= tonumber - 1 | join(\".\")"
-        }
-        importas -iu REMOTE_IP REMOTE_IP
-
-        if { ip address add ''${LOCAL_IP}/31 dev eth0 }
+        if { ip address add ''${LOCAL_IP}/32 dev eth0 }
         if { ip link set eth0 up }
-        ip route add default via $REMOTE_IP
+        if { ip route add 169.254.0.1 dev eth0 }
+        ip route add default via 169.254.0.1 dev eth0
       '';
     };
 

@@ -54,15 +54,16 @@ runCommand "vm-net" rec {
 
               # Our IP is encoded in the NIC-specific portion of the
               # interface's MAC address.
-              backtick -i LOCAL_IP {
+              backtick -i CLIENT_IP {
                 pipeline { ip -j link show $INTERFACE }
-                pipeline { jq -r ".[0].address | split(\":\") | .[3:6] | \"0x\" + .[]" }
-                xargs printf "100.%d.%d.%d"
+                pipeline { jq -r ".[0].address | split(\":\") | .[4:6] | \"0x\" + .[]" }
+                xargs printf "100.64.%d.%d"
               }
-              importas -iu LOCAL_IP LOCAL_IP
+              importas -iu CLIENT_IP CLIENT_IP
 
-              if { ip address add ''${LOCAL_IP}/31 dev $INTERFACE }
-              ip link set $INTERFACE up
+              if { ip address add 169.254.0.1/32 dev $INTERFACE }
+              if { ip link set $INTERFACE up }
+              ip route add $CLIENT_IP dev $INTERFACE
             }
 
             {

@@ -45,23 +45,20 @@ let
           if { ip link set br0 up }
 
           # Calculate the MACs for our TAP and the router's TAP.
-          backtick -in router_nic_dec {
-            expr ${toString sys-vms.app.vmID} * 2 + 64 * 256 * 256
-          }
-          backtick -in client_nic_dec {
-            expr ${toString sys-vms.app.vmID} * 2 + 64 * 256 * 256 + 1
-          }
-          multisubstitute {
-            importas -iu router_nic_dec router_nic_dec
-            importas -iu client_nic_dec client_nic_dec
-          }
+          # MAC address format, by octet:
+          #
+          #  0-3  Static OUI for Spectrum
+          #    4  Most significant bit is used to differentiate
+          #       routers from clients.  Other bits are reserved.
+          #  5-6  Last two octets of client's IP (in 100.64.0.0/16).
+          #
           backtick -i router_mac {
-            pipeline { printf %x $router_nic_dec }
-            sed s/^\\(..\\)\\(..\\)\\(..\\)$/0A:B3:EC:\\1:\\2:\\3/
+            pipeline { printf %.4x ${toString sys-vms.app.vmID} }
+            sed s/^\\(..\\)\\(..\\)$/0A:B3:EC:80:\\1:\\2/
           }
           backtick -i client_mac {
-            pipeline { printf %x $client_nic_dec }
-            sed s/^\\(..\\)\\(..\\)\\(..\\)$/0A:B3:EC:\\1:\\2:\\3/
+            pipeline { printf %.4x ${toString sys-vms.app.vmID} }
+            sed s/^\\(..\\)\\(..\\)$/0A:B3:EC:00:\\1:\\2/
           }
           multisubstitute {
             importas -iu router_mac router_mac
