@@ -1,4 +1,4 @@
-From 98cff9d9c6cd0642ecb54f0fbb799a6a9c666035 Mon Sep 17 00:00:00 2001
+From e3995d3367ae642f3eb0b4c395813af47464a65f Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Sun, 1 Dec 2019 17:04:04 +0000
 Subject: [PATCH 3/4] sommelier: don't leak source-absolute paths
@@ -21,5 +21,5 @@ index f894adf81d..28bb5a006b 100644
      }
    }
 -- 
-2.30.0
+2.31.1
 

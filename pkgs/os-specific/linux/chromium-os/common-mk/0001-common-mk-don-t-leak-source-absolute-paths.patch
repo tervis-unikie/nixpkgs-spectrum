@@ -1,4 +1,4 @@
-From 8b87e0d6ee0e645d1ac2b27c2fba0c97f2929e31 Mon Sep 17 00:00:00 2001
+From ae0c98ed2715c685b0cb97ac6e5d65101168b625 Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Sun, 24 Nov 2019 16:56:11 +0000
 Subject: [PATCH 1/4] common-mk: don't leak source-absolute paths
@@ -11,12 +11,12 @@ outputs, and normal Unix paths are passed to subprocesses.
  common-mk/external_dependencies/BUILD.gn    |  3 ++-
  common-mk/mojom_bindings_generator.gni      | 12 ++++++------
  common-mk/mojom_type_mappings_generator.gni |  2 +-
- common-mk/pkg_config.gni                    |  5 +++--
- common-mk/proto_library.gni                 | 21 +++++++++++----------
- 5 files changed, 23 insertions(+), 20 deletions(-)
+ common-mk/pkg_config.gni                    |  3 ++-
+ common-mk/proto_library.gni                 | 19 ++++++++++---------
+ 5 files changed, 21 insertions(+), 18 deletions(-)
 
 diff --git a/common-mk/external_dependencies/BUILD.gn b/common-mk/external_dependencies/BUILD.gn
-index dbf45368ff..94aae4e2e2 100644
+index 2581d31ac8..2ead288006 100644
 --- a/common-mk/external_dependencies/BUILD.gn
 +++ b/common-mk/external_dependencies/BUILD.gn
 @@ -45,6 +45,7 @@ genxml2cpp("dbus-proxies") {
@@ -104,10 +104,10 @@ index ff09397111..959a8b6ca9 100644
    }
  }
 diff --git a/common-mk/pkg_config.gni b/common-mk/pkg_config.gni
-index 24e2cf1401..151c49e560 100644
+index b2c58845d4..31d3f4ab51 100644
 --- a/common-mk/pkg_config.gni
 +++ b/common-mk/pkg_config.gni
-@@ -81,10 +81,11 @@ template("generate_pkg_config") {
+@@ -81,7 +81,8 @@ template("generate_pkg_config") {
      if (!defined(output_name)) {
        output_name = name
      }
@@ -116,13 +116,9 @@ index 24e2cf1401..151c49e560 100644
 +    outputs = [ lib_path ]
  
      script = "//common-mk/generate-pc.py"
--    args = [ "--output" ] + outputs + [ "--name=" + name ]
-+    args = [ "--output", rebase_path(lib_path), "--name=" + name ]
-     if (defined(description)) {
-       args += [ "--description=" + description ]
-     }
+     args = [ "--output" ] + rebase_path(outputs) + [ "--name=" + name ]
 diff --git a/common-mk/proto_library.gni b/common-mk/proto_library.gni
-index 68b7904acc..2bef5f44ef 100644
+index e64aedabe0..fb9fb4231d 100644
 --- a/common-mk/proto_library.gni
 +++ b/common-mk/proto_library.gni
 @@ -56,7 +56,7 @@ template("proto_library") {
@@ -134,8 +130,8 @@ index 68b7904acc..2bef5f44ef 100644
  
      proto_lib_dirs = [
        proto_in_dir,
-@@ -94,24 +94,23 @@ template("proto_library") {
-     args += [ "${proto_in_dir}/{{source_name_part}}.proto" ]
+@@ -96,10 +96,9 @@ template("proto_library") {
+     }
      outputs = []
      if (gen_python) {
 -      python_dir = "${root_gen_dir}/${proto_out_dir}/py"
@@ -144,14 +140,19 @@ index 68b7904acc..2bef5f44ef 100644
 -        "${python_dir}",
 +        "${proto_out_dir}/py",
        ]
--      outputs += [ "${python_dir}/{{source_name_part}}_pb.py" ]
-+      outputs += [ "${cc_dir}/py/{{source_name_part}}_pb.py" ]
+       foreach(source, sources) {
+         source = rebase_path(source, proto_in_dir)
+@@ -109,19 +108,19 @@ template("proto_library") {
      }
      if (gen_grpc) {
        if (gen_grpc_gmock) {
 -        args += [ "--grpc_out=generate_mock_code=true:${cc_dir}" ]
 +        args += [ "--grpc_out=generate_mock_code=true:${proto_out_dir}" ]
-         outputs += [ "${cc_dir}/{{source_name_part}}_mock.grpc.pb.h" ]
+         foreach(source, sources) {
+           source = rebase_path(source, proto_in_dir)
+           source = string_replace(source, ".proto", "")
+           outputs += [ "${cc_dir}/${source}_mock.grpc.pb.h" ]
+         }
        } else {
 -        args += [ "--grpc_out=${cc_dir}" ]
 +        args += [ "--grpc_out=${proto_out_dir}" ]
@@ -162,18 +163,18 @@ index 68b7904acc..2bef5f44ef 100644
 -        "--cpp_out=${gen_cpp_mode}${cc_dir}",
 +        "--cpp_out=${gen_cpp_mode}${proto_out_dir}",
        ]
-       outputs += [
-         "${cc_dir}/{{source_name_part}}.grpc.pb.cc",
-@@ -121,7 +120,7 @@ template("proto_library") {
-       ]
+       foreach(source, sources) {
+         source = rebase_path(source, proto_in_dir)
+@@ -135,7 +134,7 @@ template("proto_library") {
+       }
      }
      if (!gen_grpc && !gen_python) {
 -      args += [ "--cpp_out=${gen_cpp_mode}${cc_dir}" ]
 +      args += [ "--cpp_out=${gen_cpp_mode}${proto_out_dir}" ]
-       outputs += [
-         "${cc_dir}/{{source_name_part}}.pb.cc",
-         "${cc_dir}/{{source_name_part}}.pb.h",
-@@ -218,7 +217,9 @@ template("goproto_library") {
+       foreach(source, sources) {
+         source = rebase_path(source, proto_in_dir)
+         source = string_replace(source, ".proto", "")
+@@ -238,7 +237,9 @@ template("goproto_library") {
      # otherwise file descriptor var name will conflict.
      # cf) https://github.com/golang/protobuf/issues/109
  
@@ -183,7 +184,7 @@ index 68b7904acc..2bef5f44ef 100644
  
      # Build protoc command line to run.
      script = "//common-mk/file_generator_wrapper.py"
-@@ -258,7 +259,7 @@ template("goproto_library") {
+@@ -278,7 +279,7 @@ template("goproto_library") {
        "--go_out",
  
        # go_out_prefix can be empty, so we can always add a colon here.
@@ -192,7 +193,7 @@ index 68b7904acc..2bef5f44ef 100644
      ]
      foreach(source, sources) {
        args += [ rebase_path(source) ]
-@@ -268,7 +269,7 @@ template("goproto_library") {
+@@ -288,7 +289,7 @@ template("goproto_library") {
      outputs = []
      foreach(source, invoker.sources) {
        name = get_path_info(source, "name")
@@ -202,5 +203,5 @@ index 68b7904acc..2bef5f44ef 100644
    }
  }
 -- 
-2.30.0
+2.31.1
 
