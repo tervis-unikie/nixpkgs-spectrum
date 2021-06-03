@@ -11,10 +11,11 @@ let
 
   getSrc = path: fetchFromGitiles upstreamInfo.components.${path};
   srcs = lib.genAttrs [
-    "src/platform/crosvm"
-    "src/third_party/adhd"
     "src/aosp/external/minijail"
+    "src/platform/crosvm"
     "src/platform2"
+    "src/third_party/adhd"
+    "src/third_party/rust-vmm/vhost"
   ] getSrc;
 in
 
@@ -39,14 +40,12 @@ in
 
     sourceRoot = "src/platform/crosvm";
 
-    cargoPatches = [ ./Regenerate-Cargo.lock.patch ];
-
     patches = [
       ./default-seccomp-policy-dir.diff
       ./VIRTIO_NET_F_MAC.patch
     ];
 
-    cargoSha256 = "0rrhgchrf6ac5393rxlkff0kd3xs7xixxshcdpag3lxjgg0j62af";
+    cargoSha256 = "1hw9r7vggvn8p0sy4k0i2ijpyk0yb11qww6s6d6wdfvrl1ksbapl";
 
     nativeBuildInputs = [ pkgconfig wayland ];
 
@@ -55,9 +54,6 @@ in
     postPatch = ''
       sed -i "s|/usr/share/policy/crosvm/|$out/share/policy/|g" \
              seccomp/*/*.policy
-
-      # No /dev/log in the sandbox.
-      sed -i '/^[[:space:]]*syslog::init().unwrap();$/d' tests/boot.rs
     '';
 
     preBuild = ''
@@ -68,9 +64,6 @@ in
       mkdir -p $out/share/policy/
       cp seccomp/${arch}/* $out/share/policy/
     '';
-
-    # Boot test often hangs on AMD.
-    doCheck = !stdenv.buildPlatform.isx86_64;
 
     CROSVM_CARGO_TEST_KERNEL_BINARY =
       lib.optionalString (stdenv.buildPlatform == stdenv.hostPlatform)

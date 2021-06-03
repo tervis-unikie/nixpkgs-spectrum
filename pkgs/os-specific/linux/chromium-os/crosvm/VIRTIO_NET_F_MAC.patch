@@ -1,7 +1,7 @@
-From 655988f0b66ccf22ce197024d6eb2682f3bbada8 Mon Sep 17 00:00:00 2001
+From 2b5a83bd9e2c1c9642773c1daf785d03f95f33a3 Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Sun, 27 Sep 2020 15:34:02 +0000
-Subject: [PATCH crosvm v2] crosvm: support setting guest MAC from tap-fd
+Subject: [PATCH crosvm v3] crosvm: support setting guest MAC from tap-fd
 
 This adds a mac= option to crosvm's --tap-fd option.  The virtio-net
 driver in the guest will read the desired MAC from virtio
@@ -15,14 +15,14 @@ Thanks-to: Puck Meerburg <puck@puckipedia.com>
 Reviewed-by: Cole Helbling <cole.e.helbling@outlook.com>
 Message-Id: <20210517185700.3591932-1-hi@alyssa.is>
 ---
- devices/src/virtio/net.rs | 12 ++++++--
+ devices/src/virtio/net.rs | 20 ++++++++++--
  src/crosvm.rs             |  8 +++--
- src/linux.rs              | 12 ++++----
- src/main.rs               | 63 ++++++++++++++++++++++++++++++---------
- 4 files changed, 71 insertions(+), 24 deletions(-)
+ src/linux.rs              | 19 +++++++-----
+ src/main.rs               | 64 +++++++++++++++++++++++++++++++--------
+ 4 files changed, 88 insertions(+), 23 deletions(-)
 
 diff --git a/devices/src/virtio/net.rs b/devices/src/virtio/net.rs
-index 92368c440..4d0ea1560 100644
+index b88dc44ae..b7489eb2b 100644
 --- a/devices/src/virtio/net.rs
 +++ b/devices/src/virtio/net.rs
 @@ -419,6 +419,7 @@ where
@@ -40,8 +40,8 @@ index 92368c440..4d0ea1560 100644
 +        guest_mac_addr: Option<MacAddress>,
          vq_pairs: u16,
      ) -> Result<Net<T>, NetError> {
-         let multi_queue = if vq_pairs > 1 { true } else { false };
-@@ -450,12 +452,12 @@ where
+         let multi_queue = vq_pairs > 1;
+@@ -450,12 +452,17 @@ where
  
          tap.enable().map_err(NetError::TapEnable)?;
  
@@ -52,11 +52,16 @@ index 92368c440..4d0ea1560 100644
      /// Creates a new virtio network device from a tap device that has already been
      /// configured.
 -    pub fn from(base_features: u64, tap: T, vq_pairs: u16) -> Result<Net<T>, NetError> {
-+    pub fn with_tap(base_features: u64, tap: T, vq_pairs: u16, mac_address: Option<MacAddress>) -> Result<Net<T>, NetError> {
++    pub fn with_tap(
++        base_features: u64,
++        tap: T,
++        vq_pairs: u16,
++        mac_address: Option<MacAddress>,
++    ) -> Result<Net<T>, NetError> {
          let taps = tap.into_mq_taps(vq_pairs).map_err(NetError::TapOpen)?;
  
          // This would also validate a tap created by Self::new(), but that's a good thing as it
-@@ -488,7 +490,12 @@ where
+@@ -488,7 +495,12 @@ where
              workers_kill_evt.push(worker_kill_evt);
          }
  
@@ -69,39 +74,42 @@ index 92368c440..4d0ea1560 100644
              queue_sizes: vec![QUEUE_SIZE; (vq_pairs * 2 + 1) as usize].into_boxed_slice(),
              workers_kill_evt,
              kill_evts,
-@@ -503,6 +510,7 @@ where
+@@ -503,6 +515,10 @@ where
          let vq_pairs = self.queue_sizes.len() as u16 / 2;
  
          VirtioNetConfig {
-+            mac: self.mac_address.map(|m| m.octets()).unwrap_or_else(Default::default),
++            mac: self
++                .mac_address
++                .map(|m| m.octets())
++                .unwrap_or_else(Default::default),
              max_vq_pairs: Le16::from(vq_pairs),
              // Other field has meaningful value when the corresponding feature
              // is enabled, but all these features aren't supported now.
 diff --git a/src/crosvm.rs b/src/crosvm.rs
-index 04e267d6c..1dde7d769 100644
+index eededc02e..62b3019db 100644
 --- a/src/crosvm.rs
 +++ b/src/crosvm.rs
-@@ -171,6 +171,10 @@ impl Default for SharedDir {
+@@ -191,6 +191,10 @@ impl Default for SharedDir {
      }
  }
  
-+pub struct TapFdOptions {
++pub struct TapFdOption {
 +    pub mac: Option<net_util::MacAddress>,
 +}
 +
  /// Aggregate of all configurable options for a running VM.
  pub struct Config {
-     pub vcpu_count: Option<usize>,
-@@ -194,7 +198,7 @@ pub struct Config {
+     pub kvm_device_path: PathBuf,
+@@ -217,7 +221,7 @@ pub struct Config {
      pub mac_address: Option<net_util::MacAddress>,
      pub net_vq_pairs: Option<u16>,
      pub vhost_net: bool,
 -    pub tap_fd: Vec<RawFd>,
-+    pub tap_fd: BTreeMap<RawFd, TapFdOptions>,
++    pub tap_fd: BTreeMap<RawFd, TapFdOption>,
      pub cid: Option<u64>,
      pub wayland_socket_paths: BTreeMap<String, PathBuf>,
      pub wayland_dmabuf: bool,
-@@ -253,7 +257,7 @@ impl Default for Config {
+@@ -291,7 +295,7 @@ impl Default for Config {
              mac_address: None,
              net_vq_pairs: None,
              vhost_net: false,
@@ -111,37 +119,44 @@ index 04e267d6c..1dde7d769 100644
              #[cfg(feature = "gpu")]
              gpu_parameters: None,
 diff --git a/src/linux.rs b/src/linux.rs
-index f452fef3f..42c07df4f 100644
+index ba2d28f96..e9601478a 100644
 --- a/src/linux.rs
 +++ b/src/linux.rs
-@@ -75,7 +75,7 @@ use vm_memory::{GuestAddress, GuestMemory};
- 
+@@ -60,8 +60,8 @@ use vm_memory::{GuestAddress, GuestMemory};
  #[cfg(all(target_arch = "x86_64", feature = "gdb"))]
  use crate::gdb::{gdb_thread, GdbStub};
--use crate::{Config, DiskOption, Executable, SharedDir, SharedDirKind, TouchDeviceOption};
-+use crate::{Config, DiskOption, Executable, SharedDir, SharedDirKind, TapFdOptions, TouchDeviceOption};
+ use crate::{
+-    Config, DiskOption, Executable, SharedDir, SharedDirKind, TouchDeviceOption, VhostUserFsOption,
+-    VhostUserOption,
++    Config, DiskOption, Executable, SharedDir, SharedDirKind, TapFdOption, TouchDeviceOption,
++    VhostUserFsOption, VhostUserOption,
+ };
  use arch::{
      self, LinuxArch, RunnableLinuxVm, SerialHardware, SerialParameters, VcpuAffinity,
-     VirtioDeviceStub, VmComponents, VmImage,
-@@ -675,7 +675,7 @@ fn create_balloon_device(cfg: &Config, socket: BalloonControlResponseSocket) ->
+@@ -763,7 +763,11 @@ fn create_balloon_device(cfg: &Config, tube: Tube) -> DeviceResult {
      })
  }
  
 -fn create_tap_net_device(cfg: &Config, tap_fd: RawDescriptor) -> DeviceResult {
-+fn create_tap_net_device(cfg: &Config, tap_fd: RawDescriptor, options: &TapFdOptions) -> DeviceResult {
++fn create_tap_net_device(
++    cfg: &Config,
++    tap_fd: RawDescriptor,
++    options: &TapFdOption,
++) -> DeviceResult {
      // Safe because we ensure that we get a unique handle to the fd.
      let tap = unsafe {
          Tap::from_raw_descriptor(
-@@ -691,7 +691,7 @@ fn create_tap_net_device(cfg: &Config, tap_fd: RawDescriptor) -> DeviceResult {
+@@ -779,7 +783,8 @@ fn create_tap_net_device(cfg: &Config, tap_fd: RawDescriptor) -> DeviceResult {
          vq_pairs = 1;
      }
      let features = virtio::base_features(cfg.protected_vm);
 -    let dev = virtio::Net::from(features, tap, vq_pairs).map_err(Error::NetDeviceNew)?;
-+    let dev = virtio::Net::with_tap(features, tap, vq_pairs, options.mac).map_err(Error::NetDeviceNew)?;
++    let dev =
++        virtio::Net::with_tap(features, tap, vq_pairs, options.mac).map_err(Error::NetDeviceNew)?;
  
      Ok(VirtioDeviceStub {
          dev: Box::new(dev),
-@@ -725,7 +725,7 @@ fn create_net_device(
+@@ -814,7 +819,7 @@ fn create_net_device(
          .map_err(Error::VhostNetDeviceNew)?;
          Box::new(dev) as Box<dyn VirtioDevice>
      } else {
@@ -150,8 +165,8 @@ index f452fef3f..42c07df4f 100644
              .map_err(Error::NetDeviceNew)?;
          Box::new(dev) as Box<dyn VirtioDevice>
      };
-@@ -1311,8 +1311,8 @@ fn create_virtio_devices(
-     devs.push(create_balloon_device(cfg, balloon_device_socket)?);
+@@ -1445,8 +1450,8 @@ fn create_virtio_devices(
+     devs.push(create_balloon_device(cfg, balloon_device_tube)?);
  
      // We checked above that if the IP is defined, then the netmask is, too.
 -    for tap_fd in &cfg.tap_fd {
@@ -162,19 +177,29 @@ index f452fef3f..42c07df4f 100644
  
      if let (Some(host_ip), Some(netmask), Some(mac_address)) =
 diff --git a/src/main.rs b/src/main.rs
-index 5d02af02f..f8bc0d14e 100644
+index ab62f2543..e1188a86c 100644
 --- a/src/main.rs
 +++ b/src/main.rs
-@@ -28,7 +28,7 @@ use base::{
+@@ -20,13 +20,15 @@ use arch::{
+     set_default_serial_parameters, Pstore, SerialHardware, SerialParameters, SerialType,
+     VcpuAffinity,
  };
+-use base::{debug, error, getpid, info, kill_process_group, reap_child, syslog, warn};
++use base::{
++    debug, error, getpid, info, kill_process_group, reap_child, syslog, warn, RawDescriptor,
++};
+ #[cfg(feature = "direct")]
+ use crosvm::DirectIoOption;
  use crosvm::{
      argument::{self, print_help, set_arguments, Argument},
 -    platform, BindMount, Config, DiskOption, Executable, GidMap, SharedDir, TouchDeviceOption,
-+    platform, BindMount, Config, DiskOption, Executable, GidMap, SharedDir, TapFdOptions, TouchDeviceOption,
-     DISK_ID_LEN,
+-    VhostUserFsOption, VhostUserOption, DISK_ID_LEN,
++    platform, BindMount, Config, DiskOption, Executable, GidMap, SharedDir, TapFdOption,
++    TouchDeviceOption, VhostUserFsOption, VhostUserOption, DISK_ID_LEN,
  };
  #[cfg(feature = "gpu")]
-@@ -1319,17 +1319,52 @@ fn set_argument(cfg: &mut Config, name: &str, value: Option<&str>) -> argument::
+ use devices::virtio::gpu::{GpuMode, GpuParameters};
+@@ -1460,17 +1462,55 @@ fn set_argument(cfg: &mut Config, name: &str, value: Option<&str>) -> argument::
          }
          "vhost-net" => cfg.vhost_net = true,
          "tap-fd" => {
@@ -183,21 +208,20 @@ index 5d02af02f..f8bc0d14e 100644
 -                    .unwrap()
 -                    .parse()
 -                    .map_err(|_| argument::Error::InvalidValue {
--                        value: value.unwrap().to_owned(),
--                        expected: String::from(
--                            "this value for `tap-fd` must be an unsigned integer",
--                        ),
--                    })?,
--            );
 +            let mut components = value.unwrap().split(',');
 +
-+            let fd: RawDescriptor = components
-+                .next()
-+                .and_then(|x| x.parse().ok())
-+                .ok_or_else(|| argument::Error::InvalidValue {
-+                    value: value.unwrap().to_owned(),
-+                    expected: String::from("this value for `tap-fd` must be an unsigned integer"),
-+                })?;
++            let fd: RawDescriptor =
++                components
++                    .next()
++                    .and_then(|x| x.parse().ok())
++                    .ok_or_else(|| argument::Error::InvalidValue {
+                         value: value.unwrap().to_owned(),
+                         expected: String::from(
+                             "this value for `tap-fd` must be an unsigned integer",
+                         ),
+-                    })?,
+-            );
++                    })?;
 +
 +            let mut mac = None;
 +            for c in components {
@@ -234,11 +258,11 @@ index 5d02af02f..f8bc0d14e 100644
 +                    name
 +                )));
 +            }
-+            cfg.tap_fd.insert(fd, TapFdOptions { mac });
++            cfg.tap_fd.insert(fd, TapFdOption { mac });
          }
          #[cfg(feature = "gpu")]
          "gpu" => {
-@@ -1644,8 +1679,8 @@ writeback=BOOL - Indicates whether the VM can use writeback caching (default: fa
+@@ -1907,8 +1947,8 @@ writeback=BOOL - Indicates whether the VM can use writeback caching (default: fa
            Argument::value("plugin-gid-map-file", "PATH", "Path to the file listing supplemental GIDs that should be mapped in plugin jail.  Can be given more than once."),
            Argument::flag("vhost-net", "Use vhost for networking."),
            Argument::value("tap-fd",

@@ -24,6 +24,7 @@ component_paths = [
     'src/third_party/libqmi',
     'src/third_party/modemmanager-next',
     'src/third_party/modp_b64',
+    'src/third_party/rust-vmm/vhost',
 ]
 
 git_root = 'https://chromium.googlesource.com/'

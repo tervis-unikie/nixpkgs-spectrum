@@ -61,6 +61,12 @@
       "url": "https://chromium.googlesource.com/aosp/platform/external/modp_b64",
       "rev": "269b6fb8401617b85e2dff7ae8a7b0f97613e2cd",
       "sha256": "1mc5w70svgj7rq49r6lxkw9ix6q09dxrw0lamx3hn8anq5q8y532"
+    },
+    "src/third_party/rust-vmm/vhost": {
+      "name": "vhost",
+      "url": "https://chromium.googlesource.com/chromiumos/third_party/rust-vmm/vhost",
+      "rev": "98298cb96972c20e05bffed58861456b48328d43",
+      "sha256": "0ym5cmnaifn3ywcidvqmbswmsxqi0zw6gx88gfqfq0p5jis8vjhi"
     }
   }
 }
