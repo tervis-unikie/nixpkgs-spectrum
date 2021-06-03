@@ -1,66 +1,66 @@
 {
-  "version": "89.13729.0.0-rc1",
+  "version": "91.13904.0.0-rc2",
   "components": {
     "src/aosp/external/minijail": {
       "name": "minijail",
       "url": "https://android.googlesource.com/platform/external/minijail",
-      "rev": "b49291144e126662b8c7d1551fd1dc572e1d55da",
-      "sha256": "19z0qrfyh7p2kmsgvm4k053vrzz2w6zysqh3bm2rx0irsdv0pnqm"
+      "rev": "4f830bddad22ccbb5862a866efd9931393a4b83b",
+      "sha256": "044ll9jmanjlv6ibb8n77nsqifsb1iqck3bgkyix43i3yqamlq5h"
     },
     "src/platform/crosvm": {
       "name": "crosvm",
       "url": "https://chromium.googlesource.com/chromiumos/platform/crosvm",
-      "rev": "f35d2c43ff19520855cffee761dc8899c5a439a1",
-      "sha256": "0fahrcw7x33d21i6azgr787afrhp002f8mvz81ich5w7vk2xjzxr"
+      "rev": "401340ee7fa81db720a4f7a9476b6eea133e5b64",
+      "sha256": "0wbfprqqm0hqhypdb0x90bqn65kv0f3vpibr84p3paby6hmx14y2"
     },
     "src/platform/minigbm": {
       "name": "minigbm",
       "url": "https://chromium.googlesource.com/chromiumos/platform/minigbm",
-      "rev": "9fe8c20f05116869f86d91fc542a17b9badf9ec3",
-      "sha256": "0gr81qngfa1g58cz3v9dlms997ry3h5dh7vcv2ak1j53dzfdzckn"
+      "rev": "231913e75751498902132c825d5b8567684e3b8d",
+      "sha256": "03wcdwd4l0wg9k6z9nnqim2wqqddlmppa49v6bkry7mhmiar1jc9"
     },
     "src/platform2": {
       "name": "platform2",
       "url": "https://chromium.googlesource.com/chromiumos/platform2",
-      "rev": "e6e2faf2abb10fcbca3b6eccdcf7cf2506bcc212",
-      "sha256": "1g6kxmiffizqlxwakma1rp26p9mwpjbl3cv5hn7k5zd6cn8wixj7"
+      "rev": "1fcefaa166e868069ad1b81091333ff75e0657f6",
+      "sha256": "1p4rcq53qz35sfbqldmcnjz5ikjxppdw1xcb348zn8n3hnb6vmqf"
     },
     "src/third_party/adhd": {
       "name": "adhd",
       "url": "https://chromium.googlesource.com/chromiumos/third_party/adhd",
-      "rev": "0458a459ad51cc0b386835f5b909d0d04003ab16",
-      "sha256": "1y1g0h2dcmgpz9nk2hc6fcb0c53ip3mf27yyf7gg6syx764pr2gb"
+      "rev": "3624a4296888926a21462bfd499d4ba91268046b",
+      "sha256": "0flph3fagyl21dbwpdvhhizwnhbrgll87yfpq1i00xzr0c9xc1cc"
     },
     "src/third_party/chromiumos-overlay": {
       "name": "chromiumos-overlay",
       "url": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay",
-      "rev": "dd29be74a5c6fa492411ec7feed734004c6a1ea5",
-      "sha256": "0pbrbbr39j9zsc10dhhhmwx1c69a40nsv4cprh7biz1b8f840l1b"
+      "rev": "f5b0e4767c2e5f8caa899127c8b3060fda2a3694",
+      "sha256": "1vpfccb0ikqa1xh6m0wizbxcaick2arki7d76sacz8qgrxinq8mn"
     },
     "src/third_party/kernel/v5.4": {
       "name": "v5.4",
       "url": "https://chromium.googlesource.com/chromiumos/third_party/kernel",
-      "rev": "eb179ec7ef3e053acb48366e72299055b2b66ca8",
-      "sha256": "13i7f3742cnw7lm0b2zal4lxbqrkmniajqp5c1gllvrfvxcw4a45",
-      "version": "5.4.88"
+      "rev": "15178e41cf17cd7ce9f9a087bcb0677eaa57f82b",
+      "sha256": "0cwvxm5bx0xs80l2rq3dqj88445qdhiqxp1999ix1gcc8awvwzdb",
+      "version": "5.4.109"
     },
     "src/third_party/libqmi": {
       "name": "libqmi",
       "url": "https://chromium.googlesource.com/chromiumos/third_party/libqmi",
-      "rev": "072abd58da99c00b79dbf7e4642fa19fb791aed9",
-      "sha256": "1a6x5hwghkrvi82szhabxf2by4x7x9pfk6bvpgz0ipz8yqg8fwih"
+      "rev": "d9def40a2e068fd7e961aa0a4c699cf62cb8672c",
+      "sha256": "0grf510l85p32hc8gn7ks12ma0c2s3gnk76dyq62kmrvfb43ijzm"
     },
     "src/third_party/modemmanager-next": {
       "name": "modemmanager-next",
       "url": "https://chromium.googlesource.com/chromiumos/third_party/modemmanager-next",
-      "rev": "3eba6678dfe0d7b35f128bb58b63e71d1a3a64d4",
-      "sha256": "0lviwkkqsv5zmajqdlc0s83yq12ikk0gf7wq9za58p92g0970i4l"
+      "rev": "2de7877b2662d64c162434a7d3fb89d43f24b913",
+      "sha256": "027pnj92kidfgrzfpgwz18pl7gjgxi128il6wx1s8jdxsk2m00jc"
     },
     "src/third_party/modp_b64": {
       "name": "modp_b64",
       "url": "https://chromium.googlesource.com/aosp/platform/external/modp_b64",
-      "rev": "467734f4870d3ab23968f5ebdd461f6112e4103b",
-      "sha256": "1hlk9vzivy0n3xf9hm9bhj7i09yifirc1af6pli471m00v3s0zvg"
+      "rev": "269b6fb8401617b85e2dff7ae8a7b0f97613e2cd",
+      "sha256": "1mc5w70svgj7rq49r6lxkw9ix6q09dxrw0lamx3hn8anq5q8y532"
     }
   }
 }
