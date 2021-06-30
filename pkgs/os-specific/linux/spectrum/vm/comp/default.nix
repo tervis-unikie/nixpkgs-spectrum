@@ -1,5 +1,5 @@
 { lib, makeRootfs, runCommand, writeScript, writeText
-, busybox, emacs26-nox, execline, gcc, linux_vm, s6, sommelier, source-code-pro
+, busybox, emacs-nox, execline, gcc, linux_vm, s6, sommelier, source-code-pro
 , wayfire, westonLite, zsh
 }:
 
@@ -7,7 +7,7 @@ runCommand "vm-comp" rec {
   linux = linux_vm;
 
   path = [
-    busybox emacs26-nox execline gcc s6 sommelier wayfire westonLite zsh
+    busybox emacs-nox execline gcc s6 sommelier wayfire westonLite zsh
   ];
 
   login = writeScript "login" ''
