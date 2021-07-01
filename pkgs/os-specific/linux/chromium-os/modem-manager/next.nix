@@ -2,7 +2,7 @@
 , autoconf-archive, libqmi, libxslt
 }:
 
-modemmanager.overrideAttrs (
+(modemmanager.override { inherit libqmi; }).overrideAttrs (
   { pname, nativeBuildInputs ? [], passthru ? {}, meta ? {}, ... }:
   {
     pname = "${pname}-chromiumos-next-unstable";
@@ -12,7 +12,7 @@ modemmanager.overrideAttrs (
       upstreamInfo.components."src/third_party/modemmanager-next";
 
     nativeBuildInputs = nativeBuildInputs ++
-      [ autoreconfHook autoconf-archive libqmi libxslt ];
+      [ autoreconfHook autoconf-archive libxslt ];
 
     passthru = passthru // {
       updateScript = ../update.py;
