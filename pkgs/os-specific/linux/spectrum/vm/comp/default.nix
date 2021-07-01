@@ -1,33 +1,19 @@
 { lib, makeRootfs, runCommand, writeScript, writeText
 , busybox, emacs-nox, execline, gcc, linux_vm, s6, sommelier, source-code-pro
-, wayfire, westonLite, zsh
+, tinywl, westonLite, zsh
 }:
 
 runCommand "vm-comp" rec {
   linux = linux_vm;
 
   path = [
-    busybox emacs-nox execline gcc s6 sommelier wayfire westonLite zsh
+    busybox emacs-nox execline gcc s6 sommelier tinywl westonLite zsh
   ];
 
   login = writeScript "login" ''
     #! ${execline}/bin/execlineb -s0
     unexport !
     ${busybox}/bin/login -p -f root $@
-  '';
-
-  # This can't be /etc/wayfire/defaults.ini because autostart entries
-  # from that file aren't applied.
-  wayfireConfig = writeText "wayfire-config" ''
-    [core]
-    xwayland = false
-
-    [input]
-    xkb_layout = us
-    xkb_variant = dvorak
-
-    [autostart]
-    terminal = weston-terminal --shell $(command -v zsh)
   '';
 
   rootfs = makeRootfs {
@@ -41,15 +27,15 @@ runCommand "vm-comp" rec {
         bundle
       '';
       contents = writeText "ok-all-contents" ''
-        wayfire
+        compositor
       '';
     };
 
-    rcServices.wayfire = {
-      type = writeText "wayfire-type" ''
+    rcServices.compositor = {
+      type = writeText "compositor-type" ''
         longrun
       '';
-      run = writeScript "wayfire-run" ''
+      run = writeScript "compositor-run" ''
         #! ${execline}/bin/execlineb -S0
 
         s6-applyuidgid -u 1000 -g 1000
@@ -57,11 +43,12 @@ runCommand "vm-comp" rec {
         export HOME /
         export PATH ${lib.makeBinPath path}
         export XDG_RUNTIME_DIR /run/user/1000
+        export XKB_DEFAULT_LAYOUT dvorak
 
         ${sommelier}/bin/sommelier
-        wayfire -c ${wayfireConfig}
+        ${tinywl}/bin/tinywl -s "weston-terminal --shell $(command -v zsh)"
       '';
-      dependencies = writeText "wayfire-dependencies" ''
+      dependencies = writeText "compositor-dependencies" ''
         wl0
       '';
     };
