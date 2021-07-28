@@ -1,15 +1,15 @@
-{ stdenv, fetchPypi, buildPythonPackage }:
+{ lib, fetchPypi, buildPythonPackage }:
 
 buildPythonPackage rec {
   pname = "dpkt";
-  version = "1.9.3";
+  version = "1.9.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "18jcanxpzkd5n2gjbfpwbvvkm1hpxr59463z28py23vkbx57wmvg";
+    sha256 = "b5737010fd420d142e02ed04fa616edd1fc05e414980baef594f72287c875eef";
   };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Fast, simple packet creation / parsing, with definitions for the basic TCP/IP protocols";
     homepage = "https://github.com/kbandla/dpkt";
     license = licenses.bsd3;

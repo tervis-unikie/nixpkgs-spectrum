@@ -1,28 +1,30 @@
-{ stdenv, buildPythonPackage, fetchPypi, isPy27, makeDesktopItem, intervaltree, jedi, pycodestyle,
-  psutil, pyflakes, rope, numpy, scipy, matplotlib, pylint, keyring, numpydoc,
-  qtconsole, qtawesome, nbconvert, mccabe, pyopengl, cloudpickle, pygments,
-  spyder-kernels, qtpy, pyzmq, chardet, qdarkstyle, watchdog, python-language-server
-, pyqtwebengine, atomicwrites, pyxdg, diff-match-patch
+{ lib, buildPythonPackage, fetchPypi, isPy27, makeDesktopItem, intervaltree,
+  jedi, pycodestyle, psutil, pyflakes, rope, numpy, scipy, matplotlib, pylint,
+  keyring, numpydoc, qtconsole, qtawesome, nbconvert, mccabe, pyopengl,
+  cloudpickle, pygments, spyder-kernels, qtpy, pyzmq, chardet, qdarkstyle,
+  watchdog, python-language-server, pyqtwebengine, atomicwrites, pyxdg,
+  diff-match-patch, three-merge, pyls-black, pyls-spyder, flake8, textdistance
 }:
 
 buildPythonPackage rec {
   pname = "spyder";
-  version = "4.1.4";
+  version = "4.2.5";
 
   disabled = isPy27;
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "6946b2128afaf1b64e878a74d33f9abd60c91f75949b3d05f305b3c3f5fec1e2";
+    sha256 = "03159003f6ea51458e10000091e65e77888b095dba48e64ca2b36c75a648580c";
   };
 
   nativeBuildInputs = [ pyqtwebengine.wrapQtAppsHook ];
 
   propagatedBuildInputs = [
-    intervaltree jedi pycodestyle psutil pyflakes rope numpy scipy matplotlib pylint keyring
+    intervaltree jedi pycodestyle psutil rope numpy scipy matplotlib pylint keyring
     numpydoc qtconsole qtawesome nbconvert mccabe pyopengl cloudpickle spyder-kernels
     pygments qtpy pyzmq chardet pyqtwebengine qdarkstyle watchdog python-language-server
-    atomicwrites pyxdg diff-match-patch
+    atomicwrites pyxdg diff-match-patch three-merge pyls-black pyls-spyder
+    flake8 textdistance
   ];
 
   # There is no test for spyder
@@ -42,13 +44,19 @@ buildPythonPackage rec {
     # remove dependency on pyqtwebengine
     # this is still part of the pyqt 5.11 version we have in nixpkgs
     sed -i /pyqtwebengine/d setup.py
-    substituteInPlace setup.py --replace "pyqt5<5.13" "pyqt5"
+    # The major version bump in watchdog is due to changes in supported
+    # platforms, not API break.
+    # https://github.com/gorakhargosh/watchdog/issues/761#issuecomment-777001518
+    substituteInPlace setup.py \
+      --replace "pyqt5<5.13" "pyqt5" \
+      --replace "parso==0.7.0" "parso" \
+      --replace "watchdog>=0.10.3,<2.0.0" "watchdog>=0.10.3,<3.0.0"
   '';
 
   postInstall = ''
     # add Python libs to env so Spyder subprocesses
     # created to run compute kernels don't fail with ImportErrors
-    wrapProgram $out/bin/spyder3 --prefix PYTHONPATH : "$PYTHONPATH"
+    wrapProgram $out/bin/spyder --prefix PYTHONPATH : "$PYTHONPATH"
 
     # Create desktop item
     mkdir -p $out/share/icons
@@ -62,14 +70,16 @@ buildPythonPackage rec {
     makeWrapperArgs+=("''${qtWrapperArgs[@]}")
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Scientific python development environment";
     longDescription = ''
       Spyder (previously known as Pydee) is a powerful interactive development
       environment for the Python language with advanced editing, interactive
       testing, debugging and introspection features.
     '';
-    homepage = "https://github.com/spyder-ide/spyder/";
+    homepage = "https://www.spyder-ide.org/";
+    downloadPage = "https://github.com/spyder-ide/spyder/releases";
+    changelog = "https://github.com/spyder-ide/spyder/blob/master/CHANGELOG.md";
     license = licenses.mit;
     platforms = platforms.linux;
     maintainers = with maintainers; [ gebner ];

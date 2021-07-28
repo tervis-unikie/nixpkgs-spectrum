@@ -26,36 +26,40 @@
 , exiv2
 , ffmpeg
 , flex
-, jasper ? null, withJpeg2k ? false  # disable JPEG2000 support, jasper has unfixed CVE
+, graphviz
+, imagemagick
 , lcms2
 , lensfun
 , libgphoto2
 , libkipi
 , libksane
 , liblqr1
+, libqtav
 , libusb1
 , marble
 , libGL
 , libGLU
-, opencv3
+, opencv
 , pcre
 , threadweaver
+, x265
 
 # For panorama and focus stacking
 , enblend-enfuse
 , hugin
 , gnumake
 
+, breeze-icons
 , oxygen
 }:
 
 mkDerivation rec {
   pname   = "digikam";
-  version = "6.4.0";
+  version = "7.3.0";
 
   src = fetchurl {
-    url = "https://download.kde.org/stable/${pname}/${version}/${pname}-${version}.tar.xz";
-    sha256 = "0vwd97zkxv30y8x0z76s4fsj4w9ysgsmpjclp2h2bpava7zi4l3p";
+    url = "mirror://kde/stable/${pname}/${version}/${pname}-${version}.tar.xz";
+    sha256 = "sha256-la6pO+HP05u1IzO4Kz5Xv2gIDH0TGddU0WeiD22+RVE=";
   };
 
   nativeBuildInputs = [ cmake doxygen extra-cmake-modules kdoctools wrapGAppsHook ];
@@ -67,17 +71,21 @@ mkDerivation rec {
     exiv2
     ffmpeg
     flex
+    graphviz
+    imagemagick
     lcms2
     lensfun
     libgphoto2
     libkipi
     libksane
     liblqr1
+    libqtav
     libusb1
     libGL
     libGLU
-    opencv3
+    opencv
     pcre
+    x265
 
     qtbase
     qtxmlpatterns
@@ -95,24 +103,26 @@ mkDerivation rec {
     kwidgetsaddons
     kxmlgui
 
+    breeze-icons
     marble
     oxygen
     threadweaver
-  ]
-  ++ lib.optionals withJpeg2k [ jasper ];
-
-  enableParallelBuilding = true;
+  ];
 
   cmakeFlags = [
     "-DENABLE_MYSQLSUPPORT=1"
     "-DENABLE_INTERNALMYSQL=1"
     "-DENABLE_MEDIAPLAYER=1"
     "-DENABLE_QWEBENGINE=on"
+    "-DENABLE_APPSTYLES=on"
   ];
 
+  dontWrapGApps = true;
+
   preFixup = ''
-    gappsWrapperArgs+=(--prefix PATH : ${lib.makeBinPath [ gnumake hugin enblend-enfuse ]})
-    gappsWrapperArgs+=(--suffix DK_PLUGIN_PATH : ${placeholder "out"}/${qtbase.qtPluginPrefix}/${pname})
+    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
+    qtWrapperArgs+=(--prefix PATH : ${lib.makeBinPath [ gnumake hugin enblend-enfuse ]})
+    qtWrapperArgs+=(--suffix DK_PLUGIN_PATH : ${placeholder "out"}/${qtbase.qtPluginPrefix}/${pname})
     substituteInPlace $out/bin/digitaglinktree \
       --replace "/usr/bin/perl" "${perl}/bin/perl" \
       --replace "/usr/bin/sqlite3" "${sqlite}/bin/sqlite3"

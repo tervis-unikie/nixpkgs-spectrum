@@ -1,6 +1,5 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
-, fetchpatch
 , zlib
 , expat
 , cmake
@@ -11,40 +10,21 @@
 , doxygen
 , graphviz
 , libxslt
+, libiconv
 }:
 
 stdenv.mkDerivation rec {
   pname = "exiv2";
-  version = "0.27.2";
+  version = "0.27.4";
+
+  outputs = [ "out" "dev" "doc" "man" ];
 
   src = fetchFromGitHub {
     owner = "exiv2";
     repo  = "exiv2";
     rev = "v${version}";
-    sha256 = "0n8il52yzbmvbkryrl8waz7hd9a2fdkw8zsrmhyh63jlvmmc31gf";
+    sha256 = "0m1x79q6i5fw3gr9k0dw0bbl7ym27g9vbmxiamks6yw028xqwc5a";
   };
-
-  patches = [
-    # included in next release
-    (fetchpatch {
-      name = "cve-2019-20421.patch";
-      url = "https://github.com/Exiv2/exiv2/commit/a82098f4f90cd86297131b5663c3dec6a34470e8.patch";
-      sha256 = "16r19qb9l5j43ixm5jqid9sdv5brlkk1wq0w79rm5agxq4kblfyc";
-      excludes = [ "tests/bugfixes/github/test_issue_1011.py" "test/data/Jp2Image_readMetadata_loop.poc" ];
-    })
-  ];
-
-  cmakeFlags = [
-    "-DEXIV2_BUILD_PO=ON"
-    "-DEXIV2_BUILD_DOC=ON"
-    # the cmake package does not handle absolute CMAKE_INSTALL_INCLUDEDIR correctly
-    # (setting it to an absolute path causes include files to go to $out/$out/include,
-    #  because the absolute path is interpreted with root at $out).
-    "-DCMAKE_INSTALL_INCLUDEDIR=include"
-    "-DCMAKE_INSTALL_LIBDIR=lib"
-  ];
-
-  outputs = [ "out" "dev" "doc" "man" ];
 
   nativeBuildInputs = [
     cmake
@@ -53,6 +33,8 @@ stdenv.mkDerivation rec {
     graphviz
     libxslt
   ];
+
+  buildInputs = lib.optional stdenv.isDarwin libiconv;
 
   propagatedBuildInputs = [
     expat
@@ -65,7 +47,13 @@ stdenv.mkDerivation rec {
     which
   ];
 
+  cmakeFlags = [
+    "-DEXIV2_ENABLE_NLS=ON"
+    "-DEXIV2_BUILD_DOC=ON"
+  ];
+
   buildFlags = [
+    "all"
     "doc"
   ];
 
@@ -77,25 +65,21 @@ stdenv.mkDerivation rec {
   preCheck = ''
     patchShebangs ../test/
     mkdir ../test/tmp
-    export LD_LIBRARY_PATH="$(realpath ../build/lib)"
 
-    ${stdenv.lib.optionalString (stdenv.isAarch64 || stdenv.isAarch32) ''
+    ${lib.optionalString (stdenv.isAarch64 || stdenv.isAarch32) ''
       # Fix tests on arm
       # https://github.com/Exiv2/exiv2/issues/933
       rm -f ../tests/bugfixes/github/test_CVE_2018_12265.py
     ''}
 
-    ${stdenv.lib.optionalString stdenv.isDarwin ''
-      export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH''${DYLD_LIBRARY_PATH:+:}`pwd`/lib
+    ${lib.optionalString stdenv.isDarwin ''
+      export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH''${DYLD_LIBRARY_PATH:+:}$PWD/lib
       # Removing tests depending on charset conversion
       substituteInPlace ../test/Makefile --replace "conversions.sh" ""
       rm -f ../tests/bugfixes/redmine/test_issue_460.py
       rm -f ../tests/bugfixes/redmine/test_issue_662.py
+      rm -f ../tests/bugfixes/github/test_issue_1046.py
      ''}
-  '';
-
-  postCheck = ''
-    (cd ../tests/ && python3 runner.py)
   '';
 
   # With CMake we have to enable samples or there won't be
@@ -108,20 +92,11 @@ stdenv.mkDerivation rec {
     )
   '';
 
-  # Fix CMake export paths.
-  postFixup = ''
-    sed -i "$dev/lib/cmake/exiv2/exiv2Config.cmake" \
-        -e "/INTERFACE_INCLUDE_DIRECTORIES/ s@\''${_IMPORT_PREFIX}@$dev@" \
-        -e "/Compute the installation prefix/ a set(_IMPORT_PREFIX \"$out\")" \
-        -e "/^get_filename_component(_IMPORT_PREFIX/ d"
-  '';
-
-  enableParallelBuilding = true;
-
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://www.exiv2.org/";
     description = "A library and command-line utility to manage image metadata";
     platforms = platforms.all;
     license = licenses.gpl2Plus;
+    maintainers = [ ];
   };
 }

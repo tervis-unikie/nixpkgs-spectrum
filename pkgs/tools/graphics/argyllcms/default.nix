@@ -1,12 +1,10 @@
 { stdenv, fetchzip, jam, unzip, libX11, libXxf86vm, libXrandr, libXinerama
 , libXrender, libXext, libtiff, libjpeg, libpng, libXScrnSaver, writeText
 , libXdmcp, libXau, lib, openssl }:
-let
-  version = "2.1.2";
- in
+
 stdenv.mkDerivation rec {
   pname = "argyllcms";
-  inherit version;
+  version = "2.1.2";
 
   src = fetchzip {
     # Kind of flacky URL, it was reaturning 406 and inconsistent binaries for a
@@ -97,7 +95,7 @@ stdenv.mkDerivation rec {
   buildFlags = [ "all" ];
 
   makeFlags = [
-    "PREFIX=${placeholder ''out''}"
+    "PREFIX=${placeholder "out"}"
   ];
 
   # Install udev rules, but remove lines that set up the udev-acl
@@ -114,7 +112,7 @@ stdenv.mkDerivation rec {
     mv $out/ref $out/share/argyllcms
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "http://www.argyllcms.com";
     description = "Color management system (compatible with ICC)";
     license = licenses.gpl3;

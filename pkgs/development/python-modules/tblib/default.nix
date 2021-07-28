@@ -1,4 +1,4 @@
-{ stdenv, buildPythonPackage, fetchPypi }:
+{ lib, buildPythonPackage, fetchPypi }:
 
 buildPythonPackage rec {
   pname = "tblib";
@@ -6,10 +6,10 @@ buildPythonPackage rec {
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0b48bx1h720rmmd9nmw50y5cq9vhdppnl0bn9yfl2yza0rrxg6q5";
+    sha256 = "059bd77306ea7b419d4f76016aef6d7027cc8a0785579b5aad198803435f882c";
   };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Traceback fiddling library. Allows you to pickle tracebacks.";
     homepage = "https://github.com/ionelmc/python-tblib";
     license = licenses.bsd2;

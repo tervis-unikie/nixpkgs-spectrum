@@ -1,27 +1,40 @@
-{ lib, buildGoPackage, fetchFromGitHub }:
+{ lib, buildGoModule, fetchFromGitHub }:
 
-buildGoPackage rec {
+buildGoModule rec {
   pname = "open-policy-agent";
-  version = "0.22.0";
+  version = "0.30.2";
 
-  goPackagePath = "github.com/open-policy-agent/opa";
   src = fetchFromGitHub {
     owner = "open-policy-agent";
     repo = "opa";
     rev = "v${version}";
-    sha256 = "1kndiiqf6b4j8zhv0ypjr9dfjgck25qiqa2bb0pmpm3j9460zzjs";
+    sha256 = "sha256-pyqG8k2jHUhYZ1ftfAjxpJ4H1P1uWfqSdGcyR7pw1rE=";
   };
-  goDeps = ./deps.nix;
+  vendorSha256 = null;
 
-  buildFlagsArray = ''
-    -ldflags=
-      -X ${goPackagePath}/version.Version=${version}
+  subPackages = [ "." ];
+
+  ldflags = [ "-s" "-w" "-X github.com/open-policy-agent/opa/version.Version=${version}" ];
+
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/opa --help
+    $out/bin/opa version | grep "Version: ${version}"
+    runHook postInstallCheck
   '';
 
   meta = with lib; {
-    description = "General-purpose policy engine";
     homepage = "https://www.openpolicyagent.org";
+    changelog = "https://github.com/open-policy-agent/opa/blob/v${version}/CHANGELOG.md";
+    description = "General-purpose policy engine";
+    longDescription = ''
+      The Open Policy Agent (OPA, pronounced "oh-pa") is an open source, general-purpose policy engine that unifies
+      policy enforcement across the stack. OPA provides a high-level declarative language that let’s you specify policy
+      as code and simple APIs to offload policy decision-making from your software. You can use OPA to enforce policies
+      in microservices, Kubernetes, CI/CD pipelines, API gateways, and more.
+    '';
     license = licenses.asl20;
-    maintainers = with maintainers; [ lewo ];
+    maintainers = with maintainers; [ lewo jk ];
   };
 }

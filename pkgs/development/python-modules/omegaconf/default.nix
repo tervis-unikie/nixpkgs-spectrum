@@ -1,5 +1,5 @@
-{ stdenv, buildPythonPackage, fetchFromGitHub, pythonOlder
-, pytest, pytestrunner, pyyaml, six, pathlib2, isPy27 }:
+{ lib, buildPythonPackage, fetchFromGitHub, pythonOlder
+, pytest, pytest-runner, pyyaml, six, pathlib2, isPy27 }:
 
 buildPythonPackage rec {
   pname = "omegaconf";
@@ -13,10 +13,10 @@ buildPythonPackage rec {
   };
 
   checkInputs = [ pytest ];
-  buildInputs = [ pytestrunner ];
-  propagatedBuildInputs = [ pyyaml six ] ++ stdenv.lib.optional isPy27 pathlib2;
+  buildInputs = [ pytest-runner ];
+  propagatedBuildInputs = [ pyyaml six ] ++ lib.optional isPy27 pathlib2;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A framework for configuring complex applications";
     homepage = "https://github.com/omry/omegaconf";
     license = licenses.free;  # prior bsd license (1988)

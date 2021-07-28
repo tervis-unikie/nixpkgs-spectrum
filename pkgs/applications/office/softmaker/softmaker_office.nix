@@ -6,9 +6,9 @@
   # Softmaker Office or when the upstream archive was replaced and
   # nixpkgs is not in sync yet.
 , officeVersion ? {
-  version = "1018";
+  version = "1032";
   edition = "2021";
-  sha256 = "1g9mcn0z7s3xw7d5bcjxbnamh6knzndcysahydskfcds6czdxg0c";
+  hash = "sha256-LchSqLVBdkmWJQ8hCEvtwRPgIUSDE0URKPzCkEexGbc=";
 }
 
 , ... } @ args:
@@ -20,7 +20,7 @@ callPackage ./generic.nix (args // rec {
   suiteName = "SoftMaker Office";
 
   src = fetchurl {
-    inherit (officeVersion) sha256;
+    inherit (officeVersion) hash;
     url = "https://www.softmaker.net/down/softmaker-office-${edition}-${version}-amd64.tgz";
   };
 

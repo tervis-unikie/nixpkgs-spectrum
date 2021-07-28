@@ -1,5 +1,5 @@
-{ stdenv, lib, buildPackages, fetchurl, fetchzip
-, enableStatic ? false
+{ stdenv, lib, buildPackages, fetchurl, fetchFromGitLab
+, enableStatic ? stdenv.hostPlatform.isStatic
 , enableMinimal ? false
 # Allow forcing musl without switching stdenv itself, e.g. for our bootstrapping:
 # nix build -f pkgs/top-level/release.nix stdenvBootstrapTools.x86_64-linux.dist
@@ -32,27 +32,31 @@ let
     CONFIG_FEATURE_WTMP n
   '';
 
-  debianName = "busybox_1.30.1-5";
-  debianTarball = fetchzip {
-    url = "http://deb.debian.org/debian/pool/main/b/busybox/${debianName}.debian.tar.xz";
-    sha256 = "03m4rvs2pd0hj0mdkdm3r4m1gh0bgwr0cvnqds297xnkfi5s01nx";
+  # The debian version lags behind the upstream version and also contains
+  # a debian-specific suffix. We only fetch the debian repository to get the
+  # default.script
+  debianVersion = "1.30.1-6";
+  debianSource = fetchFromGitLab {
+    domain = "salsa.debian.org";
+    owner = "installer-team";
+    repo = "busybox";
+    rev = "debian/1%${debianVersion}";
+    sha256 = "sha256-6r0RXtmqGXtJbvLSD1Ma1xpqR8oXL2bBKaUE/cSENL8=";
   };
-  debianDispatcherScript = "${debianTarball}/tree/udhcpc/etc/udhcpc/default.script";
+  debianDispatcherScript = "${debianSource}/debian/tree/udhcpc/etc/udhcpc/default.script";
   outDispatchPath = "$out/default.script";
 in
 
 stdenv.mkDerivation rec {
-  # TODO: When bumping this version, please validate whether the wget patch is present upstream
-  # and remove the patch if it is. The patch should be present upstream for all versions 1.32.0+.
-  # See NixOs/nixpkgs#94722 for context.
-  name = "busybox-1.31.1";
+  pname = "busybox";
+  version = "1.33.1";
 
   # Note to whoever is updating busybox: please verify that:
   # nix-build pkgs/stdenv/linux/make-bootstrap-tools.nix -A test
   # still builds after the update.
   src = fetchurl {
-    url = "https://busybox.net/downloads/${name}.tar.bz2";
-    sha256 = "1659aabzp8w4hayr4z8kcpbk2z1q2wqhw7i1yb0l72b45ykl1yfh";
+    url = "https://busybox.net/downloads/${pname}-${version}.tar.bz2";
+    sha256 = "0a0dcvsh7nxnhxc5y73fky0z30i9p7r30qfidm2akn0n5fywdkhj";
   };
 
   hardeningDisable = [ "format" "pie" ]
@@ -60,9 +64,7 @@ stdenv.mkDerivation rec {
 
   patches = [
     ./busybox-in-store.patch
-    ./0001-Fix-build-with-glibc-2.31.patch
-    ./0001-wget-implement-TLS-verification-with-ENABLE_FEATURE_.patch
-  ] ++ stdenv.lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) ./clang-cross.patch;
+  ] ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) ./clang-cross.patch;
 
   postPatch = "patchShebangs .";
 
@@ -116,8 +118,10 @@ stdenv.mkDerivation rec {
     logger() { '$out'/bin/logger "$@"; }\
     ' ${debianDispatcherScript} > ${outDispatchPath}
     chmod 555 ${outDispatchPath}
-    PATH=$out/bin patchShebangs ${outDispatchPath}
+    HOST_PATH=$out/bin patchShebangs --host ${outDispatchPath}
   '';
+
+  strictDeps = true;
 
   depsBuildBuild = [ buildPackages.stdenv.cc ];
 
@@ -127,10 +131,10 @@ stdenv.mkDerivation rec {
 
   doCheck = false; # tries to access the net
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Tiny versions of common UNIX utilities in a single small executable";
     homepage = "https://busybox.net/";
-    license = licenses.gpl2;
+    license = licenses.gpl2Only;
     maintainers = with maintainers; [ TethysSvensson ];
     platforms = platforms.linux;
     priority = 10;

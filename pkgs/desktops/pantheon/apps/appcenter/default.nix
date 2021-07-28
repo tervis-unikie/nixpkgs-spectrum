@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , nix-update-script
 , appstream
 , appstream-glib
@@ -7,7 +7,6 @@
 , elementary-gtk-theme
 , elementary-icon-theme
 , fetchFromGitHub
-, fetchpatch
 , flatpak
 , gettext
 , glib
@@ -15,29 +14,29 @@
 , gtk3
 , json-glib
 , libgee
+, libhandy
 , libsoup
 , libxml2
 , meson
 , ninja
 , packagekit
 , pantheon
-, pkgconfig
+, pkg-config
 , python3
 , vala
 , polkit
-, libhandy
 , wrapGAppsHook
 }:
 
 stdenv.mkDerivation rec {
   pname = "appcenter";
-  version = "3.4.1";
+  version = "3.6.0";
 
   src = fetchFromGitHub {
     owner = "elementary";
     repo = pname;
     rev = version;
-    sha256 = "1bwkjxl4k49hvy88llif82hdancda9692vjwkw4bxy2cbz8444zx";
+    sha256 = "0kwqgilhyrj2nbvw5y34nzch5h9jnrg1a1n333qdsx4ax6yrxh4j";
   };
 
   passthru = {
@@ -48,12 +47,12 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [
     appstream-glib
-    dbus # for pkgconfig
+    dbus # for pkg-config
     desktop-file-utils
     gettext
     meson
     ninja
-    pkgconfig
+    pkg-config
     python3
     vala
     wrapGAppsHook
@@ -87,7 +86,7 @@ stdenv.mkDerivation rec {
     patchShebangs meson/post_install.py
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://github.com/elementary/appcenter";
     description = "An open, pay-what-you-want app store for indie developers, designed for elementary OS";
     license = licenses.gpl3Plus;

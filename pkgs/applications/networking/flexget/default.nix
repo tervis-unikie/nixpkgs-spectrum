@@ -1,12 +1,13 @@
 { lib, python3Packages }:
 
 python3Packages.buildPythonApplication rec {
-  pname = "FlexGet";
-  version = "3.1.67";
+  pname = "flexget";
+  version = "3.1.133";
 
   src = python3Packages.fetchPypi {
-    inherit pname version;
-    sha256 = "d3f4b7bebff80a3a3aa00daf60145a6bc3d12847d7339b39846b2341bca75ef3";
+    pname = "FlexGet";
+    inherit version;
+    sha256 = "1mfmy2nbxx9k6hnhwxpf2062rwspigfhbvkpr161grd5amcs2cr6";
   };
 
   postPatch = ''
@@ -26,6 +27,7 @@ python3Packages.buildPythonApplication rec {
     APScheduler
     beautifulsoup4
     cherrypy
+    colorama
     colorclass
     feedparser
     flask-compress
@@ -34,6 +36,7 @@ python3Packages.buildPythonApplication rec {
     flask-restful
     flask-restx
     flask
+    greenlet
     guessit
     html5lib
     jinja2
@@ -44,22 +47,24 @@ python3Packages.buildPythonApplication rec {
     pynzb
     pyparsing
     PyRSS2Gen
-    dateutil
+    python-dateutil
     pyyaml
     rebulk
     requests
     rpyc
+    sgmllib3k
     sqlalchemy
     terminaltables
     zxcvbn
+    psutil
     # plugins
-    transmissionrpc
+    transmission-rpc
   ];
 
   meta = with lib; {
-    homepage    = "https://flexget.com/";
+    homepage = "https://flexget.com/";
     description = "Multipurpose automation tool for all of your media";
-    license     = licenses.mit;
+    license = licenses.mit;
     maintainers = with maintainers; [ marsam ];
   };
 }

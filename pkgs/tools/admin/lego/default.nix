@@ -1,17 +1,17 @@
-{ lib, fetchFromGitHub, buildGoModule }:
+{ lib, fetchFromGitHub, buildGoModule, nixosTests }:
 
 buildGoModule rec {
   pname = "lego";
-  version = "3.8.0";
+  version = "4.4.0";
 
   src = fetchFromGitHub {
     owner = "go-acme";
     repo = pname;
     rev = "v${version}";
-    sha256 = "02p7zlrz8fp5bsvhk4jrx5x3gxnl00friay1jihlzyk3s400n9jb";
+    sha256 = "sha256-+5uy6zVfC+utXfwBCEo597CRo4di73ff0eqHyDUxxII=";
   };
 
-  vendorSha256 = "0jh7qi422i2114198fain9nwwf8yd8vna0p3g0hvginh59svyagc";
+  vendorSha256 = "sha256-JgGDP5H7zKQ8sk36JtM/FCWXl7oTScHNboQ/mE5AisU=";
 
   doCheck = false;
 
@@ -27,4 +27,6 @@ buildGoModule rec {
     homepage = "https://go-acme.github.io/lego/";
     maintainers = teams.acme.members;
   };
+
+  passthru.tests.lego = nixosTests.acme;
 }

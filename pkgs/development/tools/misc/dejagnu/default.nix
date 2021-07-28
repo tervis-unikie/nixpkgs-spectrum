@@ -1,14 +1,16 @@
-{ fetchurl, stdenv, expect, makeWrapper }:
+{ fetchurl, lib, stdenv, expect, makeWrapper }:
 
 stdenv.mkDerivation rec {
-  name = "dejagnu-1.6.2";
+  pname = "dejagnu";
+  version = "1.6.2";
 
   src = fetchurl {
-    url = "mirror://gnu/dejagnu/${name}.tar.gz";
+    url = "mirror://gnu/${pname}/${pname}-${version}.tar.gz";
     sha256 = "0qfj2wd4qk1yn9yzam6g8nmyxfazcc0knjyyibycb2ainkhp21hd";
   };
 
-  buildInputs = [ expect makeWrapper ];
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ expect ];
 
   doCheck = true;
 
@@ -30,7 +32,7 @@ stdenv.mkDerivation rec {
       --prefix PATH ":" "${expect}/bin"
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Framework for testing other programs";
 
     longDescription = ''

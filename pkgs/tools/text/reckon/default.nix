@@ -4,9 +4,9 @@ stdenv.mkDerivation rec {
   pname = "reckon";
   version = (import ./gemset.nix).reckon.version;
 
-  phases = [ "installPhase" ];
+  dontUnpack = true;
 
-  buildInputs = [ makeWrapper ];
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = let
     env = bundlerEnv {
@@ -15,8 +15,10 @@ stdenv.mkDerivation rec {
       gemdir = ./.;
     };
   in ''
+    runHook preInstall
     mkdir -p $out/bin
     makeWrapper ${env}/bin/reckon $out/bin/reckon
+    runHook postInstall
   '';
 
   passthru.updateScript = bundlerUpdateScript "reckon";

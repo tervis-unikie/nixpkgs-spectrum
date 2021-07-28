@@ -1,10 +1,7 @@
-{ stdenv, fetchFromGitHub, ocaml, findlib }:
-let
-  version = "0.14.0";
-in
-stdenv.mkDerivation {
+{ lib, stdenv, fetchFromGitHub, ocaml, findlib }:
+stdenv.mkDerivation rec {
   name = "ocamlbuild-${version}";
-  inherit version;
+  version = "0.14.0";
 
   src = fetchFromGitHub {
     owner = "ocaml";
@@ -25,7 +22,7 @@ stdenv.mkDerivation {
     "OCAMLBUILD_LIBDIR=$OCAMLFIND_DESTDIR"
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://github.com/ocaml/ocamlbuild/";
     description = "A build system with builtin rules to easily build most OCaml projects";
     license = licenses.lgpl2;

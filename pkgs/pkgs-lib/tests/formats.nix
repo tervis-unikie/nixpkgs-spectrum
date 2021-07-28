@@ -15,11 +15,11 @@ let
     in formatSet.generate "test-format-file" config;
 
   runBuildTest = name: { drv, expected }: pkgs.runCommandNoCC name {} ''
-    if diff ${drv} ${builtins.toFile "expected" expected}; then
-      touch $out
+    if diff -u '${builtins.toFile "expected" expected}' '${drv}'; then
+      touch "$out"
     else
-      echo "Got: $(cat ${drv})"
-      echo "Should be: ${expected}"
+      echo
+      echo "Got different values than expected; diff above."
       exit 1
     fi
   '';
@@ -38,6 +38,7 @@ in runBuildTests {
       str = "foo";
       attrs.foo = null;
       list = [ null null ];
+      path = ./formats.nix;
     };
     expected = ''
       {
@@ -52,6 +53,7 @@ in runBuildTests {
           null
         ],
         "null": null,
+        "path": "${./formats.nix}",
         "str": "foo",
         "true": true
       }
@@ -67,6 +69,7 @@ in runBuildTests {
       str = "foo";
       attrs.foo = null;
       list = [ null null ];
+      path = ./formats.nix;
     };
     expected = ''
       {
@@ -80,6 +83,7 @@ in runBuildTests {
           null
         ],
         "null": null,
+        "path": "${./formats.nix}",
         "str": "foo",
         "true": true
       }
@@ -124,6 +128,22 @@ in runBuildTests {
     '';
   };
 
+  testIniListToValue = {
+    drv = evalFormat formats.ini { listToValue = concatMapStringsSep ", " (generators.mkValueStringDefault {}); } {
+      foo = {
+        bar = [ null true "test" 1.2 10 ];
+        baz = false;
+        qux = "qux";
+      };
+    };
+    expected = ''
+      [foo]
+      bar=null, true, test, 1.200000, 10
+      baz=false
+      qux=qux
+    '';
+  };
+
   testTomlAtoms = {
     drv = evalFormat formats.toml {} {
       false = false;
@@ -147,9 +167,7 @@ in runBuildTests {
       foo = "foo"
 
       [level1]
-
       [level1.level2]
-
       [level1.level2.level3]
       level4 = "deep"
     '';

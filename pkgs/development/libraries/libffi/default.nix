@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, fetchpatch
+{ lib, stdenv, fetchurl, fetchpatch
 , autoreconfHook
 
 }:
@@ -9,10 +9,11 @@
 # files.
 
 stdenv.mkDerivation rec {
-  name = "libffi-3.3";
+  pname = "libffi";
+  version = "3.3";
 
   src = fetchurl {
-    url = "https://sourceware.org/pub/libffi/${name}.tar.gz";
+    url = "https://sourceware.org/pub/libffi/${pname}-${version}.tar.gz";
     sha256 = "0mi0cpf8aa40ljjmzxb7im6dbj45bb0kllcd09xgmp834y9agyvj";
   };
 
@@ -32,7 +33,7 @@ stdenv.mkDerivation rec {
 
   dontStrip = stdenv.hostPlatform != stdenv.buildPlatform; # Don't run the native `strip' when cross-compiling.
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A foreign function call interface library";
     longDescription = ''
       The libffi library provides a portable, high level programming

@@ -4,21 +4,23 @@
 
 stdenv.mkDerivation {
   pname = "hello-wayland-unstable";
-  version = "2019-01-16";
+  version = "2020-07-27";
 
   src = fetchFromGitHub {
     owner = "emersion";
     repo = "hello-wayland";
-    rev = "6c2762e653d4f91b36ee443642b735aa48128a74";
-    sha256 = "0qxkyn9w9v477gagcrs18vdzy1ffg8jgp2qsqgdf9rxkfs6m4f36";
+    rev = "501d0851cfa7f21c780c0eb52f0a6b23f02918c5";
+    sha256 = "0dz6przqp57kw8ycja3gw6jp9x12217nwbwdpgmvw7jf0lzhk4xr";
   };
 
   nativeBuildInputs = [ imagemagick pkg-config ];
   buildInputs = [ wayland wayland-protocols ];
 
   installPhase = ''
+    runHook preBuild
     mkdir -p $out/bin
     install hello-wayland $out/bin
+    runHook postBuild
   '';
 
   meta = with lib; {

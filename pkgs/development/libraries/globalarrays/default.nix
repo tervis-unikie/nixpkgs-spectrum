@@ -1,23 +1,20 @@
-{ stdenv, fetchpatch, fetchFromGitHub, autoreconfHook
-, blas, gfortran, openssh, openmpi
+{ lib, stdenv, fetchpatch, fetchFromGitHub, autoreconfHook
+, blas, gfortran, openssh, mpi
 } :
 
-let
-  version = "5.7.2";
-
-in stdenv.mkDerivation {
+stdenv.mkDerivation rec {
   pname = "globalarrays";
-  inherit version;
+  version = "5.8";
 
   src = fetchFromGitHub {
     owner = "GlobalArrays";
     repo = "ga";
     rev = "v${version}";
-    sha256 = "0c1y9a5jpdw9nafzfmvjcln1xc2gklskaly0r1alm18ng9zng33i";
+    sha256 = "0bky91ncz6vy0011ps9prsnq9f4a5s5xwr23kkmi39xzg0417mnd";
   };
 
   nativeBuildInputs = [ autoreconfHook ];
-  buildInputs = [ openmpi blas gfortran openssh ];
+  buildInputs = [ mpi blas gfortran openssh ];
 
   preConfigure = ''
     configureFlagsArray+=( "--enable-i8" \
@@ -30,7 +27,7 @@ in stdenv.mkDerivation {
 
   enableParallelBuilding = true;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Global Arrays Programming Models";
     homepage = "http://hpc.pnl.gov/globalarrays/";
     maintainers = [ maintainers.markuskowa ];

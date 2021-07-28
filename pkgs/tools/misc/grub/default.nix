@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, autoreconfHook, texinfo, buggyBiosCDSupport ? true }:
+{ lib, stdenv, fetchurl, autoreconfHook, texinfo, buggyBiosCDSupport ? true }:
 
 stdenv.mkDerivation {
   name = "grub-0.97-73";
@@ -14,9 +14,13 @@ stdenv.mkDerivation {
     # grub-install isn't smart enough.
     ./symlink.patch
   ]
-  ++ (stdenv.lib.optional buggyBiosCDSupport ./buggybios.patch)
+  ++ (lib.optional buggyBiosCDSupport ./buggybios.patch)
   ++ map fetchurl (import ./grub1.patches.nix)
   ;
+
+  preConfigure = ''
+    substituteInPlace ./configure.ac --replace 'AC_PREREQ(2.61)' 'AC_PREREQ(2.64)'
+  '';
 
   # autoreconfHook required for the splashimage patch.
   nativeBuildInputs = [ autoreconfHook ];
@@ -26,7 +30,7 @@ stdenv.mkDerivation {
 
   passthru.grubTarget = "";
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://www.gnu.org/software/grub";
     description = "GRand Unified Bootloader";
     license = licenses.gpl2;

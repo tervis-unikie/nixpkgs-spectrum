@@ -1,4 +1,4 @@
-{ stdenv
+{ lib
 , buildPythonPackage
 , fetchPypi
 , openssl
@@ -6,17 +6,17 @@
 
 buildPythonPackage rec {
   pname = "scrypt";
-  version = "0.8.15";
+  version = "0.8.18";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0643fwj8vl96bsl30jx091zicmwyi0gglza66xqhqizqyqjq0ag6";
+    sha256 = "bcf04257af12e6d52974d177a7b08e314b66f350a73f9b6f7b232d69a6a1e041";
   };
 
   buildInputs = [ openssl ];
   doCheck = false;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Bindings for scrypt key derivation function library";
     homepage = "https://pypi.python.org/pypi/scrypt";
     maintainers = [];

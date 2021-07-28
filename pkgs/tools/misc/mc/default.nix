@@ -1,6 +1,6 @@
-{ stdenv
+{ lib, stdenv
 , fetchurl
-, pkgconfig
+, pkg-config
 , glib
 , gpm
 , file
@@ -16,18 +16,24 @@
 , openssl
 , coreutils
 , autoreconfHook
+, autoSignDarwinBinariesHook
 }:
 
 stdenv.mkDerivation rec {
   pname = "mc";
-  version = "4.8.25";
+  version = "4.8.26";
 
   src = fetchurl {
     url = "https://www.midnight-commander.org/downloads/${pname}-${version}.tar.xz";
-    sha256 = "12jlnabnc91xsm35g99g2wnh96jmznvrhffd18rj7fqfy8brdhgz";
+    sha256 = "sha256-xt6txQWV8tmiLcbCmanyizk+NYNG6/bKREqEadwWbCc=";
   };
 
-  nativeBuildInputs = [ pkgconfig autoreconfHook ];
+  nativeBuildInputs = [ pkg-config autoreconfHook unzip ]
+    # The preFixup hook rewrites the binary, which invaliates the code
+    # signature. Add the fixup hook to sign the output.
+    ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
+      autoSignDarwinBinariesHook
+    ];
 
   buildInputs = [
     file
@@ -39,9 +45,8 @@ stdenv.mkDerivation rec {
     openssl
     perl
     slang
-    unzip
     zip
-  ] ++ stdenv.lib.optionals (!stdenv.isDarwin) [ e2fsprogs gpm ];
+  ] ++ lib.optionals (!stdenv.isDarwin) [ e2fsprogs gpm ];
 
   enableParallelBuilding = true;
 
@@ -55,9 +60,14 @@ stdenv.mkDerivation rec {
   postFixup = ''
     # remove unwanted build-dependency references
     sed -i -e "s!PKG_CONFIG_PATH=''${PKG_CONFIG_PATH}!PKG_CONFIG_PATH=$(echo "$PKG_CONFIG_PATH" | sed -e 's/./0/g')!" $out/bin/mc
+  '' + lib.optionalString (!stdenv.isDarwin) ''
+    # libX11.so is loaded dynamically so autopatch doesn't detect it
+    patchelf \
+      --add-needed ${libX11}/lib/libX11.so \
+      $out/bin/mc
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "File Manager and User Shell for the GNU Project";
     downloadPage = "https://www.midnight-commander.org/downloads/";
     homepage = "https://www.midnight-commander.org";

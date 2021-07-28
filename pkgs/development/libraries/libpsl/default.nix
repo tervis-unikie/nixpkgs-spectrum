@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , fetchurl
 , autoreconfHook
 , docbook_xsl
@@ -8,13 +8,15 @@
 , libidn2
 , libunistring
 , libxslt
-, pkgconfig
+, pkg-config
 , python3
 , valgrind
 , publicsuffix-list
 }:
 
-stdenv.mkDerivation rec {
+let
+  enableValgrindTests = !stdenv.isDarwin && lib.meta.availableOn stdenv.hostPlatform valgrind;
+in stdenv.mkDerivation rec {
   pname = "libpsl";
   version = "0.21.0";
 
@@ -29,10 +31,11 @@ stdenv.mkDerivation rec {
     docbook_xml_dtd_43
     gtk-doc
     lzip
-    pkgconfig
+    pkg-config
     python3
-    valgrind
     libxslt
+  ] ++ lib.optionals enableValgrindTests [
+    valgrind
   ];
 
   buildInputs = [
@@ -56,17 +59,18 @@ stdenv.mkDerivation rec {
   configureFlags = [
     # "--enable-gtk-doc"
     "--enable-man"
-    "--enable-valgrind-tests"
     "--with-psl-distfile=${publicsuffix-list}/share/publicsuffix/public_suffix_list.dat"
     "--with-psl-file=${publicsuffix-list}/share/publicsuffix/public_suffix_list.dat"
     "--with-psl-testfile=${publicsuffix-list}/share/publicsuffix/test_psl.txt"
+  ] ++ lib.optionals enableValgrindTests [
+    "--enable-valgrind-tests"
   ];
 
   enableParallelBuilding = true;
 
-  doCheck = !stdenv.isDarwin;
+  doCheck = true;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "C library for the Publix Suffix List";
     longDescription = ''
       libpsl is a C library for the Publix Suffix List (PSL). A "public suffix"

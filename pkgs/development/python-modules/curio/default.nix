@@ -2,34 +2,42 @@
 , buildPythonPackage
 , fetchPypi
 , isPy3k
-, pytest
+, pytestCheckHook
 , sphinx
+, stdenv
 }:
 
 buildPythonPackage rec {
   pname = "curio";
-  version = "1.2";
+  version = "1.5";
+  disabled = !isPy3k;
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "90f320fafb3f5b791f25ffafa7b561cc980376de173afd575a2114380de7939b";
+    sha256 = "sha256-rwghLlkLt9qOTMOcQgEnEUlNwg1iLxYhVbopbMLjvBA=";
   };
 
-  disabled = !isPy3k;
-
-  checkInputs = [ pytest sphinx ];
+  checkInputs = [
+    pytestCheckHook
+    sphinx
+  ];
 
   __darwinAllowLocalNetworking = true;
 
-  # test_aside_basic times out,
-  # test_aside_cancel fails because modifies PYTHONPATH and cant find pytest
-  checkPhase = ''
-    pytest --deselect tests/test_task.py::test_aside_basic --deselect tests/test_task.py::test_aside_cancel -k "not test_ssl_outgoing"
-  '';
+  disabledTests = [
+     "test_aside_basic" # times out
+     "test_aside_cancel" # fails because modifies PYTHONPATH and cant find pytest
+     "test_ssl_outgoing" # touches network
+   ] ++ lib.optionals (stdenv.isDarwin) [
+     "test_unix_echo" # socket bind error on hydra when built with other packages
+     "test_unix_ssl_server" # socket bind error on hydra when built with other packages
+   ];
+
+  pythonImportsCheck = [ "curio" ];
 
   meta = with lib; {
     homepage = "https://github.com/dabeaz/curio";
-    description = "Library for performing concurrent I/O with coroutines in Python 3";
+    description = "Library for performing concurrent I/O with coroutines in Python";
     license = licenses.bsd3;
     maintainers = [ maintainers.marsam ];
   };

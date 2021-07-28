@@ -1,4 +1,4 @@
-{ stdenv, lib, fetchFromGitHub, cmake, boost, gmp, mpfr, libedit, python
+{ stdenv, lib, fetchFromGitHub, cmake, boost, gmp, mpfr, libedit, python3
 , texinfo, gnused, usePython ? true }:
 
 stdenv.mkDerivation rec {
@@ -15,29 +15,23 @@ stdenv.mkDerivation rec {
   outputs = [ "out" "dev" ];
 
   buildInputs = [
-    (boost.override { enablePython = usePython; })
-    gmp mpfr libedit python gnused
+    (boost.override { enablePython = usePython; python = python3; })
+    gmp mpfr libedit python3 gnused
   ];
 
   nativeBuildInputs = [ cmake texinfo ];
-
-  enableParallelBuilding = true;
 
   cmakeFlags = [
     "-DCMAKE_INSTALL_LIBDIR=lib"
     "-DBUILD_DOCS:BOOL=ON"
     (lib.optionalString usePython "-DUSE_PYTHON=true")
-  ] ++ lib.optionals (usePython && stdenv.isDarwin) [
-    # Fix python lookup on Darwin. Not necessary after
-    # https://github.com/NixOS/nixpkgs/pull/94090 lands in master
-    "-DPython_ROOT_DIR=${python}"
   ];
 
   # by default, it will query the python interpreter for it's sitepackages location
   # however, that would write to a different nixstore path, pass our own sitePackages location
   prePatch = lib.optionalString usePython ''
     substituteInPlace src/CMakeLists.txt \
-      --replace 'DESTINATION ''${Python_SITEARCH}' 'DESTINATION "${python.sitePackages}"'
+      --replace 'DESTINATION ''${Python_SITEARCH}' 'DESTINATION "${python3.sitePackages}"'
   '';
 
   installTargets = [ "doc" "install" ];

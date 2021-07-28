@@ -1,14 +1,14 @@
-{ stdenv, fetchFromGitHub, pkg-config, cairo, libX11, lv2 }:
+{ lib, stdenv, fetchFromGitHub, pkg-config, cairo, libX11, lv2 }:
 
 stdenv.mkDerivation rec {
   pname = "bchoppr";
-  version = "1.6.4";
+  version = "1.10.8";
 
   src = fetchFromGitHub {
     owner = "sjaehn";
     repo = pname;
-    rev = "${version}";
-    sha256 = "16b0sg7q2b8l4y4bp5s3yzsj9j6jayjy2mlvqkby6l7hcgjcj493";
+    rev = version;
+    sha256 = "sha256-F2J9TBONluhBuoEnpff3tLZEHFDbmllILqbZvu+PGGI=";
   };
 
   nativeBuildInputs = [ pkg-config ];
@@ -18,8 +18,8 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
-  meta = with stdenv.lib; {
-    homepage = https://github.com/sjaehn/BChoppr;
+  meta = with lib; {
+    homepage = "https://github.com/sjaehn/BChoppr";
     description = "An audio stream chopping LV2 plugin";
     maintainers = [ maintainers.magnetophon ];
     platforms = platforms.linux;

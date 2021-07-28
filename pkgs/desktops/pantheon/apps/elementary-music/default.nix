@@ -1,8 +1,8 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , nix-update-script
 , pantheon
-, pkgconfig
+, pkg-config
 , meson
 , ninja
 , vala
@@ -15,6 +15,7 @@
 , json-glib
 , libgda
 , libgpod
+, libhandy
 , libnotify
 , libpeas
 , libsoup
@@ -30,7 +31,7 @@
 
 stdenv.mkDerivation rec {
   pname = "elementary-music";
-  version = "5.0.5";
+  version = "5.1.0";
 
   repoName = "music";
 
@@ -38,7 +39,7 @@ stdenv.mkDerivation rec {
     owner = "elementary";
     repo = repoName;
     rev = version;
-    sha256 = "0cb0mwsp5w2bmjq8ap9mi0jvaqr9fgq00gfrkj0mzb5x5c26hrnw";
+    sha256 = "13v7rii9ardyd661s6d4hvvs4ig44v7s3qd1bx7imaigr72gg58b";
   };
 
   passthru = {
@@ -51,7 +52,7 @@ stdenv.mkDerivation rec {
     desktop-file-utils
     meson
     ninja
-    pkgconfig
+    pkg-config
     python3
     vala
     wrapGAppsHook
@@ -73,6 +74,7 @@ stdenv.mkDerivation rec {
     libgda
     libgee
     libgpod
+    libhandy
     libnotify
     libpeas
     libsignon-glib
@@ -90,7 +92,7 @@ stdenv.mkDerivation rec {
     patchShebangs meson/post_install.py
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Music player and library designed for elementary OS";
     homepage = "https://github.com/elementary/music";
     license = licenses.lgpl2Plus;

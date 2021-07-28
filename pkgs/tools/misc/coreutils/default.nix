@@ -22,21 +22,18 @@ with lib;
 
 stdenv.mkDerivation (rec {
   pname = "coreutils";
-  version = "8.31";
+  version = "8.32";
 
   src = fetchurl {
     url = "mirror://gnu/${pname}/${pname}-${version}.tar.xz";
-    sha256 = "1zg9m79x1i2nifj4kb0waf9x3i5h6ydkypkjnbsb9rnwis8rqypz";
+    sha256 = "sha256-RFjY3nhJ30TMqxXhaxVIsoUiTbul8I+sBwwcDgvMTPo=";
   };
 
-  patches = optional stdenv.hostPlatform.isCygwin ./coreutils-8.23-4.cygwin.patch
-         # Fix failing test with musl. See https://lists.gnu.org/r/coreutils/2019-05/msg00031.html
-         # To be removed in coreutils-8.32.
-         ++ optional stdenv.hostPlatform.isMusl ./avoid-false-positive-in-date-debug-test.patch
-         # Fix compilation in musl-cross environments. To be removed in coreutils-8.32.
-         ++ optional stdenv.hostPlatform.isMusl ./coreutils-8.31-musl-cross.patch
-         # Fix compilation in android-cross environments. To be removed in coreutils-8.32.
-         ++ [ ./coreutils-8.31-android-cross.patch ];
+  patches = [ ./sys-getdents-undeclared.patch ]
+    ++ optional stdenv.hostPlatform.isCygwin ./coreutils-8.23-4.cygwin.patch
+    # fix gnulib tests on 32-bit ARM. Included on coreutils master.
+    # https://lists.gnu.org/r/bug-gnulib/2020-08/msg00225.html
+    ++ optional stdenv.hostPlatform.isAarch32 ./fix-gnulib-tests-arm.patch;
 
   postPatch = ''
     # The test tends to fail on btrfs,f2fs and maybe other unusual filesystems.
@@ -45,6 +42,9 @@ stdenv.mkDerivation (rec {
     sed '2i echo Skipping cp sparse test && exit 77' -i ./tests/cp/sparse.sh
     sed '2i echo Skipping rm deep-2 test && exit 77' -i ./tests/rm/deep-2.sh
     sed '2i echo Skipping du long-from-unreadable test && exit 77' -i ./tests/du/long-from-unreadable.sh
+
+    # Depends on the mountpoints
+    sed '2i echo Skipping df df-symlink test && exit 77' -i ./tests/df/df-symlink.sh
 
     # Some target platforms, especially when building inside a container have
     # issues with the inotify test.
@@ -68,6 +68,12 @@ stdenv.mkDerivation (rec {
     for f in gnulib-tests/{test-chown.c,test-fchownat.c,test-lchown.c}; do
       echo "int main() { return 77; }" > "$f"
     done
+
+    # tests try to access user 1000 which is forbidden in sandbox
+    sed '2i print "Skipping id uid test"; exit 77' -i ./tests/id/uid.sh
+    sed '2i print "Skipping id zero test"; exit 77' -i ./tests/id/zero.sh
+    sed '2i print "Skipping misc help-versiob test"; exit 77' -i ./tests/misc/help-version.sh
+    sed '2i print "Skipping chown separator test"; exit 77' -i ./tests/chown/separator.sh
   '' + optionalString (stdenv.hostPlatform.libc == "musl") (lib.concatStringsSep "\n" [
     ''
       echo "int main() { return 77; }" > gnulib-tests/test-parse-datetime.c
@@ -78,8 +84,7 @@ stdenv.mkDerivation (rec {
   outputs = [ "out" "info" ];
 
   nativeBuildInputs = [ perl xz.bin ]
-    ++ optionals stdenv.hostPlatform.isCygwin [ autoreconfHook texinfo ]   # due to patch
-    ++ optionals stdenv.hostPlatform.isMusl [ autoreconfHook bison ];   # due to patch
+    ++ optionals stdenv.hostPlatform.isCygwin [ autoreconfHook texinfo ];  # due to patch
   configureFlags = [ "--with-packager=https://NixOS.org" ]
     ++ optional (singleBinary != false)
       ("--enable-single-binary" + optionalString (isString singleBinary) "=${singleBinary}")
@@ -107,8 +112,7 @@ stdenv.mkDerivation (rec {
   # and {Open,Free}BSD.
   # With non-standard storeDir: https://github.com/NixOS/nix/issues/512
   doCheck = stdenv.hostPlatform == stdenv.buildPlatform
-    && (stdenv.hostPlatform.libc == "glibc" || stdenv.hostPlatform.isMusl)
-    && builtins.storeDir == "/nix/store";
+    && (stdenv.hostPlatform.libc == "glibc" || stdenv.hostPlatform.isMusl);
 
   # Prevents attempts of running 'help2man' on cross-built binaries.
   PERL = if stdenv.hostPlatform == stdenv.buildPlatform then null else "missing";
@@ -138,25 +142,20 @@ stdenv.mkDerivation (rec {
   meta = {
     homepage = "https://www.gnu.org/software/coreutils/";
     description = "The basic file, shell and text manipulation utilities of the GNU operating system";
-
     longDescription = ''
       The GNU Core Utilities are the basic file, shell and text
       manipulation utilities of the GNU operating system.  These are
       the core utilities which are expected to exist on every
       operating system.
     '';
-
     license = licenses.gpl3Plus;
-
     platforms = platforms.unix ++ platforms.windows;
-
     priority = 10;
-
     maintainers = [ maintainers.eelco ];
   };
 } // optionalAttrs stdenv.hostPlatform.isMusl {
   # Work around a bogus warning in conjunction with musl.
   NIX_CFLAGS_COMPILE = "-Wno-error";
-} // stdenv.lib.optionalAttrs stdenv.hostPlatform.isAndroid {
+} // lib.optionalAttrs stdenv.hostPlatform.isAndroid {
   NIX_CFLAGS_COMPILE = "-D__USE_FORTIFY_LEVEL=0";
 })

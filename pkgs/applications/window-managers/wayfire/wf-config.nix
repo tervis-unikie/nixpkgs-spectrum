@@ -1,17 +1,24 @@
-{ stdenv, lib, fetchurl, meson, ninja, pkg-config, glm, libevdev, libxml2 }:
+{ stdenv, lib, fetchurl, cmake, meson, ninja, pkg-config
+, doctest, glm, libevdev, libxml2
+}:
 
 stdenv.mkDerivation rec {
   pname = "wf-config";
-  version = "0.5.0";
+  version = "0.7.1";
 
   src = fetchurl {
-    url = "https://github.com/WayfireWM/wf-config/releases/download/0.5.0/wf-config-0.5.0.tar.xz";
-    sha256 = "0xbvfy31pl6mj0nac921gqksyh6jb8ccap30p94lw6r6fb17wz57";
+    url = "https://github.com/WayfireWM/wf-config/releases/download/v${version}/wf-config-${version}.tar.xz";
+    sha256 = "1w75yxhz0nvw4mlv38sxp8k8wb5h99b51x3fdvizc3yaxanqa8kx";
   };
 
-  nativeBuildInputs = [ meson ninja pkg-config ];
-  buildInputs = [ libevdev libxml2 ];
+  nativeBuildInputs = [ cmake meson ninja pkg-config ];
+  buildInputs = [ doctest libevdev libxml2 ];
   propagatedBuildInputs = [ glm ];
+
+  # CMake is just used for finding doctest.
+  dontUseCmakeConfigure = true;
+
+  doCheck = true;
 
   meta = with lib; {
     homepage = "https://github.com/WayfireWM/wf-config";

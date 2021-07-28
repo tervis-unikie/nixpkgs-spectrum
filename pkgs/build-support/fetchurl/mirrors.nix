@@ -9,19 +9,19 @@
   # "sourceforge", "gnu", etc.
 
   luarocks = [
-    "https://luarocks.org"
+    "https://luarocks.org/"
     "https://raw.githubusercontent.com/rocks-moonscript-org/moonrocks-mirror/master/"
-    "http://luafr.org/moonrocks"
-    "http://luarocks.logiceditor.com/rocks"
+    "http://luafr.org/moonrocks/"
+    "http://luarocks.logiceditor.com/rocks/"
   ];
 
   # SourceForge.
   sourceforge = [
     "https://downloads.sourceforge.net/"
     "https://prdownloads.sourceforge.net/"
-    "https://heanet.dl.sourceforge.net/sourceforge/"
-    "https://surfnet.dl.sourceforge.net/sourceforge/"
-    "https://dfn.dl.sourceforge.net/sourceforge/"
+    "https://netcologne.dl.sourceforge.net/sourceforge/"
+    "https://versaweb.dl.sourceforge.net/sourceforge/"
+    "https://freefr.dl.sourceforge.net/sourceforge/"
     "https://osdn.dl.sourceforge.net/sourceforge/"
     "https://kent.dl.sourceforge.net/sourceforge/"
   ];
@@ -415,6 +415,11 @@
     # pypi.io is a more semantic link, but atm it’s referencing
     # files.pythonhosted.org over two redirects
     "https://pypi.io/packages/source/"
+  ];
+
+  # Python Test-PyPI mirror
+  testpypi = [
+    "https://test.pypi.io/packages/source/"
   ];
 
   # Mozilla projects.

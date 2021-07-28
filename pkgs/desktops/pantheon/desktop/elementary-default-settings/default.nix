@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , nix-update-script
 , pantheon
@@ -6,7 +6,7 @@
 , ninja
 , nixos-artwork
 , glib
-, pkgconfig
+, pkg-config
 , dbus
 , polkit
 , accountsservice
@@ -24,7 +24,7 @@ stdenv.mkDerivation rec {
     owner = "elementary";
     repo = repoName;
     rev = version;
-    sha256 = "00z31alwn2skhksrhp2jk75f6jlaipzk91hclx7na4gbcyrw7ahw";
+    sha256 = "sha256-HKrDs2frEWVPpwyGNP+NikrjyplSXJj1hFMLy6kK4wM=";
   };
 
   passthru = {
@@ -56,7 +56,7 @@ stdenv.mkDerivation rec {
     glib # polkit requires
     meson
     ninja
-    pkgconfig
+    pkg-config
     polkit
     python3
   ];
@@ -98,7 +98,7 @@ stdenv.mkDerivation rec {
     rm -rf $out/share/applications
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Default settings and configuration files for elementary";
     homepage = "https://github.com/elementary/default-settings";
     license = licenses.gpl2Plus;

@@ -1,49 +1,47 @@
-{ stdenv, fetchFromGitHub, rustPlatform, pkg-config, openssl, installShellFiles
-, libiconv, Security }:
+{ lib
+, stdenv
+, fetchFromGitHub
+, rustPlatform
+, pkg-config
+, openssl
+, installShellFiles
+, libiconv
+, Security
+}:
 
 rustPlatform.buildRustPackage rec {
   pname = "starship";
-  version = "0.44.0";
+  version = "0.56.0";
 
   src = fetchFromGitHub {
     owner = "starship";
     repo = pname;
     rev = "v${version}";
-    sha256 = "1pxrg5sfqqkvqww3fabq64j1fg03v5fj5yvm2xg2qa5n2f2qwnhi";
+    sha256 = "0wcldggdavmxajq6dkksdacs5f4729yvxvqiyb9vgalv4akik4yj";
   };
 
-  nativeBuildInputs = [ installShellFiles ] ++ stdenv.lib.optionals stdenv.isLinux [ pkg-config ];
+  nativeBuildInputs = [ installShellFiles ] ++ lib.optionals stdenv.isLinux [ pkg-config ];
 
-  buildInputs = stdenv.lib.optionals stdenv.isLinux [ openssl ]
-    ++ stdenv.lib.optionals stdenv.isDarwin [ libiconv Security ];
-
-  postPatch = ''
-    substituteInPlace src/utils.rs \
-      --replace "/bin/echo" "echo"
-  '';
+  buildInputs = lib.optionals stdenv.isLinux [ openssl ]
+    ++ lib.optionals stdenv.isDarwin [ libiconv Security ];
 
   postInstall = ''
     for shell in bash fish zsh; do
-      $out/bin/starship completions $shell > starship.$shell
+      STARSHIP_CACHE=$TMPDIR $out/bin/starship completions $shell > starship.$shell
       installShellCompletion starship.$shell
     done
   '';
 
-  cargoSha256 = "1b5gsw7jpiqjc7kbwf2kp6h6ks7jcgygrwzvn2akz86z40sskyg3";
+  cargoSha256 = "1ligh5mwids7crf2qh657sdij9fcw7pb3w7vqskpvkyk25h2z6r9";
 
   preCheck = ''
-    substituteInPlace tests/testsuite/common.rs \
-      --replace "./target/debug/starship" "./$releaseDir/starship"
-    substituteInPlace tests/testsuite/python.rs \
-      --replace "#[test]" "#[test] #[ignore]"
+    HOME=$TMPDIR
   '';
 
-  checkFlagsArray = [ "--skip=directory::home_directory" "--skip=directory::directory_in_root" ];
-
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A minimal, blazing fast, and extremely customizable prompt for any shell";
     homepage = "https://starship.rs";
     license = licenses.isc;
-    maintainers = with maintainers; [ bbigras davidtwco filalex77 Frostman marsam ];
+    maintainers = with maintainers; [ bbigras davidtwco Br1ght0ne Frostman marsam ];
   };
 }

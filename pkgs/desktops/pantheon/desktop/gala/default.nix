@@ -1,9 +1,9 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , nix-update-script
 , fetchpatch
 , pantheon
-, pkgconfig
+, pkg-config
 , meson
 , python3
 , ninja
@@ -20,7 +20,7 @@
 , gnome-desktop
 , mutter
 , clutter
-, plank
+, elementary-dock
 , elementary-icon-theme
 , elementary-settings-daemon
 , wrapGAppsHook
@@ -34,7 +34,7 @@ stdenv.mkDerivation rec {
     owner = "elementary";
     repo = pname;
     rev = version;
-    sha256 = "1qd8ynn04rzkki68w4x3ryq6fhlbi6mk359rx86a8ni084fsprh4";
+    sha256 = "sha256-BOarHUEgWqQM6jmVMauJi0JnsM+jE45MnPNnAqz1qOE=";
   };
 
   passthru = {
@@ -49,7 +49,7 @@ stdenv.mkDerivation rec {
     libxml2
     meson
     ninja
-    pkgconfig
+    pkg-config
     python3
     vala
     wrapGAppsHook
@@ -58,16 +58,16 @@ stdenv.mkDerivation rec {
   buildInputs = [
     bamf
     clutter
+    elementary-dock
     elementary-icon-theme
-    gnome-desktop
     elementary-settings-daemon
+    gnome-desktop
     granite
     gtk3
     libcanberra
     libcanberra-gtk3
     libgee
     mutter
-    plank
   ];
 
   patches = [
@@ -87,7 +87,7 @@ stdenv.mkDerivation rec {
     patchShebangs build-aux/meson/post_install.py
   '';
 
-  meta =  with stdenv.lib; {
+  meta =  with lib; {
     description = "A window & compositing manager based on mutter and designed by elementary for use with Pantheon";
     homepage = "https://github.com/elementary/gala";
     license = licenses.gpl3Plus;

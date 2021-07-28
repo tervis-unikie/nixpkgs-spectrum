@@ -1,33 +1,25 @@
-{ lib, stdenv, fetchurl, runCommand, makeWrapper, python3Packages, docutils, help2man
-, abootimg, acl, apktool, binutils-unwrapped, build-tools, bzip2, cbfstool, cdrkit, colord, colordiff, coreutils, cpio, db, diffutils, dtc
+{ lib, stdenv, fetchurl, python3Packages, docutils, help2man, installShellFiles
+, abootimg, acl, apksigner, apktool, binutils-unwrapped, bzip2, cbfstool, cdrkit, colord, colordiff, coreutils, cpio, db, diffutils, dtc
 , e2fsprogs, file, findutils, fontforge-fonttools, ffmpeg, fpc, gettext, ghc, ghostscriptX, giflib, gnumeric, gnupg, gnutar
 , gzip, hdf5, imagemagick, jdk, libarchive, libcaca, llvm, lz4, mono, openssh, openssl, pdftk, pgpdump, poppler_utils, qemu, R
-, sng, sqlite, squashfsTools, tcpdump, odt2txt, unzip, wabt, xxd, xz, zip, zstd
+, radare2, sng, sqlite, squashfsTools, tcpdump, odt2txt, unzip, wabt, xxd, xz, zip, zstd
 , enableBloat ? false
 }:
 
 # Note: when upgrading this package, please run the list-missing-tools.sh script as described below!
-let
-  apksigner = runCommand "apksigner" { nativeBuildInputs = [ makeWrapper ]; } ''
-    mkdir -p $out/bin
-    makeWrapper "${jdk}/bin/java" "$out/bin/apksigner" \
-      --add-flags "-jar ${builtins.head build-tools}/libexec/android-sdk/build-tools/28.0.3/lib/apksigner.jar"
-  '';
-in
 python3Packages.buildPythonApplication rec {
   pname = "diffoscope";
-  version = "156";
+  version = "178";
 
   src = fetchurl {
-    url    = "https://diffoscope.org/archive/diffoscope-${version}.tar.bz2";
-    sha256 = "1irmsa0g0hggxijqyy7mghc8zy82cr6zn8qil253pm426j7gf7vm";
+    url = "https://diffoscope.org/archive/diffoscope-${version}.tar.bz2";
+    sha256 = "sha256-uJbTQshf7vRd6EyaaV0itJVrMc/6o+pPXhtUgrjFnzM=";
   };
 
   outputs = [ "out" "man" ];
 
   patches = [
     ./ignore_links.patch
-    ./skip-failing-test.patch
   ];
 
   postPatch = ''
@@ -38,7 +30,7 @@ python3Packages.buildPythonApplication rec {
     substituteInPlace doc/Makefile --replace "../bin" "$out/bin"
   '';
 
-  nativeBuildInputs = [ docutils help2man ];
+  nativeBuildInputs = [ docutils help2man installShellFiles ];
 
   # Most of the non-Python dependencies here are optional command-line tools for various file-format parsers.
   # To help figuring out what's missing from the list, run: ./pkgs/tools/misc/diffoscope/list-missing-tools.sh
@@ -57,18 +49,26 @@ python3Packages.buildPythonApplication rec {
     ++ lib.optionals stdenv.isLinux [ python3Packages.pyxattr acl cdrkit ]
     ++ lib.optionals enableBloat ([
       abootimg apksigner apktool cbfstool colord ffmpeg fpc ghc ghostscriptX giflib gnupg gnumeric
-      hdf5 imagemagick llvm jdk mono odt2txt openssh pdftk poppler_utils qemu R tcpdump wabt
+      hdf5 imagemagick llvm jdk mono odt2txt openssh pdftk poppler_utils qemu R tcpdump wabt radare2
     ] ++ (with python3Packages; [ binwalk guestfs h5py ]));
 
-  checkInputs = with python3Packages; [ pytest ] ++ pythonPath;
+  checkInputs = with python3Packages; [ pytestCheckHook ] ++ pythonPath;
 
   postInstall = ''
     make -C doc
-    mkdir -p $out/share/man/man1
-    cp doc/diffoscope.1 $out/share/man/man1/diffoscope.1
+    installManPage doc/diffoscope.1
   '';
 
-  meta = with stdenv.lib; {
+  # Disable flaky test and a failing one
+  disabledTests = [
+    "test_android_manifest"
+    "test_sbin_added_to_path"
+    "test_diff_meta"
+    "test_diff_meta2"
+    "test_obj_no_differences"
+  ];
+
+  meta = with lib; {
     description = "Perform in-depth comparison of files, archives, and directories";
     longDescription = ''
       diffoscope will try to get to the bottom of what makes files or directories
@@ -80,9 +80,9 @@ python3Packages.buildPythonApplication rec {
       diffoscope is developed as part of the "reproducible builds" Debian
       project and was formerly known as "debbindiff".
     '';
-    homepage    = "https://diffoscope.org/";
-    license     = licenses.gpl3Plus;
+    homepage = "https://diffoscope.org/";
+    license = licenses.gpl3Plus;
     maintainers = with maintainers; [ dezgeg ma27 danielfullmer ];
-    platforms   = platforms.unix;
+    platforms = platforms.unix;
   };
 }

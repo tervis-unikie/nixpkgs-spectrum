@@ -1,18 +1,18 @@
-{ stdenv, fetchFromGitHub, meson, ninja, pkg-config, wayland
-, libGL, wayland-protocols, libinput, libxkbcommon, pixman
+{ lib, stdenv, fetchFromGitHub, meson, ninja, pkg-config, wayland-scanner
+, libGL, wayland, wayland-protocols, libinput, libxkbcommon, pixman
 , xcbutilwm, libX11, libcap, xcbutilimage, xcbutilerrors, mesa
-, libpng, ffmpeg, linuxHeaders
+, libpng, ffmpeg, xcbutilrenderutil, xwayland, seatd, linuxHeaders
 }:
 
 stdenv.mkDerivation rec {
   pname = "wlroots";
-  version = "0.11.0";
+  version = "0.14.1";
 
   src = fetchFromGitHub {
     owner = "swaywm";
     repo = "wlroots";
     rev = version;
-    sha256 = "08d5d52m8wy3imfc6mdxpx8swhh2k4s1gmfaykg02j59z84awc6p";
+    sha256 = "1sshp3lvlkl1i670kxhwsb4xzxl8raz6769kqvgmxzcb63ns9ay1";
   };
 
   patches = [
@@ -23,15 +23,15 @@ stdenv.mkDerivation rec {
   # $out for the library and $examples for the example programs (in examples):
   outputs = [ "out" "examples" ];
 
-  nativeBuildInputs = [ meson ninja pkg-config wayland ];
+  depsBuildBuild = [ pkg-config ];
+
+  nativeBuildInputs = [ meson ninja pkg-config wayland-scanner ];
 
   buildInputs = [
     libGL wayland wayland-protocols libinput libxkbcommon pixman
     xcbutilwm libX11 libcap xcbutilimage xcbutilerrors mesa
-    libpng ffmpeg linuxHeaders
+    libpng ffmpeg xcbutilrenderutil xwayland seatd linuxHeaders
   ];
-
-  mesonFlags = [ "-Dlogind-provider=systemd" ];
 
   postFixup = ''
     # Install ALL example programs to $examples:
@@ -45,7 +45,7 @@ stdenv.mkDerivation rec {
     done
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A modular Wayland compositor library";
     longDescription = ''
       Pluggable, composable, unopinionated modules for building a Wayland
@@ -55,6 +55,6 @@ stdenv.mkDerivation rec {
     changelog = "https://github.com/swaywm/wlroots/releases/tag/${version}";
     license     = licenses.mit;
     platforms   = platforms.linux;
-    maintainers = with maintainers; [ primeos ];
+    maintainers = with maintainers; [ primeos synthetica ];
   };
 }
