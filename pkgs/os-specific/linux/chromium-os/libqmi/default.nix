@@ -13,7 +13,9 @@ libqmi.overrideAttrs (
     nativeBuildInputs = nativeBuildInputs ++
       [ autoreconfHook autoconf-archive gtk-doc docbook-xsl-nons ];
 
-    configureFlags = configureFlags ++ [ "--enable-gtk-doc" ];
+    # ModemManager tests fail with QRTR in Chromium OS 91.
+    # Will hopefully be fixed in CrOS 92.
+    configureFlags = configureFlags ++ [ "--enable-gtk-doc" "--disable-qrtr" ];
 
     passthru = passthru // {
       updateScript = ../update.py;
