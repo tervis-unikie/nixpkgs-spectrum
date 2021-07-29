@@ -1,4 +1,4 @@
-From 32c2af6d7091a5964056f2d3006e333d3602bd82 Mon Sep 17 00:00:00 2001
+From fae720321c2e8e4d57c9c6554d4f025b1808747c Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Tue, 25 Aug 2020 17:34:48 +0000
 Subject: [PATCH 1/2] backend/wayland: downgrade to wl_compositor v3
@@ -9,25 +9,25 @@ Rather than calculating exact surface-relative damage regions instead
 of the previous buffer-relative ones, just damage the whole surface.
 It'll do for now.
 ---
- backend/wayland/backend.c | 6 +++++-
- backend/wayland/output.c  | 4 +++-
- include/backend/wayland.h | 1 +
- 3 files changed, 9 insertions(+), 2 deletions(-)
+ backend/wayland/backend.c |  6 +++++-
+ backend/wayland/output.c  | 11 +++++++++--
+ include/backend/wayland.h |  1 +
+ 3 files changed, 15 insertions(+), 3 deletions(-)
 
 diff --git a/backend/wayland/backend.c b/backend/wayland/backend.c
-index 8de63acf..b1fddfc7 100644
+index 771f4405..fc798292 100644
 --- a/backend/wayland/backend.c
 +++ b/backend/wayland/backend.c
-@@ -101,7 +101,7 @@ static void registry_global(void *data, struct wl_registry *registry,
+@@ -210,7 +210,7 @@ static void registry_global(void *data, struct wl_registry *registry,
  
  	if (strcmp(iface, wl_compositor_interface.name) == 0) {
  		wl->compositor = wl_registry_bind(registry, name,
 -			&wl_compositor_interface, 4);
 +			&wl_compositor_interface, wl_compositor_version());
  	} else if (strcmp(iface, wl_seat_interface.name) == 0) {
- 		wl->seat = wl_registry_bind(registry, name,
+ 		struct wl_seat *wl_seat = wl_registry_bind(registry, name,
  			&wl_seat_interface, 5);
-@@ -244,6 +244,10 @@ bool wlr_backend_is_wl(struct wlr_backend *b) {
+@@ -373,6 +373,10 @@ bool wlr_backend_is_wl(struct wlr_backend *b) {
  	return b->impl == &backend_impl;
  }
  
@@ -39,32 +39,46 @@ index 8de63acf..b1fddfc7 100644
  	struct wlr_wl_backend *wl =
  		wl_container_of(listener, wl, local_display_destroy);
 diff --git a/backend/wayland/output.c b/backend/wayland/output.c
-index bd17fa20..d91c5cc0 100644
+index 542185ce..5c5ff93d 100644
 --- a/backend/wayland/output.c
 +++ b/backend/wayland/output.c
-@@ -262,7 +262,9 @@ static bool output_commit(struct wlr_output *wlr_output) {
+@@ -319,7 +319,9 @@ static bool output_commit(struct wlr_output *wlr_output) {
  
- 			wl_surface_attach(output->surface, buffer->wl_buffer, 0, 0);
+ 		wl_surface_attach(output->surface, buffer->wl_buffer, 0, 0);
  
--			if (damage == NULL) {
-+			if (wl_compositor_version() < 4) {
-+				wl_surface_damage(output->surface, 0, 0, INT32_MAX, INT32_MAX);
-+			} else if (damage == NULL) {
- 				wl_surface_damage_buffer(output->surface,
- 					0, 0, INT32_MAX, INT32_MAX);
- 			} else {
+-		if (damage == NULL) {
++		if (wl_compositor_version() < 4) {
++			wl_surface_damage(output->surface, 0, 0, INT32_MAX, INT32_MAX);
++		} else if (damage == NULL) {
+ 			wl_surface_damage_buffer(output->surface,
+ 				0, 0, INT32_MAX, INT32_MAX);
+ 		} else {
+@@ -381,7 +383,12 @@ static bool output_set_cursor(struct wlr_output *wlr_output,
+ 		}
+ 
+ 		wl_surface_attach(surface, buffer->wl_buffer, 0, 0);
+-		wl_surface_damage_buffer(surface, 0, 0, INT32_MAX, INT32_MAX);
++
++		if (wl_compositor_version() < 4)
++			wl_surface_damage(surface, 0, 0, INT32_MAX, INT32_MAX);
++		else
++			wl_surface_damage_buffer(surface, 0, 0, INT32_MAX, INT32_MAX);
++
+ 		wl_surface_commit(surface);
+ 	} else {
+ 		wl_surface_attach(surface, NULL, 0, 0);
 diff --git a/include/backend/wayland.h b/include/backend/wayland.h
-index 9a8a404b..9d7b5eb4 100644
+index 5d69c248..344dffb1 100644
 --- a/include/backend/wayland.h
 +++ b/include/backend/wayland.h
-@@ -114,6 +114,7 @@ void create_wl_pointer(struct wl_pointer *wl_pointer, struct wlr_wl_output *outp
- void create_wl_keyboard(struct wl_keyboard *wl_keyboard, struct wlr_wl_backend *wl);
- struct wlr_wl_input_device *create_wl_input_device(
- 	struct wlr_wl_backend *backend, enum wlr_input_device_type type);
+@@ -131,6 +131,7 @@ struct wlr_wl_input_device *create_wl_input_device(
+ bool create_wl_seat(struct wl_seat *wl_seat, struct wlr_wl_backend *wl);
+ void destroy_wl_seats(struct wlr_wl_backend *wl);
+ void destroy_wl_buffer(struct wlr_wl_buffer *buffer);
 +uint32_t wl_compositor_version(void);
  
  extern const struct wl_seat_listener seat_listener;
  
 -- 
-2.27.0
+2.31.1
 
