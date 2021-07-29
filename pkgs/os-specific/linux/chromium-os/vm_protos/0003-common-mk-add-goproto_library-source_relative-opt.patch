@@ -1,0 +1,48 @@
+From 211eea8e623c9e9beb61f38720c718f080bae883 Mon Sep 17 00:00:00 2001
+From: Alyssa Ross <hi@alyssa.is>
+Date: Mon, 28 Jun 2021 17:10:46 +0000
+Subject: [PATCH 3/6] common-mk: add goproto_library source_relative opt
+
+We need this for the go_package changes in protoc-gen-go 1.5.x.  If we
+didn't use source-relative paths, the full module path would be
+repeated in the output location, so we'd get paths like
+src/chromiumos/vm_tools/vm_crash/chromiumos/vm_tools/vm_crash/vm_crash.pb.go.
+
+To avoid the duplication, we either need to set source_relative, or
+set proto_out_dir to just go/src.  The latter isn't workable, because
+then everything two libraries that both use common.proto will both
+generate outputs called "go/src/common.pb.go", which will upset GN.
+
+Reviewed-by: Cole Helbling <cole.e.helbling@outlook.com>
+---
+ common-mk/proto_library.gni | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/common-mk/proto_library.gni b/common-mk/proto_library.gni
+index fb9fb4231d..23645a134f 100644
+--- a/common-mk/proto_library.gni
++++ b/common-mk/proto_library.gni
+@@ -225,6 +225,9 @@ template("proto_library") {
+ #   proto_lib_dirs (optional)
+ #       Directories to search for protos a proto file depends on.
+ #       proto_in_dir and "${sysroot}/usr/share/proto" are added by default.
++#   source_relative (optional)
++#       If true, the output file is placed in the same relative directory as the
++#       input file (but under proto_out_dir).
+ template("goproto_library") {
+   action(target_name) {
+     forward_variables_from(invoker,
+@@ -254,6 +257,10 @@ template("goproto_library") {
+ 
+     go_plugin_parameters = []
+ 
++    if (defined(invoker.source_relative) && invoker.source_relative) {
++      go_plugin_parameters += [ "paths=source_relative" ]
++    }
++
+     if (defined(invoker.gen_grpc) && invoker.gen_grpc) {
+       go_plugin_parameters += [ "plugins=grpc" ]
+     }
+-- 
+2.32.0
+

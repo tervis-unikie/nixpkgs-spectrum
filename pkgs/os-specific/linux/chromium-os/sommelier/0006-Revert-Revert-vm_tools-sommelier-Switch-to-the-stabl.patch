@@ -1,7 +1,7 @@
-From ac39fe3d341cc33dfd5f47d5301c2a6aaf743a34 Mon Sep 17 00:00:00 2001
+From e97193872755e44aae51dd88e9323d8a069a40ca Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Fri, 2 Apr 2021 17:55:55 +0000
-Subject: [PATCH 4/4] Revert "Revert "vm_tools: sommelier: Switch to the stable
+Subject: [PATCH 6/6] Revert "Revert "vm_tools: sommelier: Switch to the stable
  version of xdg-shell""
 
 This reverts commit 32050c0ea6c00c16999915856b40a6a6b8b41bb9.
@@ -1836,5 +1836,5 @@ index 79bcf6a3b3..d3157cd8a9 100644
    struct wl_list link;
  };
 -- 
-2.31.1
+2.32.0
 

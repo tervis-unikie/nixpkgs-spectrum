@@ -1,0 +1,102 @@
+From fae12c5b06864c0a9687320735c9bed9219c30c8 Mon Sep 17 00:00:00 2001
+From: Alyssa Ross <hi@alyssa.is>
+Date: Wed, 16 Jun 2021 16:09:01 +0000
+Subject: [PATCH 4/6] vm_tools: proto: set go_package correctly
+
+protoc-gen-go 1.5.x has become a lot stricter about this.  We have to
+use import_mapping for common.proto because it ends up being included
+in multiple Go libraries.  I'm not sure why it needs to be built once
+per library, but that's the way it works.
+
+Reviewed-by: Cole Helbling <cole.e.helbling@outlook.com>
+---
+ vm_tools/proto/BUILD.gn       | 5 +++++
+ vm_tools/proto/tremplin.proto | 2 +-
+ vm_tools/proto/vm_crash.proto | 2 +-
+ vm_tools/proto/vm_guest.proto | 1 +
+ vm_tools/proto/vm_host.proto  | 1 +
+ 5 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/vm_tools/proto/BUILD.gn b/vm_tools/proto/BUILD.gn
+index 79c9b94c9f..aadc40165c 100644
+--- a/vm_tools/proto/BUILD.gn
++++ b/vm_tools/proto/BUILD.gn
+@@ -60,6 +60,8 @@ goproto_library("vm-crash-gorpcs") {
+   proto_in_dir = "./"
+   proto_out_dir = "go/src/chromiumos/vm_tools/vm_crash"
+   gen_grpc = true
++  source_relative = true
++  import_mapping = [ "common.proto=chromiumos/vm_tools/vm_crash" ]
+   sources = [
+     "${proto_in_dir}/common.proto",
+     "${proto_in_dir}/vm_crash.proto",
+@@ -97,6 +99,7 @@ goproto_library("tremplin-gorpcs") {
+   proto_in_dir = "./"
+   proto_out_dir = "go/src/chromiumos/vm_tools/tremplin_proto"
+   gen_grpc = true
++  source_relative = true
+   sources = [ "${proto_in_dir}/tremplin.proto" ]
+ }
+ 
+@@ -120,6 +123,8 @@ goproto_library("vm-gorpcs") {
+   proto_in_dir = "./"
+   proto_out_dir = "go/src/chromiumos/vm_tools/vm_rpc"
+   gen_grpc = true
++  source_relative = true
++  import_mapping = [ "common.proto=chromiumos/vm_tools/vm_rpc" ]
+   sources = [
+     "${proto_in_dir}/common.proto",
+     "${proto_in_dir}/vm_guest.proto",
+diff --git a/vm_tools/proto/tremplin.proto b/vm_tools/proto/tremplin.proto
+index aac76f7a9e..e6a7bbed0e 100644
+--- a/vm_tools/proto/tremplin.proto
++++ b/vm_tools/proto/tremplin.proto
+@@ -8,7 +8,7 @@ option cc_enable_arenas = true;
+ 
+ // This file defines services for tremplin, the container springboard service.
+ package vm_tools.tremplin;
+-option go_package = "tremplin_proto";
++option go_package = "chromiumos/vm_tools/tremplin_proto";
+ 
+ // This needs to be duplicated because the gyp rule for building
+ // go code makes it difficult to have imports.
+diff --git a/vm_tools/proto/vm_crash.proto b/vm_tools/proto/vm_crash.proto
+index 6e4f62fe13..3cd4279989 100644
+--- a/vm_tools/proto/vm_crash.proto
++++ b/vm_tools/proto/vm_crash.proto
+@@ -7,7 +7,7 @@ syntax = "proto3";
+ option cc_enable_arenas = true;
+ 
+ package vm_tools.cicerone;
+-option go_package = "vm_crash";
++option go_package = "chromiumos/vm_tools/vm_crash";
+ 
+ import "common.proto";
+ 
+diff --git a/vm_tools/proto/vm_guest.proto b/vm_tools/proto/vm_guest.proto
+index 86f11d0812..d0946078d5 100644
+--- a/vm_tools/proto/vm_guest.proto
++++ b/vm_tools/proto/vm_guest.proto
+@@ -8,6 +8,7 @@ option cc_enable_arenas = true;
+ 
+ // This file defines services that will be running in the guest VM.
+ package vm_tools;
++option go_package = "chromiumos/vm_tools/vm_rpc";
+ 
+ import "common.proto";
+ import "google/protobuf/timestamp.proto";
+diff --git a/vm_tools/proto/vm_host.proto b/vm_tools/proto/vm_host.proto
+index a8bd066f61..19759b0271 100644
+--- a/vm_tools/proto/vm_host.proto
++++ b/vm_tools/proto/vm_host.proto
+@@ -8,6 +8,7 @@ option cc_enable_arenas = true;
+ 
+ // This file defines services that will be running on the host for the VM.
+ package vm_tools;
++option go_package = "chromiumos/vm_tools/vm_rpc";
+ 
+ import "common.proto";
+ 
+-- 
+2.32.0
+
