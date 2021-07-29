@@ -15,6 +15,8 @@ modemmanager.overrideAttrs (
       sha256 = "12wlak8zx914zix4vv5a8sl0nyi58v7593h4gjchgv3i8ysgj9ah";
     };
 
+    patches = [];
+
     nativeBuildInputs = nativeBuildInputs ++ [ autoreconfHook libtool intltool libxslt ];
     buildInputs = buildInputs ++ [ dbus_glib ];
 
