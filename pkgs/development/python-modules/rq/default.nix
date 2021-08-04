@@ -1,13 +1,15 @@
-{ stdenv, fetchPypi, buildPythonPackage, isPy27, click, redis }:
+{ lib, fetchFromGitHub, buildPythonPackage, isPy27, click, redis }:
 
 buildPythonPackage rec {
   pname = "rq";
-  version = "1.4.3";
+  version = "1.8.1";
   disabled = isPy27;
 
-  src = fetchPypi {
-    inherit pname version;
-    sha256 = "60509898c9ebc40e4155fde8bf88a204ed1914cc9e1cde3d19188b1c5bd5efbd";
+  src = fetchFromGitHub {
+    owner = "rq";
+    repo = "rq";
+    rev = "v${version}";
+    sha256 = "1lfv3sb27v5xw3y67lirp877gg9230d28qmykxipvhcqwzqc2dqb";
   };
 
   # test require a running redis rerver, which is something we can't do yet
@@ -15,7 +17,7 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [ click redis ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A simple, lightweight library for creating background jobs, and processing them";
     homepage = "https://github.com/nvie/rq/";
     maintainers = with maintainers; [ mrmebelman ];

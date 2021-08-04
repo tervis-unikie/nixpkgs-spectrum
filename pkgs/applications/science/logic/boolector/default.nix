@@ -4,13 +4,13 @@
 
 stdenv.mkDerivation rec {
   pname = "boolector";
-  version = "3.2.1";
+  version = "3.2.2";
 
   src = fetchFromGitHub {
     owner  = "boolector";
     repo   = "boolector";
-    rev    = "refs/tags/${version}";
-    sha256 = "0jkmaw678njqgkflzj9g374yk1mci8yqvsxkrqzlifn6bwhwb7ci";
+    rev    = version;
+    sha256 = "1smcy6yp8wvnw2brgnv5bf40v87k4v4fbdbrhi7987vja632k50z";
   };
 
   postPatch = ''
@@ -23,39 +23,39 @@ stdenv.mkDerivation rec {
   cmakeFlags =
     [ "-DBUILD_SHARED_LIBS=ON"
       "-DUSE_LINGELING=YES"
-      "-DBtor2Tools_INCLUDE_DIR=${btor2tools.dev}/include"
-      "-DBtor2Tools_LIBRARIES=${btor2tools.lib}/lib/libbtor2parser.so"
     ] ++ (lib.optional (gmp != null) "-DUSE_GMP=YES");
-
-  installPhase = ''
-    mkdir -p $out/bin $lib/lib $dev/include
-
-    cp -vr bin/* $out/bin
-    cp -vr lib/* $lib/lib
-
-    rm -rf $out/bin/{examples,tests}
-    # we don't care about gtest related libs
-    rm -rf $lib/lib/libg*
-
-    cd ../src
-    find . -iname '*.h' -exec cp --parents '{}' $dev/include \;
-    rm -rf $dev/include/tests
-  '';
 
   checkInputs = [ python3 ];
   doCheck = true;
-  preCheck = ''
-    export LD_LIBRARY_PATH=$(readlink -f lib)
-    patchShebangs ..
+  preCheck =
+    let var = if stdenv.isDarwin then "DYLD_LIBRARY_PATH" else "LD_LIBRARY_PATH";
+    in
+      # tests modelgen and modelgensmt2 spawn boolector in another processes and
+      # macOS strips DYLD_LIBRARY_PATH, hardcode it for testing
+      lib.optionalString stdenv.isDarwin ''
+        cp -r bin bin.back
+        install_name_tool -change libboolector.dylib $(pwd)/lib/libboolector.dylib bin/boolector
+      '' + ''
+        export ${var}=$(readlink -f lib)
+        patchShebangs ..
+      '';
+
+  postCheck = lib.optionalString stdenv.isDarwin ''
+    rm -rf bin
+    mv bin.back bin
   '';
 
-  outputs = [ "out" "dev" "lib" ];
+  # this is what haskellPackages.boolector expects
+  postInstall = ''
+    cp $out/include/boolector/boolector.h $out/include/boolector.h
+    cp $out/include/boolector/btortypes.h $out/include/btortypes.h
+  '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "An extremely fast SMT solver for bit-vectors and arrays";
     homepage    = "https://boolector.github.io";
     license     = licenses.mit;
-    platforms   = platforms.linux;
+    platforms   = with platforms; linux ++ darwin;
     maintainers = with maintainers; [ thoughtpolice ];
   };
 }

@@ -1,92 +1,90 @@
-{ newScope, config, stdenv, llvmPackages_9, llvmPackages_10
-, makeWrapper, ed, gnugrep, coreutils
-, glib, gtk3, gnome3, gsettings-desktop-schemas, gn, fetchgit
-, libva ? null
-, pipewire_0_2
+{ newScope, config, stdenv, fetchurl, makeWrapper
+, llvmPackages_11, llvmPackages_12, ed, gnugrep, coreutils, xdg-utils
+, glib, gtk3, gnome, gsettings-desktop-schemas, gn, fetchgit
+, libva, pipewire, wayland
 , gcc, nspr, nss, runCommand
 , lib
 
 # package customization
 # Note: enable* flags should not require full rebuilds (i.e. only affect the wrapper)
 , channel ? "stable"
-, gnomeSupport ? false, gnome ? null
+, gnomeSupport ? false, gnome2 ? null
 , gnomeKeyringSupport ? false
 , proprietaryCodecs ? true
-, enablePepperFlash ? false
 , enableWideVine ? false
-, useVaapi ? false # Deprecated, use enableVaapi instead!
-, enableVaapi ? false # Disabled by default due to unofficial support and issues on radeon
-, useOzone ? false
+, ungoogled ? false # Whether to build chromium or ungoogled-chromium
 , cupsSupport ? true
 , pulseSupport ? config.pulseaudio or stdenv.isLinux
 , commandLineArgs ? ""
 }:
 
 let
-  llvmPackages = llvmPackages_10;
+  llvmPackages = llvmPackages_11;
   stdenv = llvmPackages.stdenv;
 
   callPackage = newScope chromium;
 
-  chromium = {
+  chromium = rec {
     inherit stdenv llvmPackages;
 
-    upstream-info = (callPackage ./update.nix {}).getChannel channel;
+    upstream-info = (lib.importJSON ./upstream-info.json).${channel};
 
     mkChromiumDerivation = callPackage ./common.nix ({
-      inherit gnome gnomeSupport gnomeKeyringSupport proprietaryCodecs cupsSupport pulseSupport useOzone;
-      # TODO: Remove after we can update gn for the stable channel (backward incompatible changes):
+      inherit channel gnome2 gnomeSupport gnomeKeyringSupport proprietaryCodecs
+              cupsSupport pulseSupport ungoogled;
       gnChromium = gn.overrideAttrs (oldAttrs: {
-        version = "2020-03-23";
+        inherit (upstream-info.deps.gn) version;
         src = fetchgit {
-          url = "https://gn.googlesource.com/gn";
-          rev = "5ed3c9cc67b090d5e311e4bd2aba072173e82db9";
-          sha256 = "00y2d35wvqmx9glaqhfb62wdgbfpwr77v0934nnvh9ks71vnsjqy";
+          inherit (upstream-info.deps.gn) url rev sha256;
         };
       });
-    } // lib.optionalAttrs (channel == "beta") {
-      gnChromium = gn.overrideAttrs (oldAttrs: {
-        version = "2020-05-19";
-        src = fetchgit {
-          url = "https://gn.googlesource.com/gn";
-          rev = "d0a6f072070988e7b038496c4e7d6c562b649732";
-          sha256 = "0197msabskgfbxvhzq73gc3wlr3n9cr4bzrhy5z5irbvy05lxk17";
-        };
-      });
-    } // lib.optionalAttrs (channel == "dev") {
-      gnChromium = gn.overrideAttrs (oldAttrs: {
-        version = "2020-07-20";
-        src = fetchgit {
-          url = "https://gn.googlesource.com/gn";
-          rev = "3028c6a426a4aaf6da91c4ebafe716ae370225fe";
-          sha256 = "0h3wf4152zdvrbb0jbj49q6814lfl3rcy5mj8b2pl9s0ahvkbc6q";
-        };
-      });
+    } // lib.optionalAttrs (lib.versionAtLeast upstream-info.version "90") {
+      llvmPackages = llvmPackages_12;
+      stdenv = llvmPackages_12.stdenv;
     });
 
-    browser = callPackage ./browser.nix { inherit channel enableWideVine; };
+    browser = callPackage ./browser.nix { inherit channel enableWideVine ungoogled; };
 
-    plugins = callPackage ./plugins.nix {
-      inherit enablePepperFlash;
-    };
+    ungoogled-chromium = callPackage ./ungoogled.nix {};
+  };
+
+  pkgSuffix = if channel == "dev" then "unstable" else
+    (if channel == "ungoogled-chromium" then "stable" else channel);
+  pkgName = "google-chrome-${pkgSuffix}";
+  chromeSrc =
+    let
+      # Use the latest stable Chrome version if necessary:
+      version = if chromium.upstream-info.sha256bin64 != null
+        then chromium.upstream-info.version
+        else (lib.importJSON ./upstream-info.json).stable.version;
+      sha256 = if chromium.upstream-info.sha256bin64 != null
+        then chromium.upstream-info.sha256bin64
+        else (lib.importJSON ./upstream-info.json).stable.sha256bin64;
+    in fetchurl {
+      urls = map (repo: "${repo}/${pkgName}/${pkgName}_${version}-1_amd64.deb") [
+        "https://dl.google.com/linux/chrome/deb/pool/main/g"
+        "http://95.31.35.30/chrome/pool/main/g"
+        "http://mirror.pcbeta.com/google/chrome/deb/pool/main/g"
+        "http://repo.fdzh.org/chrome/deb/pool/main/g"
+      ];
+      inherit sha256;
   };
 
   mkrpath = p: "${lib.makeSearchPathOutput "lib" "lib64" p}:${lib.makeLibraryPath p}";
-  widevineCdm = let upstream-info = chromium.upstream-info; in stdenv.mkDerivation {
+  widevineCdm = stdenv.mkDerivation {
     name = "chrome-widevine-cdm";
 
-    # The .deb file for Google Chrome
-    src = upstream-info.binary;
+    src = chromeSrc;
 
     phases = [ "unpackPhase" "patchPhase" "installPhase" "checkPhase" ];
 
     unpackCmd = let
       widevineCdmPath =
-        if upstream-info.channel == "stable" then
+        if (channel == "stable" || channel == "ungoogled-chromium") then
           "./opt/google/chrome/WidevineCdm"
-        else if upstream-info.channel == "beta" then
+        else if channel == "beta" then
           "./opt/google/chrome-beta/WidevineCdm"
-        else if upstream-info.channel == "dev" then
+        else if channel == "dev" then
           "./opt/google/chrome-unstable/WidevineCdm"
         else
           throw "Unknown chromium channel.";
@@ -124,7 +122,9 @@ let
     };
   };
 
-  suffix = if channel != "stable" then "-" + channel else "";
+  suffix = if (channel == "stable" || channel == "ungoogled-chromium")
+    then ""
+    else "-" + channel;
 
   sandboxExecutableName = chromium.browser.passthru.sandboxExecutableName;
 
@@ -143,41 +143,34 @@ let
       ''
     else browser;
 
-  optionalVaapiFlags = if useVaapi # TODO: Remove after 20.09:
-    then throw ''
-      Chromium's useVaapi was replaced by enableVaapi and you don't need to pass
-      "--ignore-gpu-blacklist" anymore (also no rebuilds are required anymore).
-    '' else lib.optionalString
-      (!enableVaapi)
-      "--add-flags --disable-accelerated-video-decode --add-flags --disable-accelerated-video-encode";
 in stdenv.mkDerivation {
-  name = "chromium${suffix}-${version}";
+  name = lib.optionalString ungoogled "ungoogled-"
+    + "chromium${suffix}-${version}";
   inherit version;
 
-  buildInputs = [
+  nativeBuildInputs = [
     makeWrapper ed
+  ];
 
+  buildInputs = [
     # needed for GSETTINGS_SCHEMAS_PATH
     gsettings-desktop-schemas glib gtk3
 
     # needed for XDG_ICON_DIRS
-    gnome3.adwaita-icon-theme
+    gnome.adwaita-icon-theme
   ];
 
   outputs = ["out" "sandbox"];
 
   buildCommand = let
     browserBinary = "${chromiumWV}/libexec/chromium/chromium";
-    getWrapperFlags = plugin: "$(< \"${plugin}/nix-support/wrapper-flags\")";
-    libPath = stdenv.lib.makeLibraryPath [ libva pipewire_0_2 ];
+    libPath = lib.makeLibraryPath [ libva pipewire wayland gtk3 ];
 
-  in with stdenv.lib; ''
+  in with lib; ''
     mkdir -p "$out/bin"
 
     eval makeWrapper "${browserBinary}" "$out/bin/chromium" \
-      --add-flags ${escapeShellArg (escapeShellArg commandLineArgs)} \
-      ${optionalVaapiFlags} \
-      ${concatMapStringsSep " " getWrapperFlags chromium.plugins.enabled}
+      --add-flags ${escapeShellArg (escapeShellArg commandLineArgs)}
 
     ed -v -s "$out/bin/chromium" << EOF
     2i
@@ -200,6 +193,9 @@ in stdenv.mkDerivation {
 
     export XDG_DATA_DIRS=$XDG_ICON_DIRS:$GSETTINGS_SCHEMAS_PATH\''${XDG_DATA_DIRS:+:}\$XDG_DATA_DIRS
 
+    # Mainly for xdg-open but also other xdg-* tools:
+    export PATH="${xdg-utils}/bin\''${PATH:+:}\$PATH"
+
     .
     w
     EOF
@@ -219,6 +215,7 @@ in stdenv.mkDerivation {
   passthru = {
     inherit (chromium) upstream-info browser;
     mkDerivation = chromium.mkChromiumDerivation;
-    inherit sandboxExecutableName;
+    inherit chromeSrc sandboxExecutableName;
+    updateScript = ./update.py;
   };
 }

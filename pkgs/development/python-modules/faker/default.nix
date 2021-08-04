@@ -1,56 +1,48 @@
-{ lib, buildPythonPackage, fetchPypi, pythonOlder,
-  # Build inputs
-  dateutil, six, text-unidecode, ipaddress ? null
-  # Test inputs
-  , email_validator
-  , freezegun
-  , mock
-  , more-itertools
-  , pytest
-  , pytestrunner
-  , random2
-  , ukpostcodeparser
-  , validators
+{ lib
+, buildPythonPackage
+, fetchPypi
+, python-dateutil
+, text-unidecode
+, freezegun
+, pytestCheckHook
+, ukpostcodeparser
+, pillow
+, validators
 }:
 
-assert pythonOlder "3.3" -> ipaddress != null;
-
 buildPythonPackage rec {
-  pname = "Faker";
-  version = "4.1.1";
+  pname = "faker";
+  version = "8.8.2";
 
   src = fetchPypi {
-    inherit pname version;
-    sha256 = "c006b3664c270a2cfd4785c5e41ff263d48101c4e920b5961cf9c237131d8418";
+    pname = "Faker";
+    inherit version;
+    sha256 = "sha256-IlNMOqbS7584QDojTcm3G1y4ePt2XHKZS+Xce06vCGU=";
   };
 
-  nativeBuildInputs = [ pytestrunner ];
-  checkInputs = [
-    email_validator
-    freezegun
-    pytest
-    random2
-    ukpostcodeparser
-    validators
-  ]
-  ++ lib.optionals (pythonOlder "3.3") [ mock ]
-  ++ lib.optionals (pythonOlder "3.0") [ more-itertools ];
-
   propagatedBuildInputs = [
-    dateutil
-    six
+    python-dateutil
     text-unidecode
   ];
 
-  postPatch = ''
-    substituteInPlace setup.py --replace "pytest>=3.8.0,<3.9" "pytest"
-  '';
+  checkInputs = [
+    freezegun
+    pillow
+    pytestCheckHook
+    ukpostcodeparser
+    validators
+  ];
+
+  # avoid tests which import random2, an abandoned library
+  pytestFlagsArray = [
+    "--ignore=tests/providers/test_ssn.py"
+  ];
+  pythonImportsCheck = [ "faker" ];
 
   meta = with lib; {
-    description = "A Python library for generating fake user data";
-    homepage    = "http://faker.rtfd.org";
-    license     = licenses.mit;
+    description = "Python library for generating fake user data";
+    homepage = "http://faker.rtfd.org";
+    license = licenses.mit;
     maintainers = with maintainers; [ lovek323 ];
-    platforms   = platforms.unix;
   };
 }

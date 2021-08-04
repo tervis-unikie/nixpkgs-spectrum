@@ -1,8 +1,8 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , nix-update-script
 , pantheon
-, pkgconfig
+, pkg-config
 , meson
 , python3
 , ninja
@@ -18,13 +18,13 @@
 
 stdenv.mkDerivation rec {
   pname = "wingpanel-indicator-power";
-  version = "2.1.5";
+  version = "2.2.0";
 
   src = fetchFromGitHub {
     owner = "elementary";
     repo = pname;
     rev = version;
-    sha256 = "19zhgzyivf3y416r5xaajx81h87zdhvrrcsagli00gp1f2169q5m";
+    sha256 = "sha256-wjYZXFnzvPSukzh1BNvyaFxKpYm+kNNFm5AsthLXGVE=";
   };
 
   passthru = {
@@ -36,7 +36,7 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     meson
     ninja
-    pkgconfig
+    pkg-config
     python3
     vala
   ];
@@ -56,7 +56,7 @@ stdenv.mkDerivation rec {
     patchShebangs meson/post_install.py
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Power Indicator for Wingpanel";
     homepage = "https://github.com/elementary/wingpanel-indicator-power";
     license = licenses.gpl2Plus;

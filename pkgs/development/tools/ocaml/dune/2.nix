@@ -1,16 +1,16 @@
-{ stdenv, fetchurl, ocaml, findlib }:
+{ lib, stdenv, fetchurl, ocaml, findlib }:
 
-if stdenv.lib.versionOlder ocaml.version "4.08"
-then throw "dune is not available for OCaml ${ocaml.version}"
+if lib.versionOlder ocaml.version "4.08"
+then throw "dune 2 is not available for OCaml ${ocaml.version}"
 else
 
 stdenv.mkDerivation rec {
   pname = "dune";
-  version = "2.7.0";
+  version = "2.9.0";
 
   src = fetchurl {
     url = "https://github.com/ocaml/dune/releases/download/${version}/dune-${version}.tbz";
-    sha256 = "058wiyncczbmlfxj3cnwn5n68wkmbaf4mgjm2bkp2hffpn2wl5xl";
+    sha256 = "07m476kgagpd6kzm3jq30yfxqspr2hychah0xfqs14z82zxpq8dv";
   };
 
   buildInputs = [ ocaml findlib ];
@@ -24,9 +24,9 @@ stdenv.mkDerivation rec {
   meta = {
     homepage = "https://dune.build/";
     description = "A composable build system";
-    changelog = "https://github.com/ocaml/dune/releases/tag/${version}";
-    maintainers = [ stdenv.lib.maintainers.vbgl stdenv.lib.maintainers.marsam ];
-    license = stdenv.lib.licenses.mit;
+    changelog = "https://github.com/ocaml/dune/blob/${version}/CHANGES.md";
+    maintainers = [ lib.maintainers.vbgl lib.maintainers.marsam ];
+    license = lib.licenses.mit;
     inherit (ocaml.meta) platforms;
   };
 }

@@ -7,6 +7,11 @@ common-mk {
   nativeBuildInputs = [ go-protobuf ];
   buildInputs = [ grpc openssl protobuf ];
 
+  platform2Patches = [
+    ./0003-common-mk-add-goproto_library-source_relative-opt.patch
+    ./0004-vm_tools-proto-set-go_package-correctly.patch
+  ];
+
   NIX_CFLAGS_COMPILE = [
     "-Wno-error=array-bounds"
     "-Wno-error=deprecated-declarations"

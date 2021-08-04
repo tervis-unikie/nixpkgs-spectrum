@@ -6,8 +6,8 @@
 , webencodings
 # Check inputs
 , pytest
-, pytestrunner
-, pytestcov
+, pytest-runner
+, pytest-cov
 , pytest-flake8
 , pytest-isort
 }:
@@ -34,7 +34,12 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [ webencodings ];
 
-  checkInputs = [ pytest pytestrunner pytestcov pytest-flake8 pytest-isort ];
+  checkInputs = [ pytest pytest-runner pytest-cov pytest-flake8 pytest-isort ];
+
+  # https://github.com/PyCQA/pycodestyle/issues/598
+  preCheck = ''
+    printf "[flake8]\nignore=W504,E741,E126" >> setup.cfg
+  '';
 
   meta = with lib; {
     description = "Low-level CSS parser for Python";

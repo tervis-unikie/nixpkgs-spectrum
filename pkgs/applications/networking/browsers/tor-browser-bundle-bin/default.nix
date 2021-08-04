@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , fetchurl
 , makeDesktopItem
 
@@ -29,17 +29,14 @@
 
 # Media support (implies audio support)
 , mediaSupport ? true
-, ffmpeg_3
+, ffmpeg
 
 , gmp
-
-# Pluggable transport dependencies
-, python27
 
 # Wrapper runtime
 , coreutils
 , glibcLocales
-, gnome3
+, gnome
 , runtimeShell
 , shared-mime-info
 , gsettings-desktop-schemas
@@ -57,7 +54,7 @@
 , extraPrefs ? ""
 }:
 
-with stdenv.lib;
+with lib;
 
 let
   libPath = makeLibraryPath libPkgs;
@@ -84,30 +81,29 @@ let
   ]
   ++ optionals pulseaudioSupport [ libpulseaudio ]
   ++ optionals mediaSupport [
-    ffmpeg_3
+    ffmpeg
   ];
 
   # Library search path for the fte transport
   fteLibPath = makeLibraryPath [ stdenv.cc.cc gmp ];
 
   # Upstream source
-  version = "9.5.3";
+  version = "10.5.2";
 
   lang = "en-US";
 
   srcs = {
     x86_64-linux = fetchurl {
       url = "https://dist.torproject.org/torbrowser/${version}/tor-browser-linux64-${version}_${lang}.tar.xz";
-      sha256 = "1kqvr0sag94xdkq85k426qq1hz2b52m315yz51w6hvc87d8332b4";
+      sha256 = "16zk7d0sxm2j00vb002mjj38wxcxxlahnfdb9lmkmkfms9p9xfkb";
     };
 
     i686-linux = fetchurl {
       url = "https://dist.torproject.org/torbrowser/${version}/tor-browser-linux32-${version}_${lang}.tar.xz";
-      sha256 = "179g00xw964d6x11wvzs84r7d6rcczx7ganqrxrs499yklscc46b";
+      sha256 = "0xc3ac2y9xf7ff3pqrp5n6l9j8i5hk3y2y3zwykwhnycnfi6dfv4";
     };
   };
 in
-
 stdenv.mkDerivation rec {
   pname = "tor-browser-bundle-bin";
   inherit version;
@@ -134,7 +130,7 @@ stdenv.mkDerivation rec {
 
     # Unpack & enter
     mkdir -p "$TBB_IN_STORE"
-    tar xf "${src}" -C "$TBB_IN_STORE" --strip-components=2
+    tar xf "$src" -C "$TBB_IN_STORE" --strip-components=2
     pushd "$TBB_IN_STORE"
 
     # Set ELF interpreter
@@ -232,9 +228,10 @@ stdenv.mkDerivation rec {
 
     # Preload extensions by moving into the runtime instead of storing under the
     # user's profile directory.
-    mkdir -p "$TBB_IN_STORE/browser/extensions"
+    # See https://support.mozilla.org/en-US/kb/deploying-firefox-with-extensions
+    mkdir -p "$TBB_IN_STORE/distribution/extensions"
     mv "$TBB_IN_STORE/TorBrowser/Data/Browser/profile.default/extensions/"* \
-      "$TBB_IN_STORE/browser/extensions"
+      "$TBB_IN_STORE/distribution/extensions"
 
     # Hard-code paths to geoip data files.  TBB resolves the geoip files
     # relative to torrc-defaults_path but if we do not hard-code them
@@ -249,7 +246,7 @@ stdenv.mkDerivation rec {
       "${graphene-hardened-malloc}/lib/libhardened_malloc.so"}
 
     WRAPPER_XDG_DATA_DIRS=${concatMapStringsSep ":" (x: "${x}/share") [
-      gnome3.adwaita-icon-theme
+      gnome.adwaita-icon-theme
       shared-mime-info
     ]}
     WRAPPER_XDG_DATA_DIRS+=":"${concatMapStringsSep ":" (x: "${x}/share/gsettings-schemas/${x.name}") [
@@ -313,6 +310,13 @@ stdenv.mkDerivation rec {
     # Font cache files capture store paths; clear them out on the off
     # chance that TBB would continue using old font files.
     rm -rf "\$HOME/.cache/fontconfig"
+
+    # Manually specify data paths (by default TB attempts to create these in the store)
+    {
+      echo "user_pref(\"extensions.torlauncher.toronionauthdir_path\", \"\$HOME/TorBrowser/Data/Tor/onion-auth\");"
+      echo "user_pref(\"extensions.torlauncher.torrc_path\", \"\$HOME/TorBrowser/Data/Tor/torrc\");"
+      echo "user_pref(\"extensions.torlauncher.tordatadir_path\", \"\$HOME/TorBrowser/Data/Tor\");"
+    } >> "\$HOME/TorBrowser/Data/Browser/profile.default/prefs.js"
 
     # Lift-off
     #
@@ -390,7 +394,7 @@ stdenv.mkDerivation rec {
       $out/bin/tor-browser --version >/dev/null
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Tor Browser Bundle built by torproject.org";
     longDescription = ''
       Tor Browser Bundle is a bundle of the Tor daemon, Tor Browser (heavily patched version of
@@ -404,7 +408,8 @@ stdenv.mkDerivation rec {
     homepage = "https://www.torproject.org/";
     changelog = "https://gitweb.torproject.org/builders/tor-browser-build.git/plain/projects/tor-browser/Bundle-Data/Docs/ChangeLog.txt?h=maint-${version}";
     platforms = attrNames srcs;
-    maintainers = with maintainers; [ offline matejc doublec thoughtpolice joachifm hax404 cap KarlJoad ];
+    maintainers = with maintainers; [ offline matejc thoughtpolice joachifm hax404 KarlJoad ];
+    mainProgram = "tor-browser";
     hydraPlatforms = [];
     # MPL2.0+, GPL+, &c.  While it's not entirely clear whether
     # the compound is "libre" in a strict sense (some components place certain

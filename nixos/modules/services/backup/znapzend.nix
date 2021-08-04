@@ -220,7 +220,7 @@ let
       };
 
       destinations = mkOption {
-        type = loaOf (destType config);
+        type = attrsOf (destType config);
         description = "Additional destinations.";
         default = {};
         example = literalExample ''
@@ -279,7 +279,7 @@ let
     src_plan = plan;
     tsformat = timestampFormat;
     zend_delay = toString sendDelay;
-  } // fold (a: b: a // b) {} (
+  } // foldr (a: b: a // b) {} (
     map mkDestAttrs (builtins.attrValues destinations)
   );
 
@@ -328,7 +328,7 @@ in
       };
 
       zetup = mkOption {
-        type = loaOf srcType;
+        type = attrsOf srcType;
         description = "Znapzend configuration.";
         default = {};
         example = literalExample ''

@@ -1,7 +1,8 @@
-{ lib, version, hostPlatform
+{ lib, version, hostPlatform, targetPlatform
 , gnatboot ? null
 , langAda ? false
 , langJava ? false
+, langJit ? false
 , langGo }:
 
 assert langJava -> lib.versionOlder version "7";
@@ -48,4 +49,19 @@ lib.optionalString (hostPlatform.isSunOS && hostPlatform.is64bit) ''
 #
 + lib.optionalString (hostPlatform.isDarwin) ''
   export ac_cv_func_aligned_alloc=no
+''
+
+# In order to properly install libgccjit on macOS Catalina, strip(1)
+# upon installation must not remove external symbols, otherwise the
+# install step errors with "symbols referenced by indirect symbol
+# table entries that can't be stripped".
++ lib.optionalString (hostPlatform.isDarwin && langJit) ''
+  export STRIP='strip -x'
+''
+
+# HACK: if host and target config are the same, but the platforms are
+# actually different we need to convince the configure script that it
+# is in fact building a cross compiler although it doesn't believe it.
++ lib.optionalString (targetPlatform.config == hostPlatform.config && targetPlatform != hostPlatform) ''
+  substituteInPlace configure --replace is_cross_compiler=no is_cross_compiler=yes
 ''

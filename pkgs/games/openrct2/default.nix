@@ -1,23 +1,24 @@
-{ stdenv, fetchFromGitHub
+{ lib, stdenv, fetchFromGitHub
 , SDL2, cmake, curl, duktape, fontconfig, freetype, icu, jansson, libGLU
-, libiconv, libpng, libpthreadstubs, libzip, openssl, pkgconfig, speexdsp, zlib
+, libiconv, libpng, libpthreadstubs, libzip, nlohmann_json, openssl, pkg-config
+, speexdsp, zlib
 }:
 
 let
-  version = "0.3.0";
+  version = "0.3.4";
 
   openrct2-src = fetchFromGitHub {
     owner = "OpenRCT2";
     repo = "OpenRCT2";
     rev = "v${version}";
-    sha256 = "0xs8pnn3lq30iy76pv42hywsrabapcrrkl597dhjafwh1xaxxj91";
+    sha256 = "051dm7bw3l8qnppk5b7xvavl29xfadqn8aa18q49qdy5mjy6qgk4";
   };
 
   objects-src = fetchFromGitHub {
     owner = "OpenRCT2";
     repo = "objects";
-    rev = "v1.0.16";
-    sha256 = "1xz50ghiqj9rm0m6d65j09ich6dlhyj36zah6zvmmzr4kg6svnk5";
+    rev = "v1.0.21";
+    sha256 = "0r2vp2y67jc1mpfl4j83sx5khvvaddx7xs26ppkigmr2d1xpxgr7";
   };
 
   title-sequences-src = fetchFromGitHub {
@@ -28,14 +29,14 @@ let
   };
 in
 stdenv.mkDerivation {
-  inherit version;
   pname = "openrct2";
+  inherit version;
 
   src = openrct2-src;
 
   nativeBuildInputs = [
     cmake
-    pkgconfig
+    pkg-config
   ];
 
   buildInputs = [
@@ -51,9 +52,15 @@ stdenv.mkDerivation {
     libpng
     libpthreadstubs
     libzip
+    nlohmann_json
     openssl
     speexdsp
     zlib
+  ];
+
+  cmakeFlags = [
+    "-DDOWNLOAD_OBJECTS=OFF"
+    "-DDOWNLOAD_TITLE_SEQUENCES=OFF"
   ];
 
   postUnpack = ''
@@ -61,19 +68,12 @@ stdenv.mkDerivation {
     cp -r ${title-sequences-src} $sourceRoot/data/sequence
   '';
 
-  cmakeFlags = [
-    "-DDOWNLOAD_OBJECTS=OFF"
-    "-DDOWNLOAD_TITLE_SEQUENCES=OFF"
-  ];
-
-  enableParallelBuilding = true;
-
   preFixup = "ln -s $out/share/openrct2 $out/bin/data";
 
-  meta = with stdenv.lib; {
-    description = "An open source re-implementation of RollerCoaster Tycoon 2 (original game required)";
+  meta = with lib; {
+    description = "Open source re-implementation of RollerCoaster Tycoon 2 (original game required)";
     homepage = "https://openrct2.io/";
-    license = licenses.gpl3;
+    license = licenses.gpl3Only;
     platforms = platforms.linux;
     maintainers = with maintainers; [ oxzi ];
   };

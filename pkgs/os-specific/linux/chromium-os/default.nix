@@ -30,7 +30,8 @@ let
     };
 
     linux_5_4 = callPackage ../kernel/linux-cros.nix {
-      inherit (linux_5_4) kernelPatches;
+      kernelPatches =
+        lib.remove kernelPatches.rtl8761b_support linux_5_4.kernelPatches;
     };
 
     linux = self.linux_5_4;

@@ -45,13 +45,22 @@ with import ../../lib/qemu-flags.nix { inherit pkgs; };
     systemd.services."serial-getty@${qemuSerialDevice}".enable = false;
     systemd.services."serial-getty@hvc0".enable = false;
 
-    # Only use a serial console, no TTY.
-    # NOTE: optionalAttrs
-    #       test-instrumentation.nix appears to be used without qemu-vm.nix, so
-    #       we avoid defining consoles if not possible.
-    # TODO: refactor such that test-instrumentation can import qemu-vm
-    #       or declare virtualisation.qemu.console option in a module that's always imported
-    virtualisation = lib.optionalAttrs (options ? virtualisation.qemu.consoles) { qemu.consoles = [ qemuSerialDevice ]; };
+    # Only set these settings when the options exist. Some tests (e.g. those
+    # that do not specify any nodes, or an empty attr set as nodes) will not
+    # have the QEMU module loaded and thuse these options can't and should not
+    # be set.
+    virtualisation = lib.optionalAttrs (options ? virtualisation.qemu) {
+      qemu = {
+        # Only use a serial console, no TTY.
+        # NOTE: optionalAttrs
+        #       test-instrumentation.nix appears to be used without qemu-vm.nix, so
+        #       we avoid defining consoles if not possible.
+        # TODO: refactor such that test-instrumentation can import qemu-vm
+        #       or declare virtualisation.qemu.console option in a module that's always imported
+        consoles = [ qemuSerialDevice ];
+        package  = lib.mkDefault pkgs.qemu_test;
+      };
+    };
 
     boot.initrd.preDeviceCommands =
       ''
@@ -74,14 +83,7 @@ with import ../../lib/qemu-flags.nix { inherit pkgs; };
         # OOM killer randomly get rid of processes, since this leads
         # to failures that are hard to diagnose.
         echo 2 > /proc/sys/vm/panic_on_oom
-
-        # Coverage data is written into /tmp/coverage-data.
-        mkdir -p /tmp/xchg/coverage-data
       '';
-
-    # If the kernel has been built with coverage instrumentation, make
-    # it available under /proc/gcov.
-    boot.kernelModules = [ "gcov-proc" ];
 
     # Panic if an error occurs in stage 1 (rather than waiting for
     # user intervention).
@@ -111,8 +113,6 @@ with import ../../lib/qemu-flags.nix { inherit pkgs; };
     networking.defaultGateway = mkOverride 150 "";
     networking.nameservers = mkOverride 150 [ ];
 
-    systemd.globalEnvironment.GCOV_PREFIX = "/tmp/xchg/coverage-data";
-
     system.requiredKernelConfig = with config.lib.kernelConfig; [
       (isYes "SERIAL_8250_CONSOLE")
       (isYes "SERIAL_8250")
@@ -125,6 +125,10 @@ with import ../../lib/qemu-flags.nix { inherit pkgs; };
     users.users.root.initialHashedPassword = mkOverride 150 "";
 
     services.xserver.displayManager.job.logToJournal = true;
+
+    # Make sure we use the Guest Agent from the QEMU package for testing
+    # to reduce the closure size required for the tests.
+    services.qemuGuest.package = pkgs.qemu_test.ga;
   };
 
 }

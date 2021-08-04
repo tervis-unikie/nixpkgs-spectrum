@@ -1,11 +1,12 @@
-{ stdenv, buildPythonPackage, fetchPypi, mupdf, swig }:
+{ lib, buildPythonPackage, fetchPypi, mupdf, swig }:
 buildPythonPackage rec {
-  pname = "PyMuPDF";
-  version = "1.17.4";
+  pname = "pymupdf";
+  version = "1.18.0";
 
   src = fetchPypi {
-    inherit pname version;
-    sha256 = "e04421ac7e9e892ea482d0bbf8b590ae7a4f82858faa6fd24943b037122971c0";
+    pname = "PyMuPDF";
+    inherit version;
+    sha256 = "64ce58f92d9edd2631e447175fa13b4024ac3b6dce6e718e0b003c41de6f7952";
   };
 
   patchPhase = ''
@@ -17,7 +18,7 @@ buildPythonPackage rec {
 
   doCheck = false;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Python bindings for MuPDF's rendering library.";
     homepage = "https://github.com/pymupdf/PyMuPDF";
     maintainers = with maintainers; [ teto ];

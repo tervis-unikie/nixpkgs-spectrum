@@ -9,16 +9,16 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "delta";
-  version = "0.4.1";
+  version = "0.8.3";
 
   src = fetchFromGitHub {
     owner = "dandavison";
     repo = pname;
     rev = version;
-    sha256 = "15vpmalv2195aff3xd85nr99xn2dbc0k1lmlf7xp293s79kibrz7";
+    sha256 = "sha256-lwdsl3dzqrIL1JoBFmldwsCvNCWUcTlgeoEoCvmlTCQ=";
   };
 
-  cargoSha256 = "0vgjijrxpfrgwh17dpxhgq8jdr6f9cj0mkr5ni9m3w8qv545a1ix";
+  cargoSha256 = "sha256-7TvxkSJ3iWJnjD3Xe7WDXBNWIyl8U9XTCn9muUG1AmI=";
 
   nativeBuildInputs = [ installShellFiles ];
 
@@ -34,6 +34,6 @@ rustPlatform.buildRustPackage rec {
     description = "A syntax-highlighting pager for git";
     changelog = "https://github.com/dandavison/delta/releases/tag/${version}";
     license = licenses.mit;
-    maintainers = with maintainers; [ marsam ma27 zowoq ];
+    maintainers = with maintainers; [ marsam zowoq ];
   };
 }

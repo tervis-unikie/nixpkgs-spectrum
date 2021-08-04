@@ -1,9 +1,9 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , nix-update-script
 , fetchpatch
 , pantheon
-, pkgconfig
+, pkg-config
 , meson
 , ninja
 , python3
@@ -12,6 +12,7 @@
 , gtk3
 , libxml2
 , granite
+, libhandy
 , libnotify
 , vte
 , libgee
@@ -23,7 +24,7 @@
 
 stdenv.mkDerivation rec {
   pname = "elementary-terminal";
-  version = "5.5.2";
+  version = "6.0.0";
 
   repoName = "terminal";
 
@@ -31,7 +32,7 @@ stdenv.mkDerivation rec {
     owner = "elementary";
     repo = repoName;
     rev = version;
-    sha256 = "119iwmzbpkj4nmxinqfsh73lx23g8gbl6ha6wc4mc4fq9hpnc9c2";
+    sha256 = "08akr4sv4jy9kd4s26kib6j7i8hc3vs0sp71fifv7ww4mi9cm6jc";
   };
 
   passthru = {
@@ -46,7 +47,7 @@ stdenv.mkDerivation rec {
     libxml2
     meson
     ninja
-    pkgconfig
+    pkg-config
     python3
     vala
     wrapGAppsHook
@@ -57,6 +58,7 @@ stdenv.mkDerivation rec {
     granite
     gtk3
     libgee
+    libhandy
     libnotify
     pcre2
     vte
@@ -70,7 +72,7 @@ stdenv.mkDerivation rec {
     patchShebangs meson/post_install.py
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Terminal emulator designed for elementary OS";
     longDescription = ''
       A super lightweight, beautiful, and simple terminal. Comes with sane defaults, browser-class tabs, sudo paste protection,

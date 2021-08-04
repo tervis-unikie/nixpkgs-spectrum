@@ -1,41 +1,53 @@
-{ stdenv
-, libiconv, fetchurl, zlib, openssl, tcl, readline, sqlite, ed, which
-, tcllib, withJson ? true
+{ lib, stdenv
+, installShellFiles
+, tcl
+, libiconv
+, fetchurl
+, zlib
+, openssl
+, readline
+, sqlite
+, ed
+, which
+, tcllib
+, withJson ? true
 }:
 
 stdenv.mkDerivation rec {
   pname = "fossil";
-  version = "2.11.1";
+  version = "2.15.1";
 
   src = fetchurl {
-    urls =
-      [
-        "https://www.fossil-scm.org/index.html/uv/fossil-src-${version}.tar.gz"
-      ];
+    url = "https://www.fossil-scm.org/index.html/uv/fossil-src-${version}.tar.gz";
     name = "${pname}-${version}.tar.gz";
-    sha256 = "1sxq1hn87fdikhbg9y3v4sjy4gxaifnx4dig8nx6xwd5mm7z74dk";
+    sha256 = "sha256-gNJ5I8ZjsqLHEPiujNVJhi4E+MBChXBidMNK48jKF9E=";
   };
 
+  nativeBuildInputs = [ installShellFiles tcl tcllib ];
+
   buildInputs = [ zlib openssl readline sqlite which ed ]
-             ++ stdenv.lib.optional stdenv.isDarwin libiconv;
-  nativeBuildInputs = [ tcl ];
+    ++ lib.optional stdenv.isDarwin libiconv;
+
+  enableParallelBuilding = true;
 
   doCheck = stdenv.hostPlatform == stdenv.buildPlatform;
-  preCheck = ''
-    export TCLLIBPATH="${tcllib}/lib/tcllib${tcllib.version}"
-  '';
-  configureFlags = stdenv.lib.optional withJson "--json";
 
-  preBuild=''
+  configureFlags = [ "--disable-internal-sqlite" ]
+    ++ lib.optional withJson "--json";
+
+  preBuild = ''
     export USER=nonexistent-but-specified-user
   '';
 
   installPhase = ''
     mkdir -p $out/bin
     INSTALLDIR=$out/bin make install
+
+    installManPage fossil.1
+    installShellCompletion --name fossil.bash tools/fossil-autocomplete.bash
   '';
 
-  meta = {
+  meta = with lib; {
     description = "Simple, high-reliability, distributed software configuration management";
     longDescription = ''
       Fossil is a software configuration management system.  Fossil is
@@ -44,12 +56,9 @@ stdenv.mkDerivation rec {
       many such systems in use today. Fossil strives to distinguish itself
       from the others by being extremely simple to setup and operate.
     '';
-    homepage = "http://www.fossil-scm.org/";
-    license = stdenv.lib.licenses.bsd2;
-    platforms = with stdenv.lib.platforms; all;
-    maintainers = [ #Add your name here!
-      stdenv.lib.maintainers.maggesi
-      stdenv.lib.maintainers.viric
-    ];
+    homepage = "https://www.fossil-scm.org/";
+    license = licenses.bsd2;
+    maintainers = with maintainers; [ maggesi viric ];
+    platforms = platforms.all;
   };
 }

@@ -1,18 +1,19 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
+, fetchpatch
 , vala
 , atk
 , cairo
 , dconf
 , glib
 , gtk3
-, libwnck3
+, libwnck
 , libX11
 , libXfixes
 , libXi
 , pango
 , gettext
-, pkgconfig
+, pkg-config
 , libxml2
 , bamf
 , gdk-pixbuf
@@ -40,12 +41,20 @@ stdenv.mkDerivation rec {
     sha256 = "01vinik73s0vmk56samgf49zr2bl4wjv44x15sz2cmh744llckja";
   };
 
+  patches = [
+    # Fix double includedir path in plank.pc
+    (fetchpatch {
+      url = "https://github.com/elementary/dock/commit/3bc368e2c4fafcd5b8baca2711c773b0e2441c7c.patch";
+      sha256 = "0gg35phi1cg7ixljc388i0h70w323r1gqzjhanccnsbjpqsgvs3k";
+    })
+  ];
+
   nativeBuildInputs = [
     gettext
     meson
     ninja
     libxml2 # xmllint
-    pkgconfig
+    pkg-config
     vala
     wrapGAppsHook
   ];
@@ -64,11 +73,11 @@ stdenv.mkDerivation rec {
     libXi
     libdbusmenu-gtk3
     libgee
-    libwnck3
+    libwnck
     pango
   ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Elegant, simple, clean dock";
     homepage = "https://github.com/elementary/dock";
     license = licenses.gpl3Plus;

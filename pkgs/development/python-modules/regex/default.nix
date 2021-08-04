@@ -2,30 +2,30 @@
 , buildPythonPackage
 , fetchPypi
 , python
+, isPy27
 }:
-
 
 buildPythonPackage rec {
   pname = "regex";
-  version = "2020.5.14";
+  version = "2021.4.4";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "ce450ffbfec93821ab1fea94779a8440e10cf63819be6e176eb1973a6017aff5";
+    sha256 = "sha256-Uro9P5uULEnX5LwQW7KFUcRAZfE5plBiq3kSvvEMmvs=";
   };
 
-  postCheck = ''
-    echo "We now run tests ourselves, since the setuptools installer doesn't."
-    ${python.interpreter} -c 'import test_regex; test_regex.test_main();'
+  # Sources for different Python releases are located in same folder
+  checkPhase = ''
+    rm -r ${if !isPy27 then "regex_2" else "regex_3"}
+    ${python.interpreter} -m unittest
   '';
 
-  # No tests in archive
-  doCheck = false;
+  pythonImportsCheck = [ "regex" ];
 
-  meta = {
+  meta = with lib; {
     description = "Alternative regular expression module, to replace re";
     homepage = "https://bitbucket.org/mrabarnett/mrab-regex";
-    license = lib.licenses.psfl;
-    maintainers = with lib.maintainers; [ abbradar ];
+    license = licenses.psfl;
+    maintainers = with maintainers; [ abbradar ];
   };
 }

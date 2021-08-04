@@ -1,4 +1,5 @@
-{ config, lib, stdenv, fetchurl, pkgs, buildPackages, callPackage
+{ config, lib, stdenv, fetchurl, fetchFromGitHub, pkgs, buildPackages
+, callPackage
 , enableThreading ? true, coreutils, makeWrapper
 }:
 
@@ -36,16 +37,8 @@ let
     patches =
       [
         # Do not look in /usr etc. for dependencies.
-        (if (versionOlder version "5.29.6") then ./no-sys-dirs-5.26.patch
-         else if (versionOlder version "5.31.1") then ./no-sys-dirs-5.29.patch
-         else ./no-sys-dirs-5.31.patch)
+        ./no-sys-dirs-5.31.patch
       ]
-      ++ optional (versionOlder version "5.29.6")
-        # Fix parallel building: https://rt.perl.org/Public/Bug/Display.html?id=132360
-        (fetchurl {
-          url = "https://rt.perl.org/Public/Ticket/Attachment/1502646/807252/0001-Fix-missing-build-dependency-for-pods.patch";
-          sha256 = "1bb4mldfp8kq1scv480wm64n2jdsqa3ar46cjp1mjpby8h5dr2r0";
-        })
       ++ optional stdenv.isSunOS ./ld-shared.patch
       ++ optionals stdenv.isDarwin [ ./cpp-precomp.patch ./sw_vers.patch ]
       ++ optional crossCompiling ./MakeMaker-cross.patch;
@@ -73,7 +66,7 @@ let
     # Miniperl needs -lm. perl needs -lrt.
     configureFlags =
       (if crossCompiling
-       then [ "-Dlibpth=\"\"" "-Dglibpth=\"\"" ]
+       then [ "-Dlibpth=\"\"" "-Dglibpth=\"\"" "-Ddefault_inc_excludes_dot" ]
        else [ "-de" "-Dcc=cc" ])
       ++ [
         "-Uinstallusrbinperl"
@@ -175,18 +168,22 @@ let
       priority = 6; # in `buildEnv' (including the one inside `perl.withPackages') the library files will have priority over files in `perl`
     };
   } // optionalAttrs (stdenv.buildPlatform != stdenv.hostPlatform) rec {
-    crossVersion = "1.3.4"; # Jun 2, 2020
+    crossVersion = "1.3.6";
 
-    perl-cross-src = fetchurl {
-      url = "https://github.com/arsv/perl-cross/archive/${crossVersion}.tar.gz";
-      sha256 = "15wvlafhpsh9h66s3vazhx46hf8ik75473acrvf6722ijd1wpz45";
+    perl-cross-src = fetchFromGitHub {
+      name = "perl-cross-${crossVersion}";
+      owner = "arsv";
+      repo = "perl-cross";
+      rev = crossVersion;
+      sha256 = "0k5vyj40czbkfl7r3dcwxpc7dvdlp2xliaav358bviq3dq9vq9bb";
     };
 
     depsBuildBuild = [ buildPackages.stdenv.cc makeWrapper ];
 
     postUnpack = ''
       unpackFile ${perl-cross-src}
-      cp -R perl-cross-${crossVersion}/* perl-${version}/
+      chmod -R u+w ${perl-cross-src.name}
+      cp -R ${perl-cross-src.name}/* perl-${version}/
     '';
 
     configurePlatforms = [ "build" "host" "target" ];
@@ -196,26 +193,26 @@ let
   });
 in {
   # Maint version
-  perl528 = common {
-    perl = pkgs.perl528;
-    buildPerl = buildPackages.perl528;
-    version = "5.28.3";
-    sha256 = "052if351m81yhaab429i1kv77v9b15qm0g48kr6y2yjrc7bc3jdg";
+  perl532 = common {
+    perl = pkgs.perl532;
+    buildPerl = buildPackages.perl532;
+    version = "5.32.1";
+    sha256 = "0b7brakq9xs4vavhg391as50nbhzryc7fy5i65r81bnq3j897dh3";
   };
 
   # Maint version
-  perl530 = common {
-    perl = pkgs.perl530;
-    buildPerl = buildPackages.perl530;
-    version = "5.30.3";
-    sha256 = "0vs0wwwlw47sswxaflkk4hw0y45cmc7arxx788kwpbminy5lrq1j";
+  perl534 = common {
+    perl = pkgs.perl534;
+    buildPerl = buildPackages.perl534;
+    version = "5.34.0";
+    sha256 = "16mywn5afpv1mczv9dlc1w84rbgjgrr0pyr4c0hhb2wnif0zq7jm";
   };
 
   # the latest Devel version
   perldevel = common {
     perl = pkgs.perldevel;
     buildPerl = buildPackages.perldevel;
-    version = "5.32.0-RC0";
-    sha256 = "02i6n1xa4j0ksp014yy8q0j7scjcy5mr0yd4iash2ryrrfv5yw5k";
+    version = "5.35.0";
+    sha256 = "0217nbswhkjhw60kng2p64611xna7za681kk30fkriyicd3yph6n";
   };
 }

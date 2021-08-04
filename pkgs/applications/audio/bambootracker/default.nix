@@ -1,70 +1,56 @@
 { mkDerivation
 , stdenv
+, lib
 , fetchFromGitHub
 , fetchpatch
-, installShellFiles
 , qmake
-, qtbase
-, qtmultimedia
+, pkg-config
 , qttools
-, alsaSupport ? stdenv.hostPlatform.isLinux
-, alsaLib
-, pulseSupport ? stdenv.hostPlatform.isLinux
-, libpulseaudio
-, jackSupport ? stdenv.hostPlatform.isUnix
-, libjack2
+, qtbase
+, rtaudio
+, rtmidi
 }:
-let
 
-  inherit (stdenv.lib) optional optionals;
-
-in
 mkDerivation rec {
   pname = "bambootracker";
-  version = "0.4.3";
+  version = "0.4.6";
 
   src = fetchFromGitHub {
     owner = "rerrahkr";
     repo = "BambooTracker";
     rev = "v${version}";
-    sha256 = "0gq40qmsdavsyl2d6a71rwp4mjlwvp1c8bry32srn4hliwfnvqa6";
+    sha256 = "0iddqfw951dw9xpl4w7310sl4z544507ppb12i8g4fzvlxfw2ifc";
   };
 
-  # Fix macOS build until new release
+  # TODO Remove when updating past 0.4.6
+  # Fixes build failure on darwin
   patches = [
     (fetchpatch {
-      url = "https://github.com/rerrahkr/BambooTracker/commit/45346ed99559d44c2e32a5c6138a0835b212e875.patch";
-      sha256 = "1xkiqira1kpcqkacycy0y7qm1brhf89amliv42byijl4palmykh2";
+      name = "bambootracker-Add_braces_in_initialization_of_std-array.patch";
+      url = "https://github.com/rerrahkr/BambooTracker/commit/0fc96c60c7ae6c2504ee696bb7dec979ac19717d.patch";
+      sha256 = "1z28af46mqrgnyrr4i8883gp3wablkk8rijnj0jvpq01s4m2sfjn";
     })
   ];
 
-  preConfigure = "cd BambooTracker";
+  nativeBuildInputs = [ qmake qttools pkg-config ];
 
-  nativeBuildInputs = [ qmake qttools installShellFiles ];
+  buildInputs = [ qtbase rtaudio rtmidi ];
 
-  buildInputs = [ qtbase qtmultimedia ]
-    ++ optional alsaSupport alsaLib
-    ++ optional pulseSupport libpulseaudio
-    ++ optional jackSupport libjack2;
+  qmakeFlags = [ "CONFIG+=system_rtaudio" "CONFIG+=system_rtmidi" ];
 
-  qmakeFlags = [ "CONFIG+=release" "CONFIG-=debug" ]
-    ++ optional pulseSupport "CONFIG+=use_pulse"
-    ++ optionals jackSupport [ "CONFIG+=use_jack" "CONFIG+=jack_has_rename" ];
+  postConfigure = "make qmake_all";
 
-  postInstall = ''
-    install -Dm644 ../BambooTracker.desktop $out/share/applications/BambooTracker.desktop
-    installManPage ../BambooTracker*.1
-
-    cp -r ../{demos,licenses,skins,LICENSE} $out/share/BambooTracker/
-
-    for size in 16x16 256x256; do
-      install -Dm644 res/icon/icon_$size.png $out/share/icons/hicolor/$size/apps/BambooTracker.png
-    done
+  # installs app bundle on darwin, re-extract the binary
+  # wrapQtAppsHook fails to wrap mach-o binaries, manually call wrapper (https://github.com/NixOS/nixpkgs/issues/102044)
+  postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    mv $out/bin/BambooTracker{.app/Contents/MacOS/BambooTracker,}
+    rm -r $out/bin/BambooTracker.app
+    wrapQtApp $out/bin/BambooTracker
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A tracker for YM2608 (OPNA) which was used in NEC PC-8801/9801 series computers";
-    homepage = "https://github.com/rerrahkr/BambooTracker";
+    homepage = "https://rerrahkr.github.io/BambooTracker";
     license = licenses.gpl2Only;
     platforms = platforms.all;
     maintainers = with maintainers; [ OPNA2608 ];

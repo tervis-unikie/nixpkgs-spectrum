@@ -1,4 +1,4 @@
-{ config, lib, pkgs, modules, baseModules, ... }:
+{ config, lib, pkgs, modules, baseModules, specialArgs, ... }:
 
 with lib;
 
@@ -13,7 +13,7 @@ let
   # !!! fix this
   children = mapAttrs (childName: childConfig:
       (import ../../../lib/eval-config.nix {
-        inherit baseModules;
+        inherit lib baseModules specialArgs;
         system = config.nixpkgs.initialSystem;
         modules =
            (optionals childConfig.inheritParentConfig modules)
@@ -97,10 +97,11 @@ let
     allowSubstitutes = false;
     buildCommand = systemBuilder;
 
-    inherit (pkgs) utillinux coreutils;
+    inherit (pkgs) coreutils;
     systemd = config.systemd.package;
     shell = "${pkgs.bash}/bin/sh";
     su = "${pkgs.shadow.su}/bin/su";
+    utillinux = pkgs.util-linux;
 
     kernelParams = config.boot.kernelParams;
     installBootLoader =
@@ -112,8 +113,7 @@ let
     configurationName = config.boot.loader.grub.configurationName;
 
     # Needed by switch-to-configuration.
-
-    perl = "${pkgs.perl}/bin/perl " + (concatMapStringsSep " " (lib: "-I${lib}/${pkgs.perl.libPrefix}") (with pkgs.perlPackages; [ FileSlurp NetDBus XMLParser XMLTwig ]));
+    perl = pkgs.perl.withPackages (p: with p; [ FileSlurp NetDBus XMLParser XMLTwig ]);
   };
 
   # Handle assertions and warnings
@@ -125,7 +125,7 @@ let
     else showWarnings config.warnings baseSystem;
 
   # Replace runtime dependencies
-  system = fold ({ oldDependency, newDependency }: drv:
+  system = foldr ({ oldDependency, newDependency }: drv:
       pkgs.replaceDependency { inherit oldDependency newDependency drv; }
     ) baseSystemAssertWarn config.system.replaceRuntimeDependencies;
 
@@ -159,9 +159,9 @@ in
         To switch to a specialised configuration
         (e.g. <literal>fewJobsManyCores</literal>) at runtime, run:
 
-        <programlisting>
-        # sudo /run/current-system/specialisation/fewJobsManyCores/bin/switch-to-configuration test
-        </programlisting>
+        <screen>
+        <prompt># </prompt>sudo /run/current-system/specialisation/fewJobsManyCores/bin/switch-to-configuration test
+        </screen>
       '';
       type = types.attrsOf (types.submodule (
         { ... }: {
@@ -189,7 +189,7 @@ in
 
     system.boot.loader.kernelFile = mkOption {
       internal = true;
-      default = pkgs.stdenv.hostPlatform.platform.kernelTarget;
+      default = pkgs.stdenv.hostPlatform.linux-kernel.target;
       type = types.str;
       description = ''
         Name of the kernel file to be passed to the bootloader.

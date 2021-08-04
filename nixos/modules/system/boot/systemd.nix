@@ -84,11 +84,13 @@ let
       # Kernel module loading.
       "systemd-modules-load.service"
       "kmod-static-nodes.service"
+      "modprobe@.service"
 
       # Filesystems.
       "systemd-fsck@.service"
       "systemd-fsck-root.service"
       "systemd-remount-fs.service"
+      "systemd-pstore.service"
       "local-fs.target"
       "local-fs-pre.target"
       "remote-fs.target"
@@ -175,8 +177,10 @@ let
       "timers.target.wants"
     ];
 
-  upstreamUserUnits =
-    [ "basic.target"
+    upstreamUserUnits = [
+      "app.slice"
+      "background.slice"
+      "basic.target"
       "bluetooth.target"
       "default.target"
       "exit.target"
@@ -184,6 +188,7 @@ let
       "graphical-session.target"
       "paths.target"
       "printer.target"
+      "session.slice"
       "shutdown.target"
       "smartcard.target"
       "sockets.target"
@@ -193,6 +198,7 @@ let
       "systemd-tmpfiles-clean.timer"
       "systemd-tmpfiles-setup.service"
       "timers.target"
+      "xdg-desktop-autostart.target"
     ];
 
   makeJobScript = name: text:
@@ -243,6 +249,8 @@ let
           OnFailure = toString config.onFailure; }
         // optionalAttrs (options.startLimitIntervalSec.isDefined) {
           StartLimitIntervalSec = toString config.startLimitIntervalSec;
+        } // optionalAttrs (options.startLimitBurst.isDefined) {
+          StartLimitBurst = toString config.startLimitBurst;
         };
     };
   };
@@ -257,11 +265,11 @@ let
               pkgs.gnused
               systemd
             ];
-          environment.PATH = config.path;
+          environment.PATH = "${makeBinPath config.path}:${makeSearchPathOutput "bin" "sbin" config.path}";
         }
         (mkIf (config.preStart != "")
           { serviceConfig.ExecStartPre =
-              makeJobScript "${name}-pre-start" config.preStart;
+              [ (makeJobScript "${name}-pre-start" config.preStart) ];
           })
         (mkIf (config.script != "")
           { serviceConfig.ExecStart =
@@ -269,7 +277,7 @@ let
           })
         (mkIf (config.postStart != "")
           { serviceConfig.ExecStartPost =
-              makeJobScript "${name}-post-start" config.postStart;
+              [ (makeJobScript "${name}-post-start" config.postStart) ];
           })
         (mkIf (config.reload != "")
           { serviceConfig.ExecReload =
@@ -548,6 +556,14 @@ in
       '';
     };
 
+    systemd.enableUnifiedCgroupHierarchy = mkOption {
+      default = true;
+      type = types.bool;
+      description = ''
+        Whether to enable the unified cgroup hierarchy (cgroupsv2).
+      '';
+    };
+
     systemd.coredump.enable = mkOption {
       default = true;
       type = types.bool;
@@ -739,7 +755,7 @@ in
       default = [];
       example = [ "d /tmp 1777 root root 10d" ];
       description = ''
-        Rules for creating and cleaning up temporary files
+        Rules for creation, deletion and cleaning of volatile and temporary files
         automatically. See
         <citerefentry><refentrytitle>tmpfiles.d</refentrytitle><manvolnum>5</manvolnum></citerefentry>
         for the exact format.
@@ -884,30 +900,38 @@ in
 
   config = {
 
-    warnings = concatLists (mapAttrsToList (name: service:
-      let
-        type = service.serviceConfig.Type or "";
-        restart = service.serviceConfig.Restart or "no";
-      in optional
-      (type == "oneshot" && (restart == "always" || restart == "on-success"))
-      "Service '${name}.service' with 'Type=oneshot' cannot have 'Restart=always' or 'Restart=on-success'")
-      cfg.services);
+    warnings = concatLists (
+      mapAttrsToList
+        (name: service:
+          let
+            type = service.serviceConfig.Type or "";
+            restart = service.serviceConfig.Restart or "no";
+            hasDeprecated = builtins.hasAttr "StartLimitInterval" service.serviceConfig;
+          in
+            concatLists [
+              (optional (type == "oneshot" && (restart == "always" || restart == "on-success"))
+                "Service '${name}.service' with 'Type=oneshot' cannot have 'Restart=always' or 'Restart=on-success'"
+              )
+              (optional hasDeprecated
+                "Service '${name}.service' uses the attribute 'StartLimitInterval' in the Service section, which is deprecated. See https://github.com/NixOS/nixpkgs/issues/45786."
+              )
+            ]
+        )
+        cfg.services
+    );
 
     system.build.units = cfg.units;
 
     system.nssModules = [ systemd.out ];
     system.nssDatabases = {
       hosts = (mkMerge [
-        [ "mymachines" ]
-        (mkOrder 1600 [ "myhostname" ] # 1600 to ensure it's always the last
-      )
+        (mkOrder 400 ["mymachines"]) # 400 to ensure it comes before resolve (which is mkBefore'd)
+        (mkOrder 999 ["myhostname"]) # after files (which is 998), but before regular nss modules
       ]);
       passwd = (mkMerge [
-        [ "mymachines" ]
         (mkAfter [ "systemd" ])
       ]);
       group = (mkMerge [
-        [ "mymachines" ]
         (mkAfter [ "systemd" ])
       ]);
     };
@@ -1008,7 +1032,7 @@ in
       "sysctl.d/50-coredump.conf".source = "${systemd}/example/sysctl.d/50-coredump.conf";
       "sysctl.d/50-default.conf".source = "${systemd}/example/sysctl.d/50-default.conf";
 
-      "tmpfiles.d".source = pkgs.symlinkJoin {
+      "tmpfiles.d".source = (pkgs.symlinkJoin {
         name = "tmpfiles.d";
         paths = map (p: p + "/lib/tmpfiles.d") cfg.tmpfiles.packages;
         postBuild = ''
@@ -1018,8 +1042,10 @@ in
               exit 1
             )
           done
-        '';
-      };
+        '' + concatMapStrings (name: optionalString (hasPrefix "tmpfiles.d/" name) ''
+          rm -f $out/${removePrefix "tmpfiles.d/" name}
+        '') config.system.build.etc.targets;
+      }) + "/*";
 
       "systemd/system-generators" = { source = hooks "generators" cfg.generators; };
       "systemd/system-shutdown" = { source = hooks "shutdown" cfg.shutdown; };
@@ -1157,14 +1183,19 @@ in
     systemd.targets.remote-fs.unitConfig.X-StopOnReconfiguration = true;
     systemd.targets.network-online.wantedBy = [ "multi-user.target" ];
     systemd.services.systemd-importd.environment = proxy_env;
+    systemd.services.systemd-pstore.wantedBy = [ "sysinit.target" ]; # see #81138
 
     # Don't bother with certain units in containers.
     systemd.services.systemd-remount-fs.unitConfig.ConditionVirtualization = "!container";
     systemd.services.systemd-random-seed.unitConfig.ConditionVirtualization = "!container";
 
-    boot.kernel.sysctl = mkIf (!cfg.coredump.enable) {
-      "kernel.core_pattern" = "core";
-    };
+    boot.kernel.sysctl."kernel.core_pattern" = mkIf (!cfg.coredump.enable) "core";
+
+    # Increase numeric PID range (set directly instead of copying a one-line file from systemd)
+    # https://github.com/systemd/systemd/pull/12226
+    boot.kernel.sysctl."kernel.pid_max" = mkIf pkgs.stdenv.is64bit (lib.mkDefault 4194304);
+
+    boot.kernelParams = optional (!cfg.enableUnifiedCgroupHierarchy) "systemd.unified_cgroup_hierarchy=0";
   };
 
   # FIXME: Remove these eventually.

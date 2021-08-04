@@ -1,10 +1,10 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , nix-update-script
 , pantheon
 , meson
 , ninja
-, pkgconfig
+, pkg-config
 , vala
 , libgee
 , granite
@@ -20,7 +20,7 @@ stdenv.mkDerivation rec {
     owner = "elementary";
     repo = pname;
     rev = version;
-    sha256 = "0ijzm91gycx8iaf3sd8i07b5899gbryxd6klzjh122d952wsyfcs";
+    sha256 = "sha256-mjmvuSipCRGg/HSa1n1eLyVU1gERNT2ciqgz/0KqX0Y=";
   };
 
   passthru = {
@@ -32,7 +32,7 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     meson
     ninja
-    pkgconfig
+    pkg-config
     vala
   ];
 
@@ -43,7 +43,7 @@ stdenv.mkDerivation rec {
     switchboard
   ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Switchboard Displays Plug";
     homepage = "https://github.com/elementary/switchboard-plug-display";
     license = licenses.lgpl2Plus;

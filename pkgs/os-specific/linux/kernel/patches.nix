@@ -1,6 +1,19 @@
 { lib, fetchpatch, fetchurl }:
 
 {
+  ath_regd_optional = rec {
+    name = "ath_regd_optional";
+    patch = fetchpatch {
+      name = name + ".patch";
+      url = "https://github.com/openwrt/openwrt/raw/ed2015c38617ed6624471e77f27fbb0c58c8c660/package/kernel/mac80211/patches/ath/402-ath_regd_optional.patch";
+      sha256 = "1ssDXSweHhF+pMZyd6kSrzeW60eb6MO6tlf0il17RC0=";
+      postFetch = ''
+        sed -i 's/CPTCFG_/CONFIG_/g' $out
+        sed -i '/--- a\/local-symbols/,$d' $out
+      '';
+    };
+  };
+
   bridge_stp_helper =
     { name = "bridge-stp-helper";
       patch = ./bridge-stp-helper.patch;
@@ -33,15 +46,11 @@
 
   cpu-cgroup-v2 = import ./cpu-cgroup-v2-patches;
 
-  tag_hardened = {
-    name = "tag-hardened";
-    patch = ./hardened/tag-hardened.patch;
-  };
-
   hardened = let
     mkPatch = kernelVersion: src: {
       name = lib.removeSuffix ".patch" src.name;
-      patch = fetchurl src;
+      patch = fetchurl (lib.filterAttrs (k: v: k != "extra") src);
+      extra = src.extra;
     };
     patches = builtins.fromJSON (builtins.readFile ./hardened/patches.json);
   in lib.mapAttrs mkPatch patches;
@@ -74,6 +83,18 @@
       url = "https://github.com/torvalds/linux/commit/45c8184c1bed1ca8a7f02918552063a00b909bf5.patch";
       sha256 = "1l8xq02rd7vakxg52xm9g4zng0ald866rpgm8kjlh88mwwyjkrwv";
     };
+  };
+
+  # Adapted for Linux 5.4 from:
+  # https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=04896832c94aae4842100cafb8d3a73e1bed3a45
+  rtl8761b_support =
+    { name = "rtl8761b-support";
+      patch = ./rtl8761b-support.patch;
+    };
+
+  export-rt-sched-migrate = {
+    name = "export-rt-sched-migrate";
+    patch = ./export-rt-sched-migrate.patch;
   };
 
   # patches from https://lkml.org/lkml/2019/7/15/1748

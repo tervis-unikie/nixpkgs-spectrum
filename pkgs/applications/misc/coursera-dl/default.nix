@@ -1,4 +1,4 @@
-{ stdenv, fetchFromGitHub, glibcLocales, pandoc, python3 }:
+{ lib, fetchFromGitHub, glibcLocales, pandoc, python3 }:
 
 let
   pythonPackages = python3.pkgs;
@@ -18,7 +18,7 @@ in pythonPackages.buildPythonApplication rec {
 
   buildInputs = with pythonPackages; [ glibcLocales ];
 
-  propagatedBuildInputs = with pythonPackages; [ attrs beautifulsoup4 ConfigArgParse keyring pyasn1 requests six urllib3 ];
+  propagatedBuildInputs = with pythonPackages; [ attrs beautifulsoup4 configargparse keyring pyasn1 requests six urllib3 ];
 
   checkInputs = with pythonPackages; [ pytest mock ];
 
@@ -36,7 +36,7 @@ in pythonPackages.buildPythonApplication rec {
     py.test -k 'not test_get_credentials_with_keyring' .
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "CLI for downloading Coursera.org videos and naming them";
     homepage = "https://github.com/coursera-dl/coursera-dl";
     license = licenses.lgpl3Plus;

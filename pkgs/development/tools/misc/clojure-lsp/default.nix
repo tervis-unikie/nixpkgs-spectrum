@@ -1,30 +1,59 @@
-{ stdenv, fetchurl, jre }:
+{ lib, stdenv, graalvm11-ce, babashka, fetchurl, fetchFromGitHub, clojure }:
 
 stdenv.mkDerivation rec {
   pname = "clojure-lsp";
-  version = "20200819T134828";
+  version = "2021.07.12-12.30.59";
 
-  src = fetchurl {
-    url = "https://github.com/snoe/clojure-lsp/releases/download/release-${version}/${pname}";
-    sha256 = "0nfi6wf78z0xm0mgsz83pn1v4mr76h2d5rva3xan4hn8gpd1s57s";
+  src = fetchFromGitHub {
+    owner = pname;
+    repo = pname;
+    rev = version;
+    sha256 = "0iky3yh548xn28285x8gnjzc00f3i2b415wb2dhd9p9y2bgzhkld";
   };
 
-  dontUnpack = true;
+  jar = fetchurl {
+    url = "https://github.com/clojure-lsp/clojure-lsp/releases/download/${version}/clojure-lsp.jar";
+    sha256 = "02k1k0slh1lm7k43d52jvgl0fdyp9gcr8csbr6yi71qbhy0axrmp";
+  };
 
-  installPhase = ''
-    install -Dm755 $src $out/bin/clojure-lsp
-    sed -i -e '1 s!java!${jre}/bin/java!' $out/bin/clojure-lsp
+  GRAALVM_HOME = graalvm11-ce;
+  CLOJURE_LSP_JAR = jar;
+  CLOJURE_LSP_XMX = "-J-Xmx4g";
+
+  buildInputs = [ graalvm11-ce clojure ];
+
+  buildPhase = with lib; ''
+    runHook preBuild
+
+    bash ./graalvm/native-unix-compile.sh
+
+    runHook postBuild
   '';
 
-  # verify shebang patch
-  installCheckPhase = "PATH= clojure-lsp --version";
+  installPhase = ''
+    runHook preInstall
 
-  meta = with stdenv.lib; {
+    install -Dm755 ./clojure-lsp $out/bin/clojure-lsp
+
+    runHook postInstall
+  '';
+
+  doCheck = true;
+  checkPhase = ''
+    runHook preCheck
+
+    export HOME="$(mktemp -d)"
+    ./clojure-lsp --version | fgrep -q '${version}'
+    ${babashka}/bin/bb integration-test/run-all.clj ./clojure-lsp
+
+    runHook postCheck
+  '';
+
+  meta = with lib; {
     description = "Language Server Protocol (LSP) for Clojure";
-    homepage = "https://github.com/snoe/clojure-lsp";
+    homepage = "https://github.com/clojure-lsp/clojure-lsp";
     license = licenses.mit;
-    maintainers = [ maintainers.ericdallo ];
-    platforms = jre.meta.platforms;
+    maintainers = with maintainers; [ ericdallo babariviere ];
+    platforms = graalvm11-ce.meta.platforms;
   };
-
 }

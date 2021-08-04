@@ -3,15 +3,15 @@
 , importlib-metadata
 , pexpect
 , prettytable
-, requests_toolbelt
+, requests-toolbelt
 }:
 buildPythonPackage rec {
   pname = "argcomplete";
-  version = "1.12.0";
+  version = "1.12.3";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0p19rkvh28klkkd1c6y78h6vb9b9cnlyr7qrshkxghfjkz85xgig";
+    sha256 = "2c7dbffd8c045ea534921e63b0be6fe65e88599990d8dc408ac8c542b72a5445";
   };
 
   doCheck = false; # meant to be ran with interactive interpreter
@@ -24,7 +24,7 @@ buildPythonPackage rec {
     importlib-metadata
     pexpect
     prettytable
-    requests_toolbelt
+    requests-toolbelt
   ];
 
   pythonImportsCheck = [ "argcomplete" ];

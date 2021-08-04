@@ -1,35 +1,32 @@
-{ stdenv
+{ lib, stdenv
 , buildPythonPackage
 , fetchPypi
-, isPy3k
-, isPy38
+, isPy27
 # python dependencies
 , click
-, configparser ? null
-, dateutil
+, python-dateutil
 , etelemetry
 , filelock
 , funcsigs
 , future
-, futures
 , mock
 , networkx
 , nibabel
 , numpy
 , packaging
-, pathlib2
 , prov
 , psutil
 , pybids
 , pydot
 , pytest
-, pytest_xdist
+, pytest-xdist
 , pytest-forked
+, rdflib
 , scipy
 , simplejson
 , traits
 , xvfbwrapper
-, pytestcov
+, pytest-cov
 , codecov
 , sphinx
 # other dependencies
@@ -37,9 +34,11 @@
 , bash
 , glibcLocales
 , callPackage
+# causes Python packaging conflict with any package requiring rdflib,
+# so use the unpatched rdflib by default (disables Nipype provenance tracking);
+# see https://github.com/nipy/nipype/issues/2888:
+, useNeurdflib ? false
 }:
-
-assert !isPy3k -> configparser != null;
 
 let
 
@@ -50,11 +49,12 @@ in
 
 buildPythonPackage rec {
   pname = "nipype";
-  version = "1.5.0";
+  version = "1.6.1";
+  disabled = isPy27;
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "8c837eafdaa68e85d911aca20c8a2cd9210e4fffabbcbc5bd2eb6e26f8553da9";
+    sha256 = "8428cfc633d8e3b8c5650e241e9eedcf637b7969bcd40f3423334d4c6b0992b5";
   };
 
   postPatch = ''
@@ -68,13 +68,12 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [
     click
-    dateutil
+    python-dateutil
     etelemetry
     filelock
     funcsigs
     future
     networkx
-    neurdflib
     nibabel
     numpy
     packaging
@@ -85,11 +84,7 @@ buildPythonPackage rec {
     simplejson
     traits
     xvfbwrapper
-  ] ++ stdenv.lib.optionals (!isPy3k) [
-    configparser
-    futures
-    pathlib2 # darwin doesn't receive this transitively, but it is in install_requires
-  ];
+  ] ++ [ (if useNeurdflib then neurdflib else rdflib) ];
 
   checkInputs = [
     pybids
@@ -98,8 +93,8 @@ buildPythonPackage rec {
     mock
     pytest
     pytest-forked
-    pytest_xdist
-    pytestcov
+    pytest-xdist
+    pytest-cov
     which
   ];
 
@@ -111,7 +106,7 @@ buildPythonPackage rec {
   '';
   pythonImportsCheck = [ "nipype" ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://nipy.org/nipype/";
     description = "Neuroimaging in Python: Pipelines and Interfaces";
     license = licenses.bsd3;

@@ -1,16 +1,17 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , nix-update-script
 , pantheon
 , meson
 , ninja
-, pkgconfig
+, pkg-config
 , vala
 , desktop-file-utils
 , gtk3
 , libaccounts-glib
 , libexif
 , libgee
+, libhandy
 , geocode-glib
 , gexiv2
 , libgphoto2
@@ -34,7 +35,7 @@
 
 stdenv.mkDerivation rec {
   pname = "elementary-photos";
-  version = "2.7.0";
+  version = "2.7.1";
 
   repoName = "photos";
 
@@ -42,7 +43,7 @@ stdenv.mkDerivation rec {
     owner = "elementary";
     repo = repoName;
     rev = version;
-    sha256 = "09jjic165rmprc2cszsgj2m3j3f5p8v9pxx5mj66a0gj3ar3hfbd";
+    sha256 = "1dql14k43rv3in451amiwv4z71hz3ailx67hd8gw1ka3yw12128p";
   };
 
   passthru = {
@@ -56,7 +57,7 @@ stdenv.mkDerivation rec {
     desktop-file-utils
     meson
     ninja
-    pkgconfig
+    pkg-config
     python3
     vala
     wrapGAppsHook
@@ -79,6 +80,7 @@ stdenv.mkDerivation rec {
     libgee
     libgphoto2
     libgudev
+    libhandy
     libraw
     librest
     libsoup
@@ -98,7 +100,7 @@ stdenv.mkDerivation rec {
     patchShebangs meson/post_install.py
   '';
 
-  meta =  with stdenv.lib; {
+  meta =  with lib; {
     description = "Photo viewer and organizer designed for elementary OS";
     homepage = "https://github.com/elementary/photos";
     license = licenses.lgpl21Plus;

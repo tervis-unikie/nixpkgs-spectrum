@@ -1,15 +1,15 @@
-{ stdenv, fetchurl, dpkg, makeWrapper, coreutils, gawk, gnugrep, gnused, jre }:
+{ lib, stdenv, fetchurl, dpkg, makeWrapper, coreutils, gawk, gnugrep, gnused, jre }:
 
-with stdenv.lib;
+with lib;
 
 stdenv.mkDerivation rec {
   pname = "marvin";
-  version = "20.16.0";
+  version = "21.9.0";
 
   src = fetchurl {
     name = "marvin-${version}.deb";
     url = "http://dl.chemaxon.com/marvin/${version}/marvin_linux_${versions.majorMinor version}.deb";
-    sha256 = "0wfg5zd8dvjy6x6al58jd5d53gar3ds326q3b6771h5p5jzv0x2g";
+    sha256 = "sha256-T94SoHAZmBfbGaFiuYAKhuKgHaXcDZix//YTTq1oFIk=";
   };
 
   nativeBuildInputs = [ dpkg makeWrapper ];

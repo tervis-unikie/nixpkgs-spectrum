@@ -1,8 +1,8 @@
-{ stdenv
+{ lib
 , buildPythonPackage
 , fetchPypi
 , requests
-, pytest, pytestrunner, responses
+, pytest, pytest-runner, responses
 }:
 
 buildPythonPackage rec {
@@ -14,11 +14,11 @@ buildPythonPackage rec {
     sha256 = "1mgjd0ymf9mvqjkvgx3xjhxap7rzdmpa21wfy0cxbw2xcswcrqyw";
   };
 
-  checkInputs = [ pytest pytestrunner responses ];
+  checkInputs = [ pytest pytest-runner responses ];
 
   propagatedBuildInputs = [ requests ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Matrix Client-Server SDK";
     homepage = "https://github.com/matrix-org/matrix-python-sdk";
     license = licenses.asl20;

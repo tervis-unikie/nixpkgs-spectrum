@@ -11,18 +11,20 @@
 , bokeh
 , scipy
 , panel
+, colorcet
 }:
 
 buildPythonPackage rec {
   pname = "holoviews";
-  version = "1.13.3";
+  version = "1.14.4";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "e6753651a8598f21fc2c20e8456865ecec276cfea1519182a76d957506727934";
+    sha256 = "08e8be82c2e514e1700a75f02307f414179dc0ecfa2202702dd304a381909eaa";
   };
 
   propagatedBuildInputs = [
+    colorcet
     param
     numpy
     pyviz-comms

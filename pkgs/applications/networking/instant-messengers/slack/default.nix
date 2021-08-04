@@ -1,10 +1,11 @@
-{ stdenv
+{ lib
+, stdenv
 , fetchurl
 , dpkg
 , undmg
 , makeWrapper
 , nodePackages
-, alsaLib
+, alsa-lib
 , at-spi2-atk
 , at-spi2-core
 , atk
@@ -19,18 +20,21 @@
 , glib
 , gnome2
 , gtk3
+, libGL
 , libappindicator-gtk3
 , libdrm
 , libnotify
 , libpulseaudio
 , libuuid
 , libxcb
+, libxkbcommon
+, libxshmfence
 , mesa
 , nspr
 , nss
 , pango
 , systemd
-, xdg_utils
+, xdg-utils
 , xorg
 }:
 
@@ -39,37 +43,56 @@ let
   throwSystem = throw "Unsupported system: ${system}";
 
   pname = "slack";
+
+  x86_64-darwin-version = "4.17.0";
+  x86_64-darwin-sha256 = "0r5cafxw73qnn14ljprn7w8bfn67zbkcniq60k9pf2zbqgb4cyj9";
+
+  x86_64-linux-version = "4.17.0";
+  x86_64-linux-sha256 = "07ccms58pq27ilkyhcf6cgwb7qrddwil5kgy8yv95ljikqzi5rxi";
+
+  aarch64-darwin-version = "4.17.0";
+  aarch64-darwin-sha256 = "1a5crmnbz8ng3z2pk5zw17dds9d5fyir4rkvv611fn858kq5fv46";
+
   version = {
-    x86_64-darwin = "4.8.0";
-    x86_64-linux = "4.8.0";
+    x86_64-darwin = x86_64-darwin-version;
+    aarch64-darwin = aarch64-darwin-version;
+    x86_64-linux = x86_64-linux-version;
   }.${system} or throwSystem;
 
-  src = let
-    base = "https://downloads.slack-edge.com";
-  in {
-    x86_64-darwin = fetchurl {
-      url = "${base}/releases/macos/${version}/prod/x64/Slack-${version}-macOS.dmg";
-      sha256 = "0k22w3c3brbc7ivmc5npqy8h7zxfgnbs7bqwii03psymm6sw53j2";
-    };
-    x86_64-linux = fetchurl {
-      url = "${base}/linux_releases/slack-desktop-${version}-amd64.deb";
-      sha256 = "0q8qpz5nwhps7y5gq1bl8hjw7vsk789srrv39hzc7jrl8f1bxzk0";
-    };
-  }.${system} or throwSystem;
+  src =
+    let
+      base = "https://downloads.slack-edge.com";
+    in
+      {
+        x86_64-darwin = fetchurl {
+          url = "${base}/releases/macos/${version}/prod/x64/Slack-${version}-macOS.dmg";
+          sha256 = x86_64-darwin-sha256;
+        };
+        aarch64-darwin = fetchurl {
+          url = "${base}/releases/macos/${version}/prod/arm64/Slack-${version}-macOS.dmg";
+          sha256 = aarch64-darwin-sha256;
+        };
+        x86_64-linux = fetchurl {
+          url = "${base}/linux_releases/slack-desktop-${version}-amd64.deb";
+          sha256 = x86_64-linux-sha256;
+        };
+      }.${system} or throwSystem;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Desktop client for Slack";
     homepage = "https://slack.com";
     license = licenses.unfree;
     maintainers = with maintainers; [ mmahut ];
-    platforms = [ "x86_64-darwin" "x86_64-linux" ];
+    platforms = [ "x86_64-darwin" "x86_64-linux" "aarch64-darwin"];
   };
 
   linux = stdenv.mkDerivation rec {
     inherit pname version src meta;
 
-    rpath = stdenv.lib.makeLibraryPath [
-      alsaLib
+    passthru.updateScript = ./update.sh;
+
+    rpath = lib.makeLibraryPath [
+      alsa-lib
       at-spi2-atk
       at-spi2-core
       atk
@@ -84,12 +107,14 @@ let
       glib
       gnome2.GConf
       gtk3
+      libGL
       libappindicator-gtk3
       libdrm
       libnotify
       libpulseaudio
       libuuid
       libxcb
+      libxkbcommon
       mesa
       nspr
       nss
@@ -108,10 +133,11 @@ let
       xorg.libXrender
       xorg.libXtst
       xorg.libxkbfile
+      xorg.libxshmfence
     ] + ":${stdenv.cc.cc.lib}/lib64";
 
     buildInputs = [
-      gtk3  # needed for GSETTINGS_SCHEMAS_PATH
+      gtk3 # needed for GSETTINGS_SCHEMAS_PATH
     ];
 
     nativeBuildInputs = [ dpkg makeWrapper nodePackages.asar ];
@@ -140,7 +166,7 @@ let
       rm $out/bin/slack
       makeWrapper $out/lib/slack/slack $out/bin/slack \
         --prefix XDG_DATA_DIRS : $GSETTINGS_SCHEMAS_PATH \
-        --prefix PATH : ${xdg_utils}/bin
+        --prefix PATH : ${lib.makeBinPath [xdg-utils]}
 
       # Fix the desktop link
       substituteInPlace $out/share/applications/slack.desktop \
@@ -152,6 +178,8 @@ let
   darwin = stdenv.mkDerivation {
     inherit pname version src meta;
 
+    passthru.updateScript = ./update.sh;
+
     nativeBuildInputs = [ undmg ];
 
     sourceRoot = "Slack.app";
@@ -162,6 +190,7 @@ let
       /usr/bin/defaults write com.tinyspeck.slackmacgap SlackNoAutoUpdates -bool YES
     '';
   };
-in if stdenv.isDarwin
-  then darwin
-  else linux
+in
+if stdenv.isDarwin
+then darwin
+else linux

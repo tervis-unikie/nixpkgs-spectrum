@@ -1,13 +1,15 @@
-{ stdenv, fetchurl, perl, icu, zlib, gmp, lib, nqp }:
+{ stdenv, fetchurl, perl, icu, zlib, gmp, lib, nqp, removeReferencesTo }:
 
 stdenv.mkDerivation rec {
   pname = "rakudo";
-  version = "2020.08.1";
+  version = "2021.07";
 
   src = fetchurl {
-    url    = "https://www.rakudo.org/dl/rakudo/rakudo-${version}.tar.gz";
-    sha256 = "1jwlqppm2g6ivzpipkcyihsxzsii3qyx1f35n7wj5dsf99b3hkfm";
+    url    = "https://rakudo.org/dl/rakudo/rakudo-${version}.tar.gz";
+    sha256 = "0lmbgw24f8277b9kj725v3grwh1524p4iy5jbqajxwxjr16zx2hp";
   };
+
+  nativeBuildInputs = [ removeReferencesTo ];
 
   buildInputs = [ icu zlib gmp perl ];
   configureScript = "perl ./Configure.pl";
@@ -16,12 +18,14 @@ stdenv.mkDerivation rec {
     "--with-nqp=${nqp}/bin/nqp"
   ];
 
-  # Some tests fail on Darwin
-  doCheck = !stdenv.isDarwin;
+  disallowedReferences = [ stdenv.cc.cc ];
+  postFixup = ''
+    remove-references-to -t ${stdenv.cc.cc} "$(readlink -f $out/share/perl6/runtime/dynext/libperl6_ops_moar.so)"
+  '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Raku implementation on top of Moar virtual machine";
-    homepage    = "https://www.rakudo.org";
+    homepage    = "https://rakudo.org";
     license     = licenses.artistic2;
     platforms   = platforms.unix;
     maintainers = with maintainers; [ thoughtpolice vrthra sgo ];

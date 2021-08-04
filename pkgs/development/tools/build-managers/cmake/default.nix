@@ -1,30 +1,27 @@
-{ stdenv, lib, fetchurl, pkgconfig, fetchpatch
-, bzip2, curl, expat, libarchive, xz, zlib, libuv, rhash
+{ stdenv, lib, fetchurl, pkg-config
+, bzip2, curlMinimal, expat, libarchive, xz, zlib, libuv, rhash
 , buildPackages
 # darwin attributes
 , ps
 , isBootstrap ? false
 , useSharedLibraries ? (!isBootstrap && !stdenv.isCygwin)
+, useOpenSSL ? !isBootstrap, openssl
 , useNcurses ? false, ncurses
-, useQt4 ? false, qt4
-, withQt5 ? false, qtbase
+, withQt5 ? false, qtbase, wrapQtAppsHook
+, buildDocs ? (!isBootstrap && (useNcurses || withQt5)), sphinx, texinfo
 }:
-
-assert withQt5 -> useQt4 == false;
-assert useQt4 -> withQt5 == false;
 
 stdenv.mkDerivation rec {
   pname = "cmake"
           + lib.optionalString isBootstrap "-boot"
           + lib.optionalString useNcurses "-cursesUI"
-          + lib.optionalString withQt5 "-qt5UI"
-          + lib.optionalString useQt4 "-qt4UI";
-  version = "3.18.1";
+          + lib.optionalString withQt5 "-qt5UI";
+  version = "3.19.7";
 
   src = fetchurl {
-    url = "${meta.homepage}files/v${lib.versions.majorMinor version}/cmake-${version}.tar.gz";
+    url = "https://cmake.org/files/v${lib.versions.majorMinor version}/cmake-${version}.tar.gz";
     # compare with https://cmake.org/files/v${lib.versions.majorMinor version}/cmake-${version}-SHA-256.txt
-    sha256 = "0215srmc9l7ygwdpfms8yx0wbd96qgz2d58ykmdiarvysf5k7qy0";
+    sha256 = "sha256-WKFfDVagr8zDzFNxI0/Oc/zGyPnb13XYmOUQuDF1WI4=";
   };
 
   patches = [
@@ -37,27 +34,25 @@ stdenv.mkDerivation rec {
     # Derived from https://github.com/libuv/libuv/commit/1a5d4f08238dd532c3718e210078de1186a5920d
     ./libuv-application-services.patch
 
-    # TODO: Remove this patch for a regression once CMake 3.18.2 is out:
-    (fetchpatch { # PCH: Avoid Apple-specific architecture flags on other platforms
-      url = "https://gitlab.kitware.com/cmake/cmake/-/commit/70ce1ad64a04a244bb1c03753da0752c61fc3a37.patch";
-      sha256 = "0jcdgv48j0dd4nlhyy3j0s3h6bcbrq2yg1mdhpgfqrb2y3p91fky";
-    })
-
   ] ++ lib.optional stdenv.isCygwin ./3.2.2-cygwin.patch;
 
-  outputs = [ "out" ];
+  outputs = [ "out" ]
+    ++ lib.optionals buildDocs [ "man" "info" ];
   setOutputFlags = false;
 
   setupHook = ./setup-hook.sh;
 
-  buildInputs =
-    [ setupHook pkgconfig ]
-    ++ lib.optionals useSharedLibraries [ bzip2 curl expat libarchive xz zlib libuv rhash ]
-    ++ lib.optional useNcurses ncurses
-    ++ lib.optional useQt4 qt4
-    ++ lib.optional withQt5 qtbase;
-
   depsBuildBuild = [ buildPackages.stdenv.cc ];
+
+  nativeBuildInputs = [ setupHook pkg-config ]
+    ++ lib.optionals buildDocs [ texinfo ]
+    ++ lib.optionals withQt5 [ wrapQtAppsHook ];
+
+  buildInputs = []
+    ++ lib.optionals useSharedLibraries [ bzip2 curlMinimal expat libarchive xz zlib libuv rhash ]
+    ++ lib.optional useOpenSSL openssl
+    ++ lib.optional useNcurses ncurses
+    ++ lib.optional withQt5 qtbase;
 
   propagatedBuildInputs = lib.optional stdenv.isDarwin ps;
 
@@ -67,8 +62,6 @@ stdenv.mkDerivation rec {
       --subst-var-by libc_bin ${lib.getBin stdenv.cc.libc} \
       --subst-var-by libc_dev ${lib.getDev stdenv.cc.libc} \
       --subst-var-by libc_lib ${lib.getLib stdenv.cc.libc}
-    substituteInPlace Modules/FindCxxTest.cmake \
-      --replace "$""{PYTHON_EXECUTABLE}" ${stdenv.shell}
   ''
   # CC_FOR_BUILD and CXX_FOR_BUILD are used to bootstrap cmake
   + ''
@@ -78,7 +71,12 @@ stdenv.mkDerivation rec {
   configureFlags = [
     "--docdir=share/doc/${pname}${version}"
   ] ++ (if useSharedLibraries then [ "--no-system-jsoncpp" "--system-libs" ] else [ "--no-system-libs" ]) # FIXME: cleanup
-    ++ lib.optional (useQt4 || withQt5) "--qt-gui"
+    ++ lib.optional withQt5 "--qt-gui"
+    ++ lib.optionals buildDocs [
+      "--sphinx-build=${sphinx}/bin/sphinx-build"
+      "--sphinx-man"
+      "--sphinx-info"
+    ]
     # Workaround https://gitlab.kitware.com/cmake/cmake/-/issues/20568
     ++ lib.optionals stdenv.hostPlatform.is32bit [
       "CFLAGS=-D_FILE_OFFSET_BITS=64"
@@ -97,13 +95,15 @@ stdenv.mkDerivation rec {
     "-DCMAKE_AR=${lib.getBin stdenv.cc.bintools.bintools}/bin/${stdenv.cc.targetPrefix}ar"
     "-DCMAKE_RANLIB=${lib.getBin stdenv.cc.bintools.bintools}/bin/${stdenv.cc.targetPrefix}ranlib"
     "-DCMAKE_STRIP=${lib.getBin stdenv.cc.bintools.bintools}/bin/${stdenv.cc.targetPrefix}strip"
-  ]
+
+    "-DCMAKE_USE_OPENSSL=${if useOpenSSL then "ON" else "OFF"}"
     # Avoid depending on frameworks.
-    ++ lib.optional (!useNcurses) "-DBUILD_CursesDialog=OFF";
+    "-DBUILD_CursesDialog=${if useNcurses then "ON" else "OFF"}"
+  ];
 
   # make install attempts to use the just-built cmake
   preInstall = lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) ''
-    sed -i 's|bin/cmake|${buildPackages.cmake}/bin/cmake|g' Makefile
+    sed -i 's|bin/cmake|${buildPackages.cmakeMinimal}/bin/cmake|g' Makefile
   '';
 
   dontUseCmakeConfigure = true;
@@ -116,9 +116,18 @@ stdenv.mkDerivation rec {
   doCheck = false; # fails
 
   meta = with lib; {
-    homepage = "http://www.cmake.org/";
+    homepage = "https://cmake.org/";
+    changelog = "https://cmake.org/cmake/help/v${lib.versions.majorMinor version}/"
+      + "release/${lib.versions.majorMinor version}.html";
     description = "Cross-Platform Makefile Generator";
-    platforms = if useQt4 then qt4.meta.platforms else platforms.all;
+    longDescription = ''
+      CMake is an open-source, cross-platform family of tools designed to
+      build, test and package software. CMake is used to control the software
+      compilation process using simple platform and compiler independent
+      configuration files, and generate native makefiles and workspaces that
+      can be used in the compiler environment of your choice.
+    '';
+    platforms = platforms.all;
     maintainers = with maintainers; [ ttuegel lnl7 ];
     license = licenses.bsd3;
   };

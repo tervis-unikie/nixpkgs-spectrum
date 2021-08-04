@@ -2,13 +2,13 @@
 
 buildGoPackage rec {
   pname = "go-toml";
-  version = "1.8.0";
+  version = "1.9.3";
 
   src = fetchFromGitHub {
     owner = "pelletier";
     repo = pname;
     rev = "v${version}";
-    sha256 = "0fxmjm85c9h43lvqz71wr93fcc63bhj82nwby80222xx8ja63g7y";
+    sha256 = "sha256-Vu/PS01JeSeg1KHkpqL12rTjRJFoc9rla48H/ei2HDM=";
   };
 
   goPackagePath = "github.com/pelletier/go-toml";

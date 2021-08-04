@@ -7,8 +7,8 @@ common-mk {
   platformSubdir = "vm_tools/sommelier";
 
   platform2Patches = [
-    ./0003-sommelier-don-t-leak-source-absolute-paths.patch
-    ./0004-Revert-Revert-vm_tools-sommelier-Switch-to-the-stabl.patch
+    ./0005-sommelier-don-t-leak-source-absolute-paths.patch
+    ./0006-Revert-Revert-vm_tools-sommelier-Switch-to-the-stabl.patch
   ];
 
   buildInputs = [

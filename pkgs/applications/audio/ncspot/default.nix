@@ -1,5 +1,5 @@
-{ lib, fetchFromGitHub, rustPlatform, pkg-config, ncurses, openssl
-, withALSA ? true, alsaLib ? null
+{ stdenv, lib, fetchFromGitHub, rustPlatform, pkg-config, ncurses, openssl, libiconv
+, withALSA ? true, alsa-lib ? null
 , withPulseAudio ? false, libpulseaudio ? null
 , withPortAudio ? false, portaudio ? null
 , withMPRIS ? false, dbus ? null
@@ -14,23 +14,24 @@ let
 in
 rustPlatform.buildRustPackage rec {
   pname = "ncspot";
-  version = "0.2.1";
+  version = "0.7.3";
 
   src = fetchFromGitHub {
     owner = "hrkfdn";
     repo = "ncspot";
     rev = "v${version}";
-    sha256 = "1yx0fc24bgh1x6fdwznc1hqvjq0j7i0zvws3bsyijzs7q48jm0z7";
+    sha256 = "0lfly3d8pag78pabmna4i6xjwzi65dx1mwfmsk7nx64brq3iypbq";
   };
 
-  cargoSha256 = "0bh2shg80xbs2cw10dabrdxkvhf2csk5h9wmmk5z87q6w25paz1f";
+  cargoSha256 = "0a6d41ll90fza6k3lixjqzwxim98q6zbkqa3zvxvs7q5ydzg8nsp";
 
   cargoBuildFlags = [ "--no-default-features" "--features" "${lib.concatStringsSep "," features}" ];
 
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [ ncurses openssl ]
-    ++ lib.optional withALSA alsaLib
+    ++ lib.optional stdenv.isDarwin libiconv
+    ++ lib.optional withALSA alsa-lib
     ++ lib.optional withPulseAudio libpulseaudio
     ++ lib.optional withPortAudio portaudio
     ++ lib.optional withMPRIS dbus;

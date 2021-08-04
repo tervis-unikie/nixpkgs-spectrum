@@ -1,6 +1,8 @@
-{ stdenv
+{ lib
 , buildPythonPackage
 , fetchPypi
+, pythonOlder
+, importlib-metadata
 , sphinx
 , pyenchant
 , pbr
@@ -8,22 +10,23 @@
 
 buildPythonPackage rec {
   pname = "sphinxcontrib-spelling";
-  version = "5.1.2";
+  version = "7.2.1";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "7f220647f1d9270bd90f0a42146b75a03c51a60184ced6584a9e5ef8f385b5a1";
+    sha256 = "f2578653014931b32c8c30d1a9930d998ae053b0d8b7adfbea0eb95a63e7a737";
   };
 
-  propagatedBuildInputs = [ sphinx pyenchant pbr ];
+  propagatedBuildInputs = [ sphinx pyenchant pbr ]
+    ++ lib.optionals (pythonOlder "3.8") [ importlib-metadata ];
 
   # No tests included
   doCheck = false;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Sphinx spelling extension";
     homepage = "https://bitbucket.org/dhellmann/sphinxcontrib-spelling";
-    maintainers = with maintainers; [ nand0p ];
+    maintainers = with maintainers; [ ];
     license = licenses.bsd2;
   };
 

@@ -7,11 +7,11 @@
 
 buildPythonApplication rec {
   pname = "sybil";
-  version = "1.3.1";
+  version = "2.0.1";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "54dfac7b3c043dbf484b832512ad2103089f347b5b12307c63ffb4c287742382";
+    sha256 = "597d71e246690b9223c132f0ed7dcac470dcbe9ad022004a801e108a00dc3524";
   };
 
   checkInputs = [ pytest nose ];

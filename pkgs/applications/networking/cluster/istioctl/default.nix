@@ -1,26 +1,20 @@
-{ lib, buildGoModule, fetchFromGitHub, go-bindata, installShellFiles }:
+{ lib, buildGoModule, fetchFromGitHub, installShellFiles }:
 
 buildGoModule rec {
   pname = "istioctl";
-  version = "1.6.7";
+  version = "1.10.3";
 
   src = fetchFromGitHub {
     owner = "istio";
     repo = "istio";
     rev = version;
-    sha256 = "0zqp78ilr39j4pyqyk8a0rc0dlmkgzdd2ksfjd7vyjns5mrrjfj7";
+    sha256 = "sha256-MHERRJ9t7EG4sd4gevUnZLA25UnRqZprCXFWkp5roms=";
   };
-  vendorSha256 = "0cc0lmjsxrn3f78k95wklf3yn5k7h8slwnwmssy1i1h0bkcg1bai";
+  vendorSha256 = "sha256-lzRIXZXrNQOwgl774B9r6OW/O8QwykSk3Mv5oGmvDuY=";
 
   doCheck = false;
 
-  nativeBuildInputs = [ go-bindata installShellFiles ];
-
-  # Bundle charts
-  preBuild = ''
-    patchShebangs operator/scripts
-    operator/scripts/create_assets_gen.sh
-  '';
+  nativeBuildInputs = [ installShellFiles ];
 
   # Bundle release metadata
   buildFlagsArray = let

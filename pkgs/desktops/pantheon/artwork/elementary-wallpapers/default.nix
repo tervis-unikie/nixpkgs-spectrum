@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , nix-update-script
 , pantheon
@@ -17,7 +17,7 @@ stdenv.mkDerivation rec {
     owner = "elementary";
     repo = repoName;
     rev = version;
-    sha256 = "0c63nds2ylqgcp39s13mfwhipgyw8cirn0bhybp291l5g86ii6s3";
+    sha256 = "sha256-Q5sYDXqFhiTu8nABmyND3L8bIXd1BJ3GZQ9TL3SzwzA=";
   };
 
   nativeBuildInputs = [
@@ -32,7 +32,7 @@ stdenv.mkDerivation rec {
     };
   };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Collection of wallpapers for elementary";
     homepage = "https://github.com/elementary/wallpapers";
     license = licenses.publicDomain;

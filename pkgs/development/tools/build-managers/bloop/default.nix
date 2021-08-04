@@ -10,11 +10,11 @@
 
 stdenv.mkDerivation rec {
   pname = "bloop";
-  version = "1.4.3";
+  version = "1.4.8";
 
   bloop-coursier-channel = fetchurl {
     url = "https://github.com/scalacenter/bloop/releases/download/v${version}/bloop-coursier.json";
-    sha256 = "0abl91l2sb08pwr98mw910zibzwk6lss9r62h2s3g7qnnxp3z59r";
+    sha256 = "1hfd5gc98bp4p4m85jva2mlkh10q10n9s5136z8620mmjq93rx70";
   };
 
   bloop-bash = fetchurl {
@@ -54,9 +54,9 @@ stdenv.mkDerivation rec {
 
     outputHashMode = "recursive";
     outputHashAlgo = "sha256";
-    outputHash     = if stdenv.isLinux && stdenv.isx86_64 then "1ncl34f39mvk0zb5jl1l77cwjdg3xfnhjxbzz11pdfqw0d7wqywj"
-                     else if stdenv.isDarwin && stdenv.isx86_64 then "06c885w088yvh8l1r1jbrz0549gx2xvc8xr6rlxy6y27jk5655p2"
-                     else throw "unsupported platform";
+    outputHash = if stdenv.isLinux && stdenv.isx86_64 then "1cs3ng6bj9s7xf6c4xaiqgg5qr34abnipfgc44sy2ljklr7x0jwa"
+      else if stdenv.isDarwin && stdenv.isx86_64 then "0l9vqvzcmxya1s04cps96skw4dslh3i3ks73dl53ing50zb0ga9r"
+      else throw "unsupported platform";
   };
 
   dontUnpack = true;
@@ -82,10 +82,10 @@ stdenv.mkDerivation rec {
     installShellCompletion --name bloop.fish --fish ${bloop-fish}
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://scalacenter.github.io/bloop/";
     license = licenses.asl20;
-    description = "Bloop is a Scala build server and command-line tool to make the compile and test developer workflows fast and productive in a build-tool-agnostic way.";
+    description = "A Scala build server and command-line tool to make the compile and test developer workflows fast and productive in a build-tool-agnostic way";
     platforms = [ "x86_64-linux" "x86_64-darwin" ];
     maintainers = with maintainers; [ tomahna ];
   };

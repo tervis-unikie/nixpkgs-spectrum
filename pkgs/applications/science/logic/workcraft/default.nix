@@ -1,17 +1,17 @@
-{ stdenv, fetchurl, jre, makeWrapper }:
+{ lib, stdenv, fetchurl, jre, makeWrapper }:
 
 stdenv.mkDerivation rec {
   pname = "workcraft";
-  version = "3.3.0";
+  version = "3.3.2";
 
   src = fetchurl {
     url = "https://github.com/workcraft/workcraft/releases/download/v${version}/workcraft-v${version}-linux.tar.gz";
-    sha256 = "072i7kan2c9f4s9jxwqr4ccsi9979c12xhwr385sbq06rwyrna85";
+    sha256 = "0v71x3fph2j3xrnysvkm7zsgnbxisfbdfgxzvzxxfdg59a6l3xid";
   };
 
-  buildInputs = [ makeWrapper ];
+  nativeBuildInputs = [ makeWrapper ];
 
-  phases = [ "unpackPhase" "installPhase" "fixupPhase" ];
+  dontConfigure = true;
 
   installPhase = ''
   mkdir -p $out/share
@@ -25,9 +25,8 @@ stdenv.mkDerivation rec {
   meta = {
     homepage = "https://workcraft.org/";
     description = "Framework for interpreted graph modeling, verification and synthesis";
-    platforms = stdenv.lib.platforms.linux;
-    license = stdenv.lib.licenses.mit;
-    maintainers = with stdenv.lib.maintainers; [ timor ];
-    inherit version;
+    platforms = lib.platforms.linux;
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ timor ];
   };
 }

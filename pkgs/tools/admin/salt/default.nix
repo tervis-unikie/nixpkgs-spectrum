@@ -7,11 +7,11 @@
 }:
 python3.pkgs.buildPythonApplication rec {
   pname = "salt";
-  version = "3001.1";
+  version = "3003.1";
 
   src = python3.pkgs.fetchPypi {
     inherit pname version;
-    sha256 = "1g2sdcibir0zhldmngv1iyzlhh2adq9dqjc73grap3df5zcv9sz9";
+    sha256 = "inGE095NFydhjw0/u6eeVDia7/hbcvTOuCALzBZ/br4=";
   };
 
   propagatedBuildInputs = with python3.pkgs; [
@@ -23,7 +23,7 @@ python3.pkgs.buildPythonApplication rec {
     pyyaml
     pyzmq
     requests
-    tornado_4
+    tornado
   ] ++ extraInputs;
 
   patches = [ ./fix-libcrypto-loading.patch ];
@@ -31,6 +31,8 @@ python3.pkgs.buildPythonApplication rec {
   postPatch = ''
     substituteInPlace "salt/utils/rsax931.py" \
       --subst-var-by "libcrypto" "${openssl.out}/lib/libcrypto.so"
+    substituteInPlace requirements/base.txt \
+      --replace contextvars ""
   '';
 
   # The tests fail due to socket path length limits at the very least;
@@ -39,9 +41,10 @@ python3.pkgs.buildPythonApplication rec {
   doCheck = false;
 
   meta = with lib; {
-    homepage = "https://saltstack.com/";
+    homepage = "https://saltproject.io/";
+    changelog = "https://docs.saltproject.io/en/latest/topics/releases/${version}.html";
     description = "Portable, distributed, remote execution and configuration management system";
-    maintainers = with maintainers; [ aneeshusa ];
+    maintainers = with maintainers; [ Flakebi ];
     license = licenses.asl20;
   };
 }

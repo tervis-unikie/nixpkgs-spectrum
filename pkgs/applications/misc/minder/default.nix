@@ -1,5 +1,5 @@
-{ stdenv, fetchFromGitHub
-, pkgconfig, meson, ninja, python3
+{ lib, stdenv, fetchFromGitHub
+, pkg-config, meson, ninja, python3
 , wrapGAppsHook, vala, shared-mime-info
 , cairo, pantheon, glib, gtk3, libxml2, libgee, libarchive
 , discount, gtksourceview3
@@ -8,16 +8,16 @@
 
 stdenv.mkDerivation rec {
   pname = "minder";
-  version = "1.9.1";
+  version = "1.11.3";
 
   src = fetchFromGitHub {
     owner = "phase1geo";
     repo = pname;
     rev = version;
-    sha256 = "1823nl9hgsa9l04ra1drj3c7r8s5ybx6c06d9ijpwqz191sz2jg2";
+    sha256 = "137kyf82n5a2v0cm9q02rhv8rmbjgnj60h64prq90h0d42prj3gd";
   };
 
-  nativeBuildInputs = [ pkgconfig meson ninja python3 wrapGAppsHook vala shared-mime-info ];
+  nativeBuildInputs = [ pkg-config meson ninja python3 wrapGAppsHook vala shared-mime-info ];
   buildInputs = [ cairo pantheon.granite glib gtk3 libxml2 libgee libarchive hicolor-icon-theme discount gtksourceview3 ];
 
   postPatch = ''
@@ -31,7 +31,7 @@ stdenv.mkDerivation rec {
     done
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Mind-mapping application for Elementary OS";
     homepage = "https://github.com/phase1geo/Minder";
     license = licenses.gpl3Plus;

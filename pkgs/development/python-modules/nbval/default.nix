@@ -5,12 +5,13 @@
 , ipykernel
 , jupyter_client
 , nbformat
+, pytestCheckHook
 , pytest
 , six
 , glibcLocales
 , matplotlib
 , sympy
-, pytestcov
+, pytest-cov
 }:
 
 buildPythonPackage rec {
@@ -23,10 +24,10 @@ buildPythonPackage rec {
   };
 
   checkInputs = [
-    pytest
+    pytestCheckHook
     matplotlib
     sympy
-    pytestcov
+    pytest-cov
   ];
 
   buildInputs = [ glibcLocales ];
@@ -40,10 +41,15 @@ buildPythonPackage rec {
     six
   ];
 
-  # ignore impure tests
-  checkPhase = ''
-    pytest tests --ignore tests/test_timeouts.py
-  '';
+  pytestFlagsArray = [
+    "tests"
+    # These are the main tests but they're fragile so skip them. They error
+    # whenever matplotlib outputs any unexpected warnings, e.g. deprecation
+    # warnings.
+    "--ignore=tests/test_unit_tests_in_notebooks.py"
+    # Impure
+    "--ignore=tests/test_timeouts.py"
+  ];
 
   # Some of the tests use localhost networking.
   __darwinAllowLocalNetworking = true;

@@ -1,16 +1,15 @@
-{ stdenv, fetchFromGitHub, pcre-cpp, sqlite, ncurses
+{ lib, stdenv, fetchFromGitHub, pcre-cpp, sqlite, ncurses
 , readline, zlib, bzip2, autoconf, automake, curl }:
 
 stdenv.mkDerivation rec {
-
-  name = "lnav-${meta.version}";
+  pname = "lnav";
+  version = "0.9.0";
 
   src = fetchFromGitHub {
     owner = "tstack";
     repo = "lnav";
-    rev = "v${meta.version}";
-    sha256 = "0z8bsr0falxlkmd1b5gy871vyafyih0sw7lgg858lqnbsy0q2m4i";
-    inherit name;
+    rev = "v${version}";
+    sha256 = "1frdrr3yjlk2fns3ny0qbr30rpswhwlvv3kyhdl3l6a0q5cqaqsg";
   };
 
   buildInputs = [
@@ -25,11 +24,15 @@ stdenv.mkDerivation rec {
     curl
   ];
 
+  postPatch = ''
+    sed -ie '/DUMP_INTERNALS/d' src/Makefile.am
+  '';
+
   preConfigure = ''
     ./autogen.sh
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://github.com/tstack/lnav";
     description = "The Logfile Navigator";
     longDescription = ''
@@ -43,7 +46,6 @@ stdenv.mkDerivation rec {
     '';
     downloadPage = "https://github.com/tstack/lnav/releases";
     license = licenses.bsd2;
-    version = "0.8.5";
     maintainers = with maintainers; [ dochang ma27 ];
     platforms = platforms.unix;
   };

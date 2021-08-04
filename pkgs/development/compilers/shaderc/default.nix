@@ -1,4 +1,4 @@
-{ stdenv, fetchFromGitHub, cmake, python3 }:
+{ lib, stdenv, fetchFromGitHub, cmake, python3 }:
 # Like many google projects, shaderc doesn't gracefully support separately compiled dependencies, so we can't easily use
 # the versions of glslang and spirv-tools used by vulkan-loader. Exact revisions are taken from
 # https://github.com/google/shaderc/blob/known-good/known_good.json
@@ -8,24 +8,24 @@ let
   glslang = fetchFromGitHub {
     owner = "KhronosGroup";
     repo = "glslang";
-    rev = "3ed344dd784ecbbc5855e613786f3a1238823e56";
-    sha256 = "00s2arfvw78d9k9fmangqlkvkmkpqzrin3g91vfab4wr8srb09dx";
+    rev = "18eef33bd7a4bf5ad8c69f99cb72022608cf6e73";
+    sha256 = "sha256-tkWVvYmSpJPaZ8VJOkAWndDWhA0PiHAkR3feBAo+knM=";
   };
   spirv-tools = fetchFromGitHub {
     owner = "KhronosGroup";
     repo = "SPIRV-Tools";
-    rev = "323a81fc5e30e43a04e5e22af4cba98ca2a161e6";
-    sha256 = "1kwyh95l02w3v1ra55c836wayzw8d0m14ab7wf0ynhhyp3k2p9hv";
+    rev = "c2d5375fa7cc87c93f692e7200d5d974283d4391";
+    sha256 = "sha256-tMJRljrlH+qb+27rTn+3LuEyMOVpiU0zSCiGNfUTb6g=";
   };
   spirv-headers = fetchFromGitHub {
     owner = "KhronosGroup";
     repo = "SPIRV-Headers";
-    rev = "204cd131c42b90d129073719f2766293ce35c081";
-    sha256 = "1gp0mlbfccqnalaix97jxsa5i337xyzyr55wgssapy56p0q04wv2";
+    rev = "0c28b6451d77774912e52949c1e57fa726edf113";
+    sha256 = "sha256-KpCMceTV/BRaoJe1qeXhKYQNQqdGaM6Q9nklpJKzHFY=";
   };
 in stdenv.mkDerivation rec {
   pname = "shaderc";
-  version = "2019.1";
+  version = "2021.0";
 
   outputs = [ "out" "lib" "bin" "dev" "static" ];
 
@@ -33,7 +33,7 @@ in stdenv.mkDerivation rec {
     owner = "google";
     repo = "shaderc";
     rev = "v${version}";
-    sha256 = "0x514rpignnb4vvl7wmijfakqc59986knjw3dh1zx0ah42xa7x37";
+    sha256 = "sha256-RfSMzrGVtdXbr/mjSrHoN447e3vMQfJbesQMvLOARBs=";
   };
 
   patchPhase = ''
@@ -50,9 +50,9 @@ in stdenv.mkDerivation rec {
 
   cmakeFlags = [ "-DSHADERC_SKIP_TESTS=ON" ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     inherit (src.meta) homepage;
-    description = "A collection of tools, libraries and tests for shader compilation.";
+    description = "A collection of tools, libraries and tests for shader compilation";
     license = [ licenses.asl20 ];
   };
 }

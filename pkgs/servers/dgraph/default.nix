@@ -2,16 +2,16 @@
 
 buildGoModule rec {
   pname = "dgraph";
-  version = "20.03.4";
+  version = "20.07.3";
 
   src = fetchFromGitHub {
     owner = "dgraph-io";
     repo = "dgraph";
     rev = "v${version}";
-    sha256 = "1i098wimzwna62q4wp8ipx8qjrmhrdv48kklm1jdi2sfiz18c9sc";
+    sha256 = "sha256-yuKXcxewt64T0ToDPid37WUEhwLu+yt4tjhDQobj/Ls=";
   };
 
-  vendorSha256 = "0n442nsa2whwb22dl0cjxspl8dc00rqv29zivcw9liwdzara81bw";
+  vendorSha256 = "sha256-2Ub0qdEaVSHHE5K0bNSXJFukGeSSXNpIBoUldF8jGpI=";
 
   doCheck = false;
 

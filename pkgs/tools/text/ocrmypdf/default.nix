@@ -7,6 +7,7 @@
 , python3
 , python3Packages
 , qpdf
+, lib
 , stdenv
 , tesseract4
 , unpaper
@@ -29,21 +30,19 @@ let
 in
 buildPythonApplication rec {
   pname = "ocrmypdf";
-  version = "10.3.0";
-  disabled = ! python3Packages.isPy3k;
+  version = "12.3.0";
 
   src = fetchFromGitHub {
     owner = "jbarlow83";
     repo = "OCRmyPDF";
     rev = "v${version}";
-    sha256 = "0c6v7846lmkmbyfla07s35mpba4h09h0fx6pxqf0yvdjxmj46q8c";
+    sha256 = "122yv3p0v4fbx30zgppcznwnm7svg97gv0sa103xb6zcld68ggn2";
   };
 
   nativeBuildInputs = with python3Packages; [
-    pytestrunner
     setuptools
     setuptools-scm-git-archive
-    setuptools_scm
+    setuptools-scm
   ];
 
   propagatedBuildInputs = with python3Packages; [
@@ -64,9 +63,8 @@ buildPythonApplication rec {
     pypdf2
     pytest
     pytest-helpers-namespace
-    pytest_xdist
-    pytestcov
-    pytestrunner
+    pytest-xdist
+    pytest-cov
     python-xmp-toolkit
     pytestCheckHook
   ] ++ runtimeDeps;
@@ -74,19 +72,18 @@ buildPythonApplication rec {
   patches = [
     (substituteAll {
       src = ./liblept.patch;
-      liblept = "${stdenv.lib.getLib leptonica}/lib/liblept${stdenv.hostPlatform.extensions.sharedLibrary}";
+      liblept = "${lib.getLib leptonica}/lib/liblept${stdenv.hostPlatform.extensions.sharedLibrary}";
     })
-    # https://github.com/jbarlow83/OCRmyPDF/pull/596
-    ./0001-Make-compatible-with-pdfminer.six-version-20200720.patch
   ];
 
-  makeWrapperArgs = [ "--prefix PATH : ${stdenv.lib.makeBinPath [ ghostscript jbig2enc pngquant qpdf tesseract4 unpaper ]}" ];
+  makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ ghostscript jbig2enc pngquant qpdf tesseract4 unpaper ]}" ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://github.com/jbarlow83/OCRmyPDF";
     description = "Adds an OCR text layer to scanned PDF files, allowing them to be searched";
-    license = licenses.gpl3;
+    license = with licenses; [ mpl20 mit ];
     platforms = platforms.linux;
     maintainers = [ maintainers.kiwi ];
+    changelog  = "https://github.com/jbarlow83/OCRmyPDF/blob/v${version}/docs/release_notes.rst";
   };
 }

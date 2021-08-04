@@ -1,11 +1,12 @@
-{ stdenv
+{ lib
 , buildPythonApplication
 , fetchPypi
+, pythonOlder
 , mock
 , lxml
 , relatorio
 , genshi
-, dateutil
+, python-dateutil
 , polib
 , python-sql
 , werkzeug
@@ -20,14 +21,14 @@
 , withPostgresql ? true
 }:
 
-with stdenv.lib;
-
 buildPythonApplication rec {
   pname = "trytond";
-  version = "5.6.4";
+  version = "5.8.9";
+  disabled = pythonOlder "3.5";
+
   src = fetchPypi {
     inherit pname version;
-    sha256 = "d89da52a9a0a9bcbbc316fc72eea8810bac64307d22c90ab2d70a4b0cd9b1a9c";
+    sha256 = "5f14e9615ff91e18c146c74eb4c1cd56112662361a52c73389f15baced0bef18";
   };
 
   # Tells the tests which database to use
@@ -40,7 +41,7 @@ buildPythonApplication rec {
     lxml
     relatorio
     genshi
-    dateutil
+    python-dateutil
     polib
     python-sql
     werkzeug
@@ -53,14 +54,14 @@ buildPythonApplication rec {
     python-Levenshtein
     simplejson
     html2text
-  ] ++ stdenv.lib.optional withPostgresql psycopg2;
+  ] ++ lib.optional withPostgresql psycopg2;
 
   # If unset, trytond will try to mkdir /homeless-shelter
   preCheck = ''
     export HOME=$(mktemp -d)
   '';
 
-  meta = {
+  meta = with lib; {
     description = "The server of the Tryton application platform";
     longDescription = ''
       The server for Tryton, a three-tier high-level general purpose

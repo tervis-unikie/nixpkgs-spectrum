@@ -86,7 +86,8 @@ in
 
     ipv6 = mkOption {
       type = types.bool;
-      default = false;
+      default = config.networking.enableIPv6;
+      defaultText = "config.networking.enableIPv6";
       description = "Whether to use IPv6.";
     };
 
@@ -239,8 +240,8 @@ in
 
     system.nssModules = optional cfg.nssmdns pkgs.nssmdns;
     system.nssDatabases.hosts = optionals cfg.nssmdns (mkMerge [
-      [ "mdns_minimal [NOTFOUND=return]" ]
-      (mkOrder 1501 [ "mdns" ]) # 1501 to ensure it's after dns
+      (mkBefore [ "mdns_minimal [NOTFOUND=return]" ]) # before resolve
+      (mkAfter [ "mdns" ]) # after dns
     ]);
 
     environment.systemPackages = [ pkgs.avahi ];

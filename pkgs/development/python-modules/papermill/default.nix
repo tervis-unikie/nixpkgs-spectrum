@@ -14,22 +14,22 @@
 , requests
 , entrypoints
 , tenacity
-, futures
+, futures ? null
 , black
 , backports_tempfile
 , isPy27
 , pytest
-, pytestcov
+, pytest-cov
 , pytest-mock
 }:
 
 buildPythonPackage rec {
   pname = "papermill";
-  version = "2.1.2";
+  version = "2.3.3";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "aadc23f0ae2eaa75868e4359f1ea7d75ff46bc8cb1988651f3f3fd5d4ec44679";
+    sha256 = "349aecd526c15c39f73a08df836467e2fead877c474d82c7df349f27ad272525";
   };
 
   propagatedBuildInputs = [
@@ -54,7 +54,7 @@ buildPythonPackage rec {
 
   checkInputs = [
     pytest
-    pytestcov
+    pytest-cov
     pytest-mock
   ];
 

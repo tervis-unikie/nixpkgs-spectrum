@@ -1,11 +1,11 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , nix-update-script
 , fetchpatch
 , pantheon
 , meson
 , ninja
-, pkgconfig
+, pkg-config
 , vala
 , libgee
 , granite
@@ -21,7 +21,7 @@ stdenv.mkDerivation rec {
     owner = "elementary";
     repo = pname;
     rev = version;
-    sha256 = "1awkz16nydlgi8a2dd6agfnd3qwl2qsvv6wnn8bhaz1kbv1v9kpw";
+    sha256 = "sha256-/M60w14zfAUXspabvTUWlOPRrHvKtCYUio82b034k6s=";
   };
 
   passthru = {
@@ -33,7 +33,7 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     meson
     ninja
-    pkgconfig
+    pkg-config
     vala
   ];
 
@@ -44,7 +44,7 @@ stdenv.mkDerivation rec {
     switchboard
   ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Switchboard Sharing Plug";
     homepage = "https://github.com/elementary/switchboard-plug-sharing";
     license = licenses.gpl2Plus;

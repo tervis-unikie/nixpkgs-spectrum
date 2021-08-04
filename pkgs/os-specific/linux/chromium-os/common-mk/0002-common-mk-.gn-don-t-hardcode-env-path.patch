@@ -1,7 +1,7 @@
 From 7d33bcd724ec79d00281c2752f9642be25782370 Mon Sep 17 00:00:00 2001
 From: Alyssa Ross <hi@alyssa.is>
 Date: Sun, 24 Nov 2019 17:20:46 +0000
-Subject: [PATCH 2/4] common-mk: .gn: don't hardcode env path
+Subject: [PATCH 2/6] common-mk: .gn: don't hardcode env path
 
 This is needlessly non-portable.
 ---
@@ -19,5 +19,5 @@ index e7dba8c91c..e29fcd61ee 100644
 -script_executable = "/usr/bin/env"
 +script_executable = "env"
 -- 
-2.31.1
+2.32.0
 

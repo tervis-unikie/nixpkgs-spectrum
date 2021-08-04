@@ -4,22 +4,22 @@
 , termstyle
 , lxml
 , unidecode
-, mock
-, backports_shutil_get_terminal_size
 }:
 
 buildPythonPackage rec {
   pname = "green";
-  version = "3.1.4";
+  version = "3.2.6";
+
+  disabled = !isPy3k;
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "65f87e4c0d2aca63eb32b01c78233e6f920a58ebabc4f85dd9d8f1c6a92a5184";
+    sha256 = "e51d4ff6e6885942d944304fedc7440a8f87917aa09526beeecb31a0dae655b8";
   };
 
   propagatedBuildInputs = [
     colorama coverage termstyle unidecode lxml
-  ] ++ lib.optionals (!isPy3k) [ mock backports_shutil_get_terminal_size ];
+  ];
 
   # let green run it's own test suite
   checkPhase = ''

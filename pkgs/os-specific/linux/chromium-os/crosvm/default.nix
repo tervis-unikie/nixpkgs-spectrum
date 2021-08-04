@@ -1,6 +1,6 @@
 { stdenv, lib, rustPlatform, fetchFromGitiles, upstreamInfo
-, pkgconfig, minigbm, minijail, wayland, wayland-protocols, dtc, libusb1, libcap
-, linux
+, pkg-config, minigbm, minijail, wayland, wayland-protocols, dtc, libusb1
+, libcap, linux
 }:
 
 let
@@ -45,9 +45,9 @@ in
       ./VIRTIO_NET_F_MAC.patch
     ];
 
-    cargoSha256 = "1hw9r7vggvn8p0sy4k0i2ijpyk0yb11qww6s6d6wdfvrl1ksbapl";
+    cargoSha256 = "1yhxw19niqwipi1fbrskrpvhs915lrs8sdcpknmqd9izq67r3a06";
 
-    nativeBuildInputs = [ pkgconfig wayland ];
+    nativeBuildInputs = [ pkg-config wayland ];
 
     buildInputs = [ dtc libcap libusb1 minigbm minijail wayland wayland-protocols ];
 
@@ -67,7 +67,7 @@ in
 
     CROSVM_CARGO_TEST_KERNEL_BINARY =
       lib.optionalString (stdenv.buildPlatform == stdenv.hostPlatform)
-        "${linux}/${stdenv.hostPlatform.platform.kernelTarget}";
+        "${linux}/${stdenv.hostPlatform.linux-kernel.target}";
 
     passthru = {
       inherit srcs;

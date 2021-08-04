@@ -1,8 +1,8 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , nix-update-script
 , pantheon
-, pkgconfig
+, pkg-config
 , meson
 , ninja
 , vala
@@ -11,15 +11,17 @@
 , glib
 , granite
 , libgee
+, libhandy
 , elementary-icon-theme
 , elementary-gtk-theme
 , gettext
 , wrapGAppsHook
+, appstream
 }:
 
 stdenv.mkDerivation rec {
   pname = "elementary-feedback";
-  version = "1.0";
+  version = "6.0.0";
 
   repoName = "feedback";
 
@@ -27,7 +29,7 @@ stdenv.mkDerivation rec {
     owner = "elementary";
     repo = repoName;
     rev = version;
-    sha256 = "0rc4ifs4hd4cj0v028bzc45v64pwx21xylwrhb20jpw61ainfi8s";
+    sha256 = "1fh9a0nfvbrxamki9avm9by760csj2nqy4ya7wzbnqbrrvjwd3fv";
   };
 
   passthru = {
@@ -40,18 +42,20 @@ stdenv.mkDerivation rec {
     gettext
     meson
     ninja
-    pkgconfig
+    pkg-config
     python3
     vala
     wrapGAppsHook
   ];
 
   buildInputs = [
+    appstream
     elementary-icon-theme
     granite
     gtk3
     elementary-gtk-theme
     libgee
+    libhandy
     glib
   ];
 
@@ -60,7 +64,7 @@ stdenv.mkDerivation rec {
     patchShebangs meson/post_install.py
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "GitHub Issue Reporter designed for elementary OS";
     homepage = "https://github.com/elementary/feedback";
     license = licenses.gpl3Plus;
