@@ -54,12 +54,11 @@ runCommand "vm-net" rec {
 
               # Our IP is encoded in the NIC-specific portion of the
               # interface's MAC address.
-              backtick -i CLIENT_IP {
+              backtick -E CLIENT_IP {
                 pipeline { ip -j link show $INTERFACE }
                 pipeline { jq -r ".[0].address | split(\":\") | .[4:6] | \"0x\" + .[]" }
                 xargs printf "100.64.%d.%d"
               }
-              importas -iu CLIENT_IP CLIENT_IP
 
               if { ip address add 169.254.0.1/32 dev $INTERFACE }
               if { ip link set $INTERFACE up }
@@ -121,7 +120,7 @@ runCommand "vm-net" rec {
       '';
       run = writeScript "connman-run" ''
         #! ${execline}/bin/execlineb -S0
-        backtick -in HARDWARE_INTERFACES {
+        backtick -E HARDWARE_INTERFACES {
           pipeline {
             find -L /sys/class/net -mindepth 2 -maxdepth 2 -name address -print0
           }
@@ -132,7 +131,6 @@ runCommand "vm-net" rec {
           # Extract the interface names from the address file paths.
           awk -F/ "{if (NR > 1) printf \",\"; printf \"%s\", $5}"
         }
-        importas -iu HARDWARE_INTERFACES HARDWARE_INTERFACES
 
         ${connman}/bin/connmand -ni $HARDWARE_INTERFACES
       '';

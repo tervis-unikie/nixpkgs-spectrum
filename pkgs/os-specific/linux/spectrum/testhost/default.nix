@@ -52,17 +52,13 @@ let
           #       routers from clients.  Other bits are reserved.
           #  5-6  Last two octets of client's IP (in 100.64.0.0/16).
           #
-          backtick -i router_mac {
+          backtick -E router_mac {
             pipeline { printf %.4x ${toString sys-vms.app.vmID} }
             sed s/^\\(..\\)\\(..\\)$/0A:B3:EC:80:\\1:\\2/
           }
-          backtick -i client_mac {
+          backtick -E client_mac {
             pipeline { printf %.4x ${toString sys-vms.app.vmID} }
             sed s/^\\(..\\)\\(..\\)$/0A:B3:EC:00:\\1:\\2/
-          }
-          multisubstitute {
-            importas -iu router_mac router_mac
-            importas -iu client_mac client_mac
           }
 
           # Create the net VM end, and attach it to the net VM.
@@ -143,12 +139,11 @@ let
           # is allowed to fail because it might already know that, in
           # which case it'll return EEXIST.
           if { modprobe vfio-pci }
-          backtick -in device_id {
+          backtick -E device_id {
             if { dd bs=2 skip=1 count=2 status=none if=''${PCI_PATH}/vendor }
             if { printf " " }
             dd bs=2 skip=1 count=2 status=none if=''${PCI_PATH}/device
           }
-          importas -iu device_id device_id
           foreground {
             redirfd -w 1 /sys/bus/pci/drivers/vfio-pci/new_id
             printf "%s" $device_id
@@ -205,8 +200,7 @@ writeScriptBin "spectrum-testhost" ''
   if { redirfd -w 1 /proc/sys/net/ipv4/ip_forward echo 1 }
 
   importas -iu runtime_dir XDG_RUNTIME_DIR
-  backtick -in TOP { mktemp -dp $runtime_dir spectrum.XXXXXXXXXX }
-  importas -iu top TOP
+  backtick -E top { mktemp -dp $runtime_dir spectrum.XXXXXXXXXX }
   if { echo $top }
   if { rsync -r --chmod=Du+w ${servicesDir}/ ''${top}/service }
   background {

@@ -26,12 +26,11 @@ runCommand "vm-app" rec {
         oneshot
       '';
       up = writeText "net-up" ''
-        backtick -i LOCAL_IP {
+        backtick -E LOCAL_IP {
           pipeline { ip -j link show eth0 }
           pipeline { jq -r ".[0].address | split(\":\") | .[4:6] | \"0x\" + .[]" }
           xargs printf "100.64.%d.%d"
         }
-        importas -iu LOCAL_IP LOCAL_IP
 
         if { ip address add ''${LOCAL_IP}/32 dev eth0 }
         if { ip link set eth0 up }
