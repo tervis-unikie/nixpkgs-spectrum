@@ -15,7 +15,7 @@ libqmi.overrideAttrs (
 
     # ModemManager tests fail with QRTR in Chromium OS 91.
     # Will hopefully be fixed in CrOS 92.
-    configureFlags = configureFlags ++ [ "--enable-gtk-doc" "--disable-qrtr" ];
+    configureFlags = configureFlags ++ [ "--disable-qrtr" ];
 
     passthru = passthru // {
       updateScript = ../update.py;
