@@ -1,14 +1,14 @@
-{ lib, buildGoModule, fetchFromGitHub }:
+{ lib, buildGoModule, fetchFromGitHub, fetchpatch }:
 
 buildGoModule rec {
-  pname = "tar2ext4";
-  version = "0.8.22";
+  pname = "tar2ext4-unstable";
+  version = "2021-10-20";
 
   src = fetchFromGitHub {
     owner = "microsoft";
     repo = "hcsshim";
-    rev = "v${version}";
-    sha256 = "sha256-z8w/xzNEebnQJTO4H5PlU5W+69MY1wQwmuz5inXBl1k=";
+    rev = "60b5fa7eea6f95295888d71b0621eb1c1291fb67";
+    sha256 = "0g5bj99786pwms7zklh3i8hvxg3dqsb5nrbqf8aifr3kp2cn9njh";
   };
 
   sourceRoot = "source/cmd/tar2ext4";
