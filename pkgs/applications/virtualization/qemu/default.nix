@@ -184,6 +184,7 @@ stdenv.mkDerivation rec {
 
   # Add a ‘qemu-kvm’ wrapper for compatibility/convenience.
   postInstall = ''
+    ln -s $out/libexec/virtiofsd $out/bin
     ln -s $out/bin/qemu-system-${stdenv.hostPlatform.qemuArch} $out/bin/qemu-kvm
   '';
 
@@ -201,5 +202,6 @@ stdenv.mkDerivation rec {
     mainProgram = "qemu-kvm";
     maintainers = with maintainers; [ eelco qyliss ];
     platforms = platforms.unix;
+    priority = 10; # Prefer virtiofsd from the virtiofsd package.
   };
 }
