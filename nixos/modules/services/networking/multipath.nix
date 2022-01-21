@@ -49,6 +49,8 @@ in {
         groups.
       '';
       type = listOf (submodule {
+        imports = [ (mkRemovedOptionModule [ "retain_attached_hw_handler" ]) ];
+
         options = {
 
           vendor = mkOption {
@@ -239,21 +241,6 @@ in {
               form of mpath. If set to "no" use the WWID as the alias. In either
               case this be will be overridden by any specific aliases in the
               multipaths section.
-            '';
-          };
-
-          retain_attached_hw_handler = mkOption {
-            type = nullOr (enum [ "yes" "no" ]);
-            default = null; # real default: "yes"
-            description = ''
-              (Obsolete for kernels >= 4.3) If set to "yes" and the SCSI layer has
-              already attached a hardware_handler to the device, multipath will not
-              force the device to use the hardware_handler specified by mutipath.conf.
-              If the SCSI layer has not attached a hardware handler, multipath will
-              continue to use its configured hardware handler.
-
-              Important Note: Linux kernel 4.3 or newer always behaves as if
-              "retain_attached_hw_handler yes" was set.
             '';
           };
 
