@@ -1,4 +1,4 @@
-{ lib, stdenv, fetchurl, fetchpatch, autoreconfHook, ncurses, utmp, pam ? null }:
+{ lib, stdenv, fetchurl, autoreconfHook, ncurses, utmp, pam ? null }:
 
 stdenv.mkDerivation rec {
   pname = "screen";
@@ -18,12 +18,7 @@ stdenv.mkDerivation rec {
 
   patches = [
     ./0001-Send-resize-events-to-attached-ptys.patch
-  ] ++ lib.optional stdenv.hostPlatform.isMusl
-    (fetchpatch {
-      url = "https://gist.githubusercontent.com/yujinakayama/4608863/raw/76b9f89af5e5a2e97d9a0f36aac989fb56cf1447/gistfile1.diff";
-      sha256 = "0f9bf83p8zdxaa1pr75jyf5g8xr3r8kv7cyzzbpraa1q4j15ss1p";
-      stripLen = 1;
-    });
+  ];
 
   nativeBuildInputs = [
     autoreconfHook
