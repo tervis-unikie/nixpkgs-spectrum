@@ -1,4 +1,0 @@
-This branch exists so that commit hashes we want to make sure are
-preserved for archival purposes have a reference, and so don't get
-cleaned up by git's garbage collector even if the branch they were
-originally on is rebased.
